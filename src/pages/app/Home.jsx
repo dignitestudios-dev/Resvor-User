@@ -42,7 +42,7 @@ const Home = () => {
   };
 
   return (
-    <>
+    <div className="relative">
       <div className="h-[400px] w-full homeSectionImage ">
         <div className="flex flex-col items-center justify-center h-[300px] md:text-center text-start">
           <div className="xxl:w-[600px] lg:w-[600px] md:w-[400px] w-[300px]">
@@ -56,7 +56,7 @@ const Home = () => {
         </div>
       </div>
       <div
-        className="absolute md:bottom-52 bottom-52 md:right-1/4 md:left-1/4 right-0 left-0 md:w-1/2 w-[400px] bg-white rounded-[16px] md:h-24 md:p-4 p-1 md:mx-0 mx-6 z-50"
+        className="absolute md:top-1/4 md:-mt-6 md:right-1/4 md:left-1/4 right-0 left-0 md:w-1/2 w-[400px] bg-white rounded-[16px] md:h-24 h-12 md:p-4 p-1 md:mx-0 mx-6 z-50"
         style={{ boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.25)" }}
       >
         <div className="flex items-end border border-gray-400 text-sm rounded-[12px] overflow-hidden p-[3px]">
@@ -116,7 +116,7 @@ const Home = () => {
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
