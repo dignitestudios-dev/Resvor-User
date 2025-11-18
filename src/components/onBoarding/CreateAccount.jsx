@@ -1,0 +1,158 @@
+/* eslint-disable react/prop-types */
+import { useFormik } from "formik";
+import AuthButton from "../auth/AuthButton";
+import AuthInput from "../auth/AuthInput";
+import { useNavigate } from "react-router";
+import { phoneFormatter } from "../../lib/helpers";
+import PhoneInput from "../auth/PhoneInput";
+
+const CreateAccount = ({ handleNext }) => {
+  const navigate = useNavigate();
+  const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
+    useFormik({
+      initialValues: "",
+      validationSchema: "",
+      validateOnChange: true,
+      validateOnBlur: true,
+      onSubmit: async (values, action) => {
+        console.log("🚀 ~ CreateAccount ~ action:", action);
+        console.log("🚀 ~ CreateAccount ~ values:", values);
+        handleNext();
+
+        // Use the loading state to show loading spinner
+        // Use the response if you want to perform any specific functionality
+        // Otherwise you can just pass a callback that will process everything
+      },
+    });
+  return (
+    <div className="flex flex-col justify-center items-center h-auto ">
+      <div className="mt-4 xxl:w-[400px] xxl:ml-12 text-center space-y-4">
+        <p className="xxl:text-[48px] text-[32px] text-[#E6E6E6] font-[600] capitalize">
+          sign up
+        </p>
+        <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] capitalize ">
+          Please enter your details to create an account.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-10">
+          {/* <div className=" w-full">
+            <AuthInput
+              label={"Name"}
+              text={"Name"}
+              placeholder={"Enter your name"}
+              type={"text"}
+              id={"name"}
+              name={"name"}
+              maxLength={30}
+              value={values.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors?.email}
+              touched={touched?.email}
+            />
+          </div> */}
+          <div className=" w-full">
+            <AuthInput
+              label={"Email Address"}
+              text={"Email address"}
+              placeholder={"Enter email address"}
+              type={"email"}
+              id={"email"}
+              name={"email"}
+              maxLength={30}
+              value={values.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors?.email}
+              touched={touched?.email}
+            />
+          </div>
+          <div>
+            <PhoneInput
+              label={"Phone Number"}
+              value={phoneFormatter(values.number)}
+              id={"number"}
+              name={"number"}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.number}
+              touched={touched.number}
+              autoComplete="off"
+            />
+          </div>
+          <div className=" w-full">
+            <AuthInput
+              label={"Password"}
+              text={"Password"}
+              placeholder={"Enter password here"}
+              type={"password"}
+              id={"password"}
+              name={"password"}
+              showToggle={true}
+              maxLength={250}
+              value={values.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors?.password}
+              touched={touched?.password}
+            />
+          </div>
+          <div className=" w-full">
+            <AuthInput
+              label={"Confirm Password"}
+              text={"Password"}
+              placeholder={"Re-enter password here"}
+              type={"password"}
+              id={"confPassword"}
+              name={"confPassword"}
+              showToggle={true}
+              maxLength={250}
+              value={values.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors?.password}
+              touched={touched?.password}
+            />
+          </div>
+        </div>
+        <div className="mt-6 ">
+          <div className="xxl:w-[650px] w-[350px] mt-1 mb-4">
+            <AuthButton text={"Sign Up"} />
+          </div>
+        </div>
+      </form>
+
+      <div className="flex items-center justify-center gap-2 ">
+        <p className="text-center xxl:text-[26px] text-[12px] leading-[21.6px] text-[#CACACA]">
+          Already have an account?
+          <span
+            className="xxl:text-[26px] text-[12px] font-[600] pl-1 cursor-pointer text-white"
+            onClick={() => navigate("/auth/login")}
+          >
+            Login
+          </span>
+        </p>
+      </div>
+      <div className="mt-6 text-[12px] text-[#CACACA] ">
+        I accept the{" "}
+        <span
+          className="text-[#E6E6E6] font-semibold cursor-pointer"
+          onClick={() => console.log("first")}
+        >
+          Terms & Conditions
+        </span>{" "}
+        and{" "}
+        <span
+          className="text-[#E6E6E6] font-semibold cursor-pointer"
+          onClick={() => console.log("second")}
+        >
+          Privacy Policy
+        </span>
+      </div>
+    </div>
+  );
+};
+
+export default CreateAccount;

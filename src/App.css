@@ -1,0 +1,52 @@
+/* All the Global CSS code goes here */
+
+.backgroundImage {
+  font-family: 'General Sans', sans-serif;
+  background-image: url('./assets/bg-image.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.homeSectionImage {
+  font-family: 'General Sans', sans-serif;
+  background-image: url('./assets/heroSectionImg.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+
+.range-input {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  outline: none;
+  transition: background 0.3s ease-in-out;
+}
+
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(to left, #010067, #000000);
+
+border-image-source: linear-gradient(264.26deg, #010067 -14.79%, #000000 157.42%);
+border-image-slice: 1;
+
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.range-input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+    background: linear-gradient(to left, #010067, #000000);
+border-image-source: linear-gradient(264.26deg, #010067 -14.79%, #000000 157.42%);
+border-image-slice: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
