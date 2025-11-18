@@ -71,7 +71,7 @@ const Home = () => {
             <button
               type="button"
               onClick=""
-              className="bg-gradient-to-l from-[#012C57] to-[#061523] text-white md:text-[14px] text-[12px] py-3.5 md:px-6 px-2 rounded-xl"
+              className="bg-gradient-to-l from-[#010067] to-[#000000] text-white md:text-[14px] text-[12px] py-3.5 md:px-6 px-2 rounded-[12px]"
             >
               <p>Find lounge</p>
             </button>
