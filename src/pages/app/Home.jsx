@@ -43,21 +43,22 @@ const Home = () => {
 
   return (
     <div className="relative">
-      <div className="h-[400px]  w-full homeSectionImage ">
+      <div className="h-[420px] w-full homeSectionImage ">
         <div className="flex flex-col items-center justify-center h-[300px] md:text-center text-start">
-          <div className="xxl:w-[600px] lg:w-[600px] md:w-[400px] w-[300px]">
+          <div className="xxl:w-[600px] lg:w-[600px] md:w-[400px] w-[300px] mt-2">
             <p className="text-white xxl:text-[48px] lg:text-[48px] text-[32px] font-[600] capitalize">
               Where every occasion finds its lounge.
             </p>
-            <p className="xxl:text-[26px] text-[18px] text-[#E6E6E6] capitalize ">
-              Discover Premium Lounges, Exclusive Packages, and Unforgettable Vibes.
+            <p className="xxl:text-[26px] text-[18px] text-[#E6E6E6] capitalize md:text-center md:mx-8 mx-0 mt-2">
+              Discover Premium Lounges, Exclusive Packages, and Unforgettable
+              Vibes.
             </p>
           </div>
         </div>
       </div>
 
       <div
-        className="absolute top-[260px] lg:top-1/4 md:top-1/6 left-1/2 -translate-x-1/2 
+        className="absolute top-[300px] lg:top-1/4 md:top-1/4 left-1/2 -translate-x-1/2 
              w-full max-w-md md:max-w-xl bg-white rounded-[16px] 
              md:p-4 p-2 px-4 z-50"
         style={{ boxShadow: "0px 4px 30px rgba(0,0,0,0.25)" }}
