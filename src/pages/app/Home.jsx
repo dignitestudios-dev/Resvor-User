@@ -49,8 +49,8 @@ const Home = () => {
             <p className="text-white xxl:text-[48px] lg:text-[48px] text-[32px] font-[600] capitalize">
               Where every occasion finds its lounge.
             </p>
-            <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] capitalize ">
-              Discover premium lounges
+            <p className="xxl:text-[26px] text-[18px] text-[#E6E6E6] capitalize ">
+              Discover Premium Lounges, Exclusive Packages, and Unforgettable Vibes.
             </p>
           </div>
         </div>
