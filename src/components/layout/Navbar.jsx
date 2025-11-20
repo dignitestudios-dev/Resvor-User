@@ -160,7 +160,7 @@ const Navbar = () => {
       } text-[#181818]`}
     >
       <div className="max-w-7xl border-b border-white/40 mx-auto px-4 py-2 flex z-10 items-center justify-between relative">
-        <div className="w-[60%]">
+        <div className="md:w-[60%] w-[40%]">
           <img
             src={logoBlack}
             alt="Logo"

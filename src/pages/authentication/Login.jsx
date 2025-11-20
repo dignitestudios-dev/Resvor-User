@@ -102,7 +102,7 @@ const Login = () => {
               </p>
             </div>
 
-            <div className="xxl:w-[650px] w-[350px] mt-1 mb-4">
+            <div className="xxl:w-[650px] lg:w-[350px] w-full md:mx-0 mx-2 mt-1 mb-4">
               <AuthButton
                 onClick={() => navigate("/app/home")}
                 type="button"

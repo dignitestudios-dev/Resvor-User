@@ -89,7 +89,7 @@ const VerifyEmail = ({ handleNext, handlePrevious }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[460px] md:w-[550px] w-[320px] mt-4">
-            <div className="xxl:w-[600px] xxl:m-4 grid grid-cols-6 gap-20 xl:w-[340px] lg:w-[360px] md:w-[550px] w-full ">
+            <div className="xxl:w-[600px] xxl:m-4 grid grid-cols-6 sm:gap-20 gap-4 xl:w-[340px] lg:w-[360px] md:w-[550px] w-full">
               {otp.map((digit, index) => (
                 <input
                   inputMode="numeric"
@@ -101,7 +101,7 @@ const VerifyEmail = ({ handleNext, handlePrevious }) => {
                   onChange={(e) => handleChange(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)}
                   ref={(el) => (inputs.current[index] = el)}
-                  className="xxl:h-[79px] xxl:w-[79px] h-[70px] w-[70px] rounded-[12px] outline-none text-center border-[1px] bg-white/10 backdrop-blur-[28.9px] placeholder:text-[#E6E6F0]
+                  className="xxl:h-[79px] xxl:w-[79px] md:h-[70px] md:w-[70px] w-[60px] h-[60px] rounded-[12px] outline-none text-center border-[1px] bg-white/10 backdrop-blur-[28.9px] placeholder:text-[#E6E6F0]
                 placeholder:text-[16px] xxl:placeholder:text-[20px] focus-within:border-[#CACACA] flex items-center justify-center"
                 />
               ))}

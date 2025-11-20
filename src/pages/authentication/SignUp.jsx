@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { IoMailOutline, IoCallOutline } from "react-icons/io5";
-import { LiaIdCard } from "react-icons/lia";
+import { IoCall, IoMail } from "react-icons/io5";
+import { FaIdCard } from "react-icons/fa";
 import { IoMdPerson } from "react-icons/io";
 
 import OnboardingStepper from "../../components/onBoarding/OnboardingSteps";
-import { HiOutlineCalendarDateRange } from "react-icons/hi2";
+import { HiCalendarDateRange } from "react-icons/hi2";
 import CreateAccount from "../../components/onBoarding/CreateAccount";
 import VerifyEmail from "../../components/onBoarding/VerifyEmail";
 import VerifyPhone from "./../../components/onBoarding/VerifyPhone";
@@ -16,10 +16,10 @@ export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0);
   const providerSteps = [
     { icon: IoMdPerson, title: "Your Details" },
-    { icon: IoMailOutline, title: "Verify Email" },
-    { icon: IoCallOutline, title: "Verify Number" },
-    { icon: LiaIdCard, title: "Personal details" },
-    { icon: HiOutlineCalendarDateRange, title: "Preferences" },
+    { icon: IoMail, title: "Verify Email" },
+    { icon: IoCall, title: "Verify Number" },
+    { icon: FaIdCard, title: "Personal details" },
+    { icon: HiCalendarDateRange, title: "Preferences" },
     { icon: FaClipboardList, title: "Subscription" },
   ];
   const [email, setEmail] = useState("");

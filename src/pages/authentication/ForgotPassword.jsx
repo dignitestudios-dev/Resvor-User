@@ -67,7 +67,7 @@ const ForgotPassword = () => {
               />
             </div>
           </div>
-          <div className="xxl:w-[650px] w-[350px] mt-6 mb-4">
+          <div className="xxl:w-[650px]  lg:w-[350px] w-full mt-6 mb-4">
             <AuthButton
               text={"Send OTP"}
               loading={loading}

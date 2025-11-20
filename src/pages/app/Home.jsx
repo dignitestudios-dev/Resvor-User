@@ -43,7 +43,7 @@ const Home = () => {
 
   return (
     <div className="relative">
-      <div className="h-[400px] w-full homeSectionImage ">
+      <div className="h-[400px]  w-full homeSectionImage ">
         <div className="flex flex-col items-center justify-center h-[300px] md:text-center text-start">
           <div className="xxl:w-[600px] lg:w-[600px] md:w-[400px] w-[300px]">
             <p className="text-white xxl:text-[48px] lg:text-[48px] text-[32px] font-[600] capitalize">
@@ -55,29 +55,32 @@ const Home = () => {
           </div>
         </div>
       </div>
+
       <div
-        className="absolute md:top-1/4 md:-mt-6 md:right-1/4 md:left-1/4 right-0 left-0 md:w-1/2 w-[400px] bg-white rounded-[16px] md:h-24 h-12 md:p-4 p-1 md:mx-0 mx-6 z-50"
-        style={{ boxShadow: "0px 4px 30px 0px rgba(0, 0, 0, 0.25)" }}
+        className="absolute top-[260px] lg:top-1/4 md:top-1/6 left-1/2 -translate-x-1/2 
+             w-full max-w-md md:max-w-xl bg-white rounded-[16px] 
+             md:p-4 p-2 px-4 z-50"
+        style={{ boxShadow: "0px 4px 30px rgba(0,0,0,0.25)" }}
       >
         <div className="flex items-end border border-gray-400 text-sm rounded-[12px] overflow-hidden p-[3px]">
-          <div className="flex items-center gap-2 py-3.5 px-6 md:w-[80%] w-[70%] text-[#9F9F9F]">
-            {/* Search Icon + Text */}
-            <span role="img" aria-label="search">
-              <FaSearch className="text-[#9F9F9F] text-[16px]" />
-            </span>
+          {/* Search text */}
+          <div className="flex items-center gap-2 py-3.5 px-4 flex-1 text-[#9F9F9F]">
+            <FaSearch className="text-[#9F9F9F] text-[16px]" />
             <span>search for lounges</span>
           </div>
-          <div className="flex items-start h-full justify-end md:w-[20%] w-[30%]">
-            <button
-              type="button"
-              onClick=""
-              className="bg-gradient-to-l from-[#010067] to-[#000000] text-white md:text-[14px] text-[12px] py-3.5 md:px-6 px-2 rounded-[12px]"
-            >
-              <p>Find lounge</p>
-            </button>
-          </div>
+
+          {/* Button */}
+          <button
+            type="button"
+            className="bg-gradient-to-l from-[#010067] to-[#000000] 
+                 text-white text-[12px] md:text-[14px] 
+                 py-3.5 px-4 md:px-6 rounded-[12px]"
+          >
+            Find lounge
+          </button>
         </div>
       </div>
+
       <div className="w-full mt-20 md:px-16 px-8 relative">
         <div className="w-full flex md:flex-row flex-col justify-between md:items-center items-start md:space-y-0 space-y-2 px-10 ">
           <div className="space-y-2">

@@ -118,7 +118,7 @@ const CreateAccount = ({ handleNext }) => {
           </div>
         </div>
         <div className="mt-6 ">
-          <div className="xxl:w-[650px] w-[350px] mt-1 mb-4">
+          <div className="xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-1 mb-4">
             <AuthButton text={"Sign Up"} />
           </div>
         </div>

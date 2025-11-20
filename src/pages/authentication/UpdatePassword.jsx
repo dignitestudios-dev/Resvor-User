@@ -50,7 +50,7 @@ const UpdatePassword = () => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[360px] md:w-[550px] w-[320px] mt-4">
+          <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-4">
             <div className=" w-full">
               <AuthInput
                 label={"Password"}
@@ -86,7 +86,7 @@ const UpdatePassword = () => {
               />
             </div>
           </div>
-          <div className="xxl:w-[650px] w-[360px] mt-6 mb-4">
+          <div className="xxl:w-[650px] lg:w-[350px] mt-6 mb-4">
             <AuthButton text={"Update"} loading={loading} disabled={loading} />
           </div>
         </form>
