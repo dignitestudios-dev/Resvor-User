@@ -4,11 +4,15 @@ import { binIcon, editIcon } from "../../assets/export";
 import AuthButton from "../../components/auth/AuthButton";
 import { useState } from "react";
 import AddGuestModal from "../../components/guestBook/AddGuestModal";
+import EditGuestModal from "../../components/guestBook/EditGuestModal";
+import DeleteGuestModal from "../../components/guestBook/DeleteGuestModal";
 
 const GuestBook = () => {
   const navigate = useNavigate();
   const [addGuest, setAddGuest] = useState(false);
-  const users = [
+  const [editGuest, setEditGuest] = useState(null);
+  const [guestToDeleteIndex, setGuestToDeleteIndex] = useState(null);
+  const [users, setUsers] = useState([
     {
       name: "John Doe",
       date: "12-05-25",
@@ -33,7 +37,14 @@ const GuestBook = () => {
       location: "New York, NY – 9 Empire Blvd",
       status: "Inactive",
     },
-  ];
+  ]);
+
+  const handleConfirmDelete = () => {
+    if (guestToDeleteIndex !== null) {
+      setUsers((prev) => prev.filter((_, i) => i !== guestToDeleteIndex));
+      setGuestToDeleteIndex(null);
+    }
+  };
 
   return (
     <>
@@ -57,17 +68,11 @@ const GuestBook = () => {
         </div>
       </div>
       <div className="px-5 lg:px-40">
-        <div
-          className=" mx-auto  bg-white rounded-xl -mt-[16em] border-[1px] border-[#b9b9b95f]"
-          // style={{ boxShadow: "0px 4px 30px 0px #00000026" }}
-        >
+        <div className=" mx-auto  bg-white rounded-xl -mt-[16em] border-[1px] border-[#b9b9b95f]">
           <div className="bg-white rounded-xl hidden md:block overflow-x-auto overflow-y-auto">
             <table className="w-full">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-[#E8E8FF] text-[14.82px]">
-                  {/* <th className="px-4 py-5 text-left text-nowrap font-[500]">
-                    #
-                  </th> */}
                   <th className="pl-8 pr-4 py-5 text-left text-nowrap font-[500] ">
                     Lounge Name
                   </th>
@@ -88,34 +93,31 @@ const GuestBook = () => {
                     key={index}
                     className="border-b border-[#D4D4D4] text-[14.82px]"
                   >
-                    {/* <td className="px-4 py-6">{index + 1}</td> */}
                     <td className="pl-8 pr-4 py-6">
-                      <div className="flex items-center gap-3">
-                        {/* <div className="p-0.5 bg-linear-to-bl from-[#29ABE2] to-[#63CFAC] rounded-full">
-                          <div
-                            className="rounded-full bg-cover bg-center border border-white"
-                            style={{
-                              backgroundImage: `url(${"/images/profile.jpg"})`,
-                            }}
-                          />
-                        </div> */}
-                        {user.name}
-                      </div>
+                      <div className="flex items-center gap-3">{user.name}</div>
                     </td>
                     <td className="px-4 py-6">{user.location}</td>
                     <td className={"px-4 py-6 "}>{user.date}</td>
                     <td className="px-4 py-6 text-nowrap underline cursor-pointer">
                       <div className="flex items-center gap-2">
-                        <img
-                          src={editIcon}
-                          alt="edit"
-                          className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
-                        />
-                        <img
-                          src={binIcon}
-                          alt="edit"
-                          className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
-                        />
+                        <button
+                          onClick={() => setEditGuest(user)}
+                          type="button"
+                          className="cursor-pointer"
+                        >
+                          <img
+                            src={editIcon}
+                            alt="edit"
+                            className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
+                          />
+                        </button>
+                        <button onClick={() => setGuestToDeleteIndex(index)}>
+                          <img
+                            src={binIcon}
+                            alt="delete"
+                            className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
+                          />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -155,23 +157,45 @@ const GuestBook = () => {
                     Action
                   </span>
                   <div className="flex items-center gap-2">
-                    <img
-                      src={editIcon}
-                      alt="edit"
-                      className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
-                    />
-                    <img
-                      src={binIcon}
-                      alt="edit"
-                      className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
-                    />
+                    <button
+                      onClick={() => setEditGuest(user)}
+                      type="button"
+                      className="cursor-pointer"
+                    >
+                      <img
+                        src={editIcon}
+                        alt="edit"
+                        className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
+                      />
+                    </button>
+                    <button onClick={() => setGuestToDeleteIndex(idx)}>
+                      <img
+                        src={binIcon}
+                        alt="delete"
+                        className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
+                      />
+                    </button>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
+
         {addGuest && <AddGuestModal onClose={() => setAddGuest(false)} />}
+        {editGuest && (
+          <EditGuestModal
+            guestData={editGuest}
+            onClose={() => setEditGuest(null)}
+          />
+        )}
+
+        {guestToDeleteIndex !== null && (
+          <DeleteGuestModal
+            onClose={() => setGuestToDeleteIndex(null)}
+            onConfirm={handleConfirmDelete}
+          />
+        )}
       </div>
     </>
   );

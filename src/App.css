@@ -1,5 +1,9 @@
 /* All the Global CSS code goes here */
 
+ body {
+      font-family: 'Inter', sans-serif;
+    }
+
 .backgroundImage {
   font-family: 'General Sans', sans-serif;
   background-image: url('./assets/bg-image.png');

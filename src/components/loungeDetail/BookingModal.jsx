@@ -32,13 +32,14 @@ const BookingModal = ({ onClose, onNext }) => {
   }, []);
 
   const handleSelect = (option) => {
+    const name = option?.name || option;
     setSelectedTable((prev) => {
-      const exists = prev.some((item) => item.id === option._id);
+      const exists = prev.some((item) => item.name === name);
 
       if (exists) {
-        return prev.filter((item) => item.id !== option._id);
+        return prev.filter((item) => item.name !== name);
       } else {
-        return [...prev, { name: option.name, id: option._id }];
+        return [...prev, { name }];
       }
     });
   };
@@ -76,13 +77,15 @@ const BookingModal = ({ onClose, onNext }) => {
   };
 
   const handleSelectPackage = (option) => {
+    const name = option?.name || option?.title || option;
+    const price = option?.price || null;
     setSelectedPackage((prev) => {
-      const exists = prev.some((item) => item.id === option._id);
+      const exists = prev.some((item) => item.name === name);
 
       if (exists) {
-        return prev.filter((item) => item.id !== option._id);
+        return prev.filter((item) => item.name !== name);
       } else {
-        return [...prev, { name: option.name, id: option._id }];
+        return [...prev, { name, price }];
       }
     });
   };
@@ -193,9 +196,9 @@ const BookingModal = ({ onClose, onNext }) => {
                 label="Select Services & packages"
                 placeholder={"Select Services & packages"}
                 options={[
-                  "Vip table package",
-                  "Food and drink package",
-                  "Birthday packages",
+                  { title: "Vip table package", price: "20$" },
+                  { title: "Food and drink package", price: "40$" },
+                  { title: "Birthday packages", price: "25$" },
                 ]}
                 value={selectedPackage}
                 onChange={handleSelectPackage}

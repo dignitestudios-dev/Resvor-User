@@ -1,6 +1,5 @@
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { useNavigate } from "react-router";
-import { flyer } from "../../assets/export";
 import { flyerData } from "../../static/MockData";
 
 const Flyers = () => {
@@ -32,10 +31,10 @@ const Flyers = () => {
                 className="space-y-2 cursor-pointer"
               >
                 <div className="border border-[#F4F4F4] rounded-[10px] ">
-                  <img src={flyer} alt="flyer" className="h-[273px]" />
+                  <img src={item.image} alt="flyer" className="h-[273px]" />
                 </div>
                 <p className="text-[#202224] text-center text-[16px] font-[600]">
-                  Flyer Name
+                  {item.name}
                 </p>
               </div>
             ))}

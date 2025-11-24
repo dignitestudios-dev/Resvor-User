@@ -1,31 +1,31 @@
-import { flyer, loungeImg } from "../assets/export";
+import { flyer, loungeImg, flyerThree, flyerTwo } from "../assets/export";
 
 export const flyerData = [
-  { id: 1, name: "Summer Sale Flyer", image: "/flyers/summer-sale.jpg" },
-  { id: 2, name: "New Arrivals Flyer", image: "/flyers/new-arrivals.jpg" },
-  { id: 3, name: "Holiday Deals Flyer", image: "/flyers/holiday-deals.jpg" },
-  { id: 4, name: "Back to School Flyer", image: "/flyers/back-to-school.jpg" },
-  { id: 5, name: "Black Friday Flyer", image: "/flyers/black-friday.jpg" },
+  { id: 1, name: "Summer Sale Flyer", image: flyer },
+  { id: 2, name: "New Arrivals Flyer", image: flyerThree },
+  { id: 3, name: "Holiday Deals Flyer", image: flyerTwo },
+  { id: 4, name: "Back to School Flyer", image: flyer },
+  { id: 5, name: "Black Friday Flyer", image: flyerTwo },
   {
     id: 6,
     name: "Winter Clearance Flyer",
-    image: "/flyers/winter-clearance.jpg",
+    image: flyerThree,
   },
   {
     id: 7,
     name: "Spring Collection Flyer",
-    image: "/flyers/spring-collection.jpg",
+    image: flyer,
   },
-  { id: 8, name: "Flash Sale Flyer", image: "/flyers/flash-sale.jpg" },
+  { id: 8, name: "Flash Sale Flyer", image: flyerTwo },
   {
     id: 9,
     name: "Limited Edition Flyer",
-    image: "/flyers/limited-edition.jpg",
+    image: flyerThree,
   },
   {
     id: 10,
     name: "Weekly Specials Flyer",
-    image: "/flyers/weekly-specials.jpg",
+    image: flyerTwo,
   },
 ];
 

@@ -6,8 +6,11 @@ import Button from "../global/Button";
 import { binIcon, mapImg, userImage } from "../../assets/export";
 import { useState } from "react";
 import TagsInputField from "../onBoarding/TagsInputField";
+import TagsModal from "../onBoarding/TagsModal";
 
 const EditProfileModal = ({ onClose, onClick, initialData = {} }) => {
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const closeModal = () => setModalIsOpen(false);
   const [dateModalData, setDateModalData] = useState("");
   const [formData, setFormData] = useState({
     name: initialData.name || "Mike Smith",
@@ -110,7 +113,7 @@ const EditProfileModal = ({ onClose, onClick, initialData = {} }) => {
                 Add birthday and special dates
               </label>
 
-              <TagsInputField setDateModalData={setDateModalData} />
+              <TagsInputField setModalIsOpen={setModalIsOpen} />
               {dateModalData && (
                 <div
                   className={`flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5`}
@@ -126,7 +129,7 @@ const EditProfileModal = ({ onClose, onClick, initialData = {} }) => {
                       onClick={() => setDateModalData("")}
                       className="py-1.5 rounded-xl"
                     >
-                      <img src={binIcon} alt="bin" className="pr-2" />
+                      <img src={binIcon} alt="bin" className="pr-2 w-7" />
                     </button>
                   </div>
                 </div>
@@ -145,6 +148,13 @@ const EditProfileModal = ({ onClose, onClick, initialData = {} }) => {
           </div>
         </div>
       </div>
+      {modalIsOpen && (
+        <TagsModal
+          isOpen={modalIsOpen}
+          onClose={closeModal}
+          setDateModalData={setDateModalData}
+        />
+      )}
     </div>
   );
 };

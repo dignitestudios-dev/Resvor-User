@@ -7,12 +7,15 @@ import { binIcon, mapImg, uploadIcon } from "../../assets/export";
 import { useState } from "react";
 import TagsInputField from "./TagsInputField";
 import { FaArrowLeftLong } from "react-icons/fa6";
+import TagsModal from "./TagsModal";
 
 const PersonalDetails = ({ handleNext, handlePrevious }) => {
   const [userImage, setUserImage] = useState("");
   console.log("🚀 ~ PersonalDetails ~ userImage:", userImage);
   const [dateModalData, setDateModalData] = useState("");
   console.log("🚀 ~ PersonalDetails ~ dateModalData:", dateModalData);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const closeModal = () => setModalIsOpen(false);
 
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
@@ -105,7 +108,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
               Add birthday and special dates
             </label>
 
-            <TagsInputField setDateModalData={setDateModalData} />
+            <TagsInputField setModalIsOpen={setModalIsOpen} />
             {dateModalData && (
               <div
                 className={`flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5`}
@@ -120,7 +123,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
                     onClick={() => setDateModalData("")}
                     className="py-1.5 rounded-xl"
                   >
-                    <img src={binIcon} alt="bin" className="pr-2" />
+                    <img src={binIcon} alt="bin" className="pr-2 w-7" />
                   </button>
                 </div>
               </div>
@@ -152,6 +155,13 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
           </div>
         </div>
       </form>
+      {modalIsOpen && (
+        <TagsModal
+          isOpen={modalIsOpen}
+          onClose={closeModal}
+          setDateModalData={setDateModalData}
+        />
+      )}
     </div>
   );
 };

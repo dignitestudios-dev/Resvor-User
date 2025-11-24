@@ -5,7 +5,7 @@ import { likeIcon, msgIcon } from "../../assets/export";
 import { IoLocation } from "react-icons/io5";
 import { FaClock } from "react-icons/fa";
 import Button from "../../components/global/Button";
-import { tabs } from "../../static/LoungDetailTabs";
+import { tabs } from "../../static/LoungeDetailTabs";
 import { useState } from "react";
 import LoungeDetailTabs from "../../components/loungeDetail/LoungeDetailTabs";
 import BookingModal from "../../components/loungeDetail/BookingModal";
@@ -128,7 +128,9 @@ const LoungeDetail = () => {
                   <span>Location: New York</span>
                 </li>
               </ul>
-              <p className="text-[#010067] text-[19px]">Description</p>
+              <p className="text-[#010067] text-[19px] font-semibold mt-2">
+                Description
+              </p>
               <p className="text-[#6B6B6B] text-[15px]">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
                 adipiscing elit, sed do eiusmod tempor labore et dolore magna
@@ -143,7 +145,7 @@ const LoungeDetail = () => {
                 <div className="w-full">
                   <button
                     onClick={() => setIsEventRequest(true)}
-                    className="bg-[#21293514] text-[#212935] text-[13px] rounded-[8px] w-full py-2 flex-1"
+                    className="bg-[#21293514] text-[#212935] font-semibold text-[13px] rounded-[8px] w-full py-2 flex-1"
                   >
                     Request Event
                   </button>

@@ -13,17 +13,24 @@ import { useState } from "react";
 import { binIcon } from "../../assets/export";
 import TagsModal from "../onBoarding/TagsModal";
 
-const AddGuestModal = ({ onClose }) => {
+const EditGuestModal = ({ onClose, guestData }) => {
   const [dateModalData, setDateModalData] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const closeModal = () => setModalIsOpen(false);
 
   const { values, handleBlur, handleChange, errors, touched, handleSubmit } =
     useFormik({
-      initialValues: changPasswordValues,
+      initialValues: {
+        name: guestData?.name || "",
+        email: guestData?.email || "",
+        number: guestData?.phone || "",
+        lounge: guestData?.lounge || "",
+        ...changPasswordValues,
+      },
       validationSchema: changePasswordSchema,
       onSubmit: async (values) => {
-        console.log("🚀 ~ AddGuestModal ~ values:", values);
+        console.log("🚀 ~ EditGuestModal ~ values:", values);
+        onClose();
       },
     });
 
@@ -31,7 +38,7 @@ const AddGuestModal = ({ onClose }) => {
     <div className="fixed inset-0 bg-[#0A150F80] z-50 flex items-center justify-center">
       <div className="bg-white rounded-[12px] w-[490px] max-w-[95%] pb-4 overflow-y-auto">
         <div className="flex justify-between items-center px-8 pt-4 border-b border-b-[#00000033]">
-          <h2 className="text-[28px] font-bold mb-4">Add New</h2>
+          <h2 className="text-[28px] font-bold mb-4">Edit Guest</h2>
           <div onClick={onClose} className="cursor-pointer">
             <RxCross2 className="text-[28px] text-[#181818]" />
           </div>
@@ -39,6 +46,7 @@ const AddGuestModal = ({ onClose }) => {
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-6 w-full pt-4 px-8">
             <InputField
+              type="text"
               label="Full Name"
               placeholder="Full Name"
               id="name"
@@ -69,7 +77,6 @@ const AddGuestModal = ({ onClose }) => {
               Phone Number
             </label>
             <PhoneInput
-              //   label={"Phone Number"}
               value={phoneFormatter(values.number)}
               id={"number"}
               name={"number"}
@@ -121,7 +128,7 @@ const AddGuestModal = ({ onClose }) => {
           </div>
         </form>
         <div className="mt-8 mx-8">
-          <Button text="Add New" type="button" onClick={onClose} />
+          <Button text="Update Guest" type="button" onClick={handleSubmit} />
         </div>
       </div>
       {modalIsOpen && (
@@ -135,4 +142,4 @@ const AddGuestModal = ({ onClose }) => {
   );
 };
 
-export default AddGuestModal;
+export default EditGuestModal;

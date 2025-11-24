@@ -78,18 +78,23 @@ const FilterSelectableField = ({
         {isOpen && (
           <div className="border border-[#CACACA] rounded-[8px] max-h-[200px] overflow-y-auto text-[#727272]">
             {options?.map((option) => {
-              const isChecked = value?.some(
-                (item) => item.id === option._id || item === option
-              );
+              // derive a stable key for option (works for objects and strings)
+              const optionKey = option?.title ?? option;
+
+              const isChecked = value?.some((item) => {
+                const itemKey = item?.name ?? item?.title ?? item;
+                return itemKey === optionKey;
+              });
+
               return (
                 <label
-                  key={option?._id || option}
+                  key={option?._id || optionKey}
                   className="flex px-4 py-2 hover:bg-gray-100 cursor-pointer items-center"
                 >
                   <div className="relative">
                     <input
                       type="checkbox"
-                      checked={isChecked}
+                      checked={!!isChecked}
                       onChange={() => onChange(option)}
                       className="absolute opacity-0 w-0 h-0"
                     />
@@ -113,7 +118,12 @@ const FilterSelectableField = ({
                       )}
                     </div>
                   </div>
-                  <span className="ml-3">{option?.name || option}</span>
+                  <span className="ml-3">
+                    {option?.title || option}{" "}
+                    {option.price && (
+                      <span className="pl-4">({option.price})</span>
+                    )}
+                  </span>
                 </label>
               );
             })}

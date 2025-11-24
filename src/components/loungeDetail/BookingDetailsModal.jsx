@@ -80,7 +80,9 @@ const BookingDetailsModal = ({ onClose, bookingData, onNext }) => {
             </p>
             <div className="grid grid-cols-2 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2 mb-4">
               <div>
-                <p className="text-[#000000] py-2">{services.split(",")[0]}</p>
+                <p className="text-[#000000] py-2">
+                  {services.split(",")[0]} <span>20$</span>
+                </p>{" "}
               </div>
               <div className="border-l-2 border-b-gray-300 pl-1 py-2">
                 <p className="text-[#000000]">

@@ -40,7 +40,8 @@ import editIcon from "./Edit.png";
 import flyer from "./flyer.png";
 import danger from "./Danger.png";
 import dangerBlue from "./dangerBlue.png";
-
+import flyerTwo from "./flyerTwo.png";
+import flyerThree from "./flyerThree.png";
 // export {
 //     FILENAME(PASCALCASE)
 // }
@@ -81,6 +82,8 @@ export {
   logout,
   editIcon,
   flyer,
+  flyerTwo,
+  flyerThree,
   danger,
   dangerBlue,
 };

@@ -1,12 +1,14 @@
 import { HiOutlinePencilSquare } from "react-icons/hi2";
-import { userImage } from "../../assets/export";
+import { qrSnap, userImage } from "../../assets/export";
 import { useState } from "react";
 import EditProfileModal from "./EditProfileModal";
 import AuthSuccessModal from "../auth/AuthSuccessModal";
+import { FaQrcode } from "react-icons/fa6";
 
 const ProfileDetail = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isUpdated, setIsUpdated] = useState(false);
+  const [isQrCode, setIsQrCode] = useState(false);
 
   return (
     <div className="bg-[#F5F5F5] rounded-[16px] p-6 space-y-4">
@@ -45,6 +47,34 @@ const ProfileDetail = () => {
         </p>
         <p className="text-[16px] text-[#252525]">+123456789, abc123 , xyz</p>
       </div>
+      <div
+        onClick={() => setIsQrCode(true)}
+        className="underline w-[130px] p-1 rounded-md cursor-pointer flex items-center gap-1"
+      >
+        View QR code
+        <FaQrcode className=" text-[#292D32] text-[18px]" />
+      </div>
+
+      {isQrCode && (
+        <div className="fixed inset-0 bg-[#0A150F80] z-50 flex items-center justify-center">
+          <div className="relative bg-white rounded-[12px] w-[440px] h-[300px] flex items-center justify-center">
+            {/* Close Button */}
+            <button
+              className="absolute top-3 right-6 text-gray-500 hover:text-gray-700 text-xl "
+              onClick={() => setIsQrCode(false)} // <-- pass a handler to close modal
+            >
+              X
+            </button>
+
+            {/* Image */}
+            <img
+              src={qrSnap}
+              alt="success"
+              className="max-w-full max-h-full object-contain"
+            />
+          </div>
+        </div>
+      )}
 
       {isEditOpen && (
         <EditProfileModal

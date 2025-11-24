@@ -1,12 +1,7 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
-import TagsModal from "./TagsModal";
 
-const TagsInputField = ({ setDateModalData, isLight = false }) => {
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-
+const TagsInputField = ({ setModalIsOpen, isLight = false }) => {
   const openModal = () => setModalIsOpen(true);
-  const closeModal = () => setModalIsOpen(false);
 
   return (
     <div
@@ -46,11 +41,6 @@ const TagsInputField = ({ setDateModalData, isLight = false }) => {
           </button>
         )}
       </div>
-      <TagsModal
-        isOpen={modalIsOpen}
-        onClose={closeModal}
-        setDateModalData={setDateModalData}
-      />
     </div>
   );
 };
