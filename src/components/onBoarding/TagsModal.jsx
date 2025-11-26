@@ -67,7 +67,7 @@ const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
           offers and curated invitations.
         </p>
 
-        <div className="max-h-[540px] overflow-auto scrollbar-custom  ">
+        <div className="max-h-[500px] overflow-auto scrollbar-custom  ">
           <label className="block text-[14px] font-[500] text-[#181818] mb-2 mt-6">
             When Is Your Birthday?{" "}
             <span className="text-[#CACACA]">(required)</span>
@@ -197,9 +197,9 @@ const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
             )}
 
             {/* Just for debugging */}
-            <pre className="text-xs mt-4 bg-gray-50 p-2 rounded">
+            {/* <pre className="text-xs mt-4 bg-gray-50 p-2 rounded">
               {JSON.stringify(specialDates, null, 2)}
-            </pre>
+            </pre> */}
           </div>
 
           <div className="mt-4 flex justify-center">

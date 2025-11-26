@@ -16,15 +16,15 @@ const LogOutModal = ({ isOpen, setIsOpen, onConfirm, loading = false }) => {
       className="flex items-center justify-center border-none outline-none z-[1000]"
       overlayClassName="fixed inset-0 bg-[#C6C6C6]/50 backdrop-blur-sm z-[1000] flex justify-center items-center"
     >
-      <div className="bg-white rounded-[16px] shadow-lg p-2 w-[450px] flex flex-col justify-center gap-3">
+      <div className="bg-white rounded-[16px] shadow-lg p-2 w-[380px] flex flex-col justify-center gap-3">
         <div className="flex justify-end w-full p-2">
-          <button
+          {/* <button
             onClick={() => setIsOpen(false)}
             disabled={loading}
             aria-label="Close"
           >
             <HiOutlineXMark size={23} />
-          </button>
+          </button> */}
         </div>
 
         <div className="flex items-center px-5 flex-col gap-2 mb-4">

@@ -62,7 +62,7 @@ const BuySubscriptionModal = ({ onClick, setCompleted, isVip }) => {
               <div className="my-4 flex justify-center">
                 <button
                   onClick={() => setShowBill(false)}
-                  className="bg-[#21293514] text-[13px] px-4 py-3 rounded-[12px] w-[97%] font-bold"
+                  className="bg-[#21293514] text-[13px] text-black px-4 py-3 rounded-[12px] w-[97%] font-bold"
                 >
                   Back
                 </button>
@@ -93,7 +93,7 @@ const BuySubscriptionModal = ({ onClick, setCompleted, isVip }) => {
               <div className="my-4 flex justify-center w-[360px]">
                 <button
                   onClick={onClick}
-                  className="bg-white border-[1px] border-[#000000] text-[13px] px-4 py-3 rounded-[12px] w-[97%] font-bold"
+                  className="bg-white border-[1px] text-black border-[#000000] text-[13px] px-4 py-3 rounded-[12px] w-[97%] font-bold"
                 >
                   Next
                 </button>
@@ -204,7 +204,7 @@ const BuySubscriptionModal = ({ onClick, setCompleted, isVip }) => {
               <div className="my-4 flex justify-center">
                 <button
                   onClick={onClick}
-                  className="bg-[#21293514] text-[13px] px-4 py-3 rounded-[12px] w-[97%] font-bold"
+                  className="bg-[#21293514] text-[13px] text-black px-4 py-3 rounded-[12px] w-[97%] font-bold"
                 >
                   Back
                 </button>

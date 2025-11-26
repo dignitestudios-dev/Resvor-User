@@ -5,9 +5,8 @@ import LoungeCard from "../../components/global/LoungeCard";
 import FilterDropdown from "../../components/global/FilterDropdown";
 
 const Home = () => {
-  const [liked, setLiked] = useState(false);
-
   const [open, setOpen] = useState(false);
+  const [services, setServices] = useState([]);
 
   const [selectedFilters, setSelectedFilters] = useState({
     location: "",
@@ -39,6 +38,7 @@ const Home = () => {
       maxPrice: "",
       guestCapacity: 1,
     });
+    setServices([]);
   };
 
   return (
@@ -67,7 +67,11 @@ const Home = () => {
           {/* Search text */}
           <div className="flex items-center gap-2 py-3.5 px-4 flex-1 text-[#9F9F9F]">
             <FaSearch className="text-[#9F9F9F] text-[16px]" />
-            <span>search for lounges</span>
+            <input
+              type="text"
+              placeholder="Search for lounges"
+              className="flex-1 bg-transparent outline-none border-0 placeholder:text-[#9F9F9F] text-[#9F9F9F]"
+            />
           </div>
 
           {/* Button */}
@@ -111,12 +115,14 @@ const Home = () => {
               toggleSelection={toggleSelection}
               setOpen={setOpen}
               clearAll={clearAll}
+              services={services}
+              setServices={setServices}
             />
           )}
         </div>
         <div className="grid md:grid-cols-3 grid-cols-1 gap-6 md:px-10 px-4 mt-6">
           {[...Array(6)].map((item, index) => (
-            <LoungeCard key={index} setLiked={setLiked} liked={liked} />
+            <LoungeCard key={index} />
           ))}
         </div>
       </div>

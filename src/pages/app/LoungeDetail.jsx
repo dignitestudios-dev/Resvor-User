@@ -120,12 +120,12 @@ const LoungeDetail = () => {
               </p>
               <ul className="space-y-2 list-none">
                 <li className="flex items-center gap-2 text-gray-700">
-                  <FaClock className="text-md text-[#010067]" />
-                  <span>Time: 12:00 PM</span>
+                  <IoLocation className="text-xl text-[#010067]" />
+                  <span>Times Square, New York, NY</span>
                 </li>
                 <li className="flex items-center gap-2 text-gray-700">
-                  <IoLocation className="text-xl text-[#010067]" />
-                  <span>Location: New York</span>
+                  <FaClock className="text-md text-[#010067]" />
+                  <span>Operating Hours: 5 PM - 2 AM</span>
                 </li>
               </ul>
               <p className="text-[#010067] text-[19px] font-semibold mt-2">

@@ -176,7 +176,7 @@ const Navbar = () => {
             <Link
               key={link.label}
               to={link.path}
-              className={`pb-1 relative text-[12px] lg:text-[16px] lg:font-[500] transition-all duration-300 ${
+              className={`pb-1 relative text-[12px] lg:text-[16px] lg:font-[500] font-medium transition-all duration-300 font-sans ${
                 currentPath === link.path
                   ? "after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-white"
                   : ""

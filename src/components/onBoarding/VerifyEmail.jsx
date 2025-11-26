@@ -95,7 +95,7 @@ const VerifyEmail = ({ handleNext, handlePrevious }) => {
                   inputMode="numeric"
                   key={index}
                   type="password"
-                  placeholder="0"
+                  placeholder=""
                   maxLength="1"
                   value={digit}
                   onChange={(e) => handleChange(e, index)}

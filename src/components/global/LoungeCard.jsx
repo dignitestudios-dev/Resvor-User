@@ -1,13 +1,12 @@
-/* eslint-disable react/prop-types */
-
 import { heart, heartRed, loungeImg } from "../../assets/export";
 import { GoClockFill } from "react-icons/go";
 import { HiPercentBadge } from "react-icons/hi2";
 import { IoLocation } from "react-icons/io5";
 import { BiSolidBadgeDollar } from "react-icons/bi";
 import { useNavigate } from "react-router";
-
-const LoungeCard = ({ setLiked, liked }) => {
+import { useState } from "react";
+const LoungeCard = () => {
+  const [liked, setLiked] = useState(false);
   const navigate = useNavigate();
   return (
     <div
@@ -22,7 +21,7 @@ const LoungeCard = ({ setLiked, liked }) => {
         />
       </div>
       <div
-        onClick={() => setLiked(!liked)}
+        onClick={() => setLiked((s) => !s)}
         className="p-2 cursor-pointer rounded-full bg-white absolute bottom-48 right-8"
         style={{ boxShadow: "0px 8px 25px 0px #00000012" }}
       >

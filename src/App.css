@@ -5,7 +5,6 @@
     }
 
 .backgroundImage {
-  
   background-image: url('./assets/bg-image.png');
   background-size: cover;
   background-repeat: no-repeat;
@@ -13,7 +12,6 @@
 }
 
 .homeSectionImage {
-  
   background-image: url('./assets/heroSectionImg.png');
   background-size: cover;
   background-repeat: no-repeat;

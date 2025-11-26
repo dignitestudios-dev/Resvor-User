@@ -1,6 +1,5 @@
 import { useLogin } from "../../hooks/api/Post";
 import { useFormik } from "formik";
-import { loginValues } from "../../init/authentication/dummyLoginValues";
 import { useNavigate } from "react-router";
 import AuthInput from "../../components/auth/AuthInput";
 import AuthButton from "../../components/auth/AuthButton";
@@ -16,7 +15,7 @@ const UpdatePassword = () => {
 
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
-      initialValues: loginValues,
+      initialValues: { password: "", confPassword: "" },
       validationSchema: "",
       validateOnChange: true,
       validateOnBlur: true,
@@ -44,8 +43,8 @@ const UpdatePassword = () => {
           <p className=" xxl:text-[48px] text-[32px] font-[600] capitalize">
             create new password
           </p>
-          <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] capitalize ">
-            Enter your new password to reset your password
+          <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] font-[400] ">
+            Enter new password to reset.
           </p>
         </div>
 
@@ -78,11 +77,11 @@ const UpdatePassword = () => {
                 name={"confPassword"}
                 showToggle={true}
                 maxLength={250}
-                value={values.password}
+                value={values.confPassword}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                error={errors?.password}
-                touched={touched?.password}
+                error={errors?.confPassword}
+                touched={touched?.confPassword}
               />
             </div>
           </div>

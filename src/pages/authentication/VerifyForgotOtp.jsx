@@ -3,6 +3,7 @@ import AuthButton from "../../components/auth/AuthButton";
 import { forgotLogo } from "../../assets/export";
 import { useRef, useState } from "react";
 import CountDown from "../../components/auth/CountDown";
+import { FaArrowLeftLong } from "react-icons/fa6";
 
 const VerifyForgotOtp = () => {
   const navigate = useNavigate();
@@ -49,7 +50,12 @@ const VerifyForgotOtp = () => {
   };
 
   return (
-    <div className="w-full flex flex-col items-center text-white px-4 py-6">
+    <div className="w-full flex flex-col items-center text-white px-4 py-6 relative">
+      <div className="flex justify-start items-center absolute top-4 left-28">
+        <button type="button" onClick={() => navigate(-1)}>
+          <FaArrowLeftLong color="white" size={24} />
+        </button>
+      </div>
       {/* Logo */}
       <img
         src={forgotLogo}
@@ -80,7 +86,7 @@ const VerifyForgotOtp = () => {
               type="password"
               maxLength="1"
               value={digit}
-              placeholder="0"
+              placeholder=""
               inputMode="numeric"
               onChange={(e) => handleChange(e, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}

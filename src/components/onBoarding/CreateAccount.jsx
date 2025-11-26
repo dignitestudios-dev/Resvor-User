@@ -10,8 +10,13 @@ const CreateAccount = ({ handleNext }) => {
   const navigate = useNavigate();
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
-      initialValues: "",
-      validationSchema: "",
+      initialValues: {
+        email: "",
+        number: "",
+        password: "",
+        confPassword: "",
+      },
+      validationSchema: null, // Add your validation schema here if needed
       validateOnChange: true,
       validateOnBlur: true,
       onSubmit: async (values, action) => {
@@ -72,7 +77,7 @@ const CreateAccount = ({ handleNext }) => {
           <div>
             <PhoneInput
               label={"Phone Number"}
-              value={phoneFormatter(values.number)}
+              value={values.number}
               id={"number"}
               name={"number"}
               onChange={handleChange}
@@ -102,18 +107,18 @@ const CreateAccount = ({ handleNext }) => {
           <div className=" w-full">
             <AuthInput
               label={"Confirm Password"}
-              text={"Password"}
+              text={"Confirm Password"}
               placeholder={"Re-enter password here"}
               type={"password"}
               id={"confPassword"}
               name={"confPassword"}
               showToggle={true}
               maxLength={250}
-              value={values.password}
+              value={values.confPassword}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={errors?.password}
-              touched={touched?.password}
+              error={errors?.confPassword}
+              touched={touched?.confPassword}
             />
           </div>
         </div>
@@ -125,10 +130,10 @@ const CreateAccount = ({ handleNext }) => {
       </form>
 
       <div className="flex items-center justify-center gap-2 ">
-        <p className="text-center xxl:text-[26px] text-[12px] leading-[21.6px] text-[#CACACA]">
+        <p className="text-center xxl:text-[26px] text-[15px] leading-[21.6px] text-white">
           Already have an account?
           <span
-            className="xxl:text-[26px] text-[12px] font-[600] pl-1 cursor-pointer text-white"
+            className="xxl:text-[26px] text-[14px] font-[600] pl-1 cursor-pointer text-white"
             onClick={() => navigate("/auth/login")}
           >
             Login

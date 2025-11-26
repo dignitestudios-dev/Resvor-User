@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import { IoClose } from "react-icons/io5";
 import FilterSelectableField from "./FilterSelectableField";
-import { useState } from "react";
 
 const FilterDropdown = ({
   setOpen,
@@ -9,16 +8,21 @@ const FilterDropdown = ({
   selectedFilters,
   toggleSelection,
   clearAll,
+  services,
+  setServices,
 }) => {
-  const [services, setServices] = useState([]);
   const handleSelect = (option) => {
+    // normalize option which can be either a string or an object
+    const name = option?.name || option?.title || option;
+    const id = option?._id || null;
+
     setServices((prev) => {
-      const exists = prev.some((item) => item.id === option._id);
+      const exists = prev.some((item) => item.name === name);
 
       if (exists) {
-        return prev.filter((item) => item.id !== option._id);
+        return prev.filter((item) => item.name !== name);
       } else {
-        return [...prev, { name: option.name, id: option._id }];
+        return [...prev, { name, id }];
       }
     });
   };

@@ -29,7 +29,7 @@ const CountDown = ({ isActive, setIsActive, seconds, setSeconds }) => {
     >
       <div className="flex justify-center items-center">
         <span className="mr-1">
-          Resend Code (00:{seconds > 0 ? seconds : "00"} s)
+          Resend Code {seconds > 0 && "00:" + seconds + "s"}
         </span>
       </div>
     </button>

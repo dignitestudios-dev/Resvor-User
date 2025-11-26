@@ -52,6 +52,7 @@ const Preferences = ({ handleNext, handlePrevious }) => {
           <div className="py-4 px-4 flex flex-wrap gap-3 w-full text-center justify-start rounded-[13px] bg-[#EFEFEF1A] border border-[#CACACA]">
             {musicPreferences.map((music, index) => (
               <button
+                type="button"
                 key={index}
                 onClick={() => toggleCategory(music)}
                 className={` h-[28px] px-2 text-[12px] rounded-full font-medium transition-all duration-200 ${
@@ -76,6 +77,7 @@ const Preferences = ({ handleNext, handlePrevious }) => {
           <div className="py-4 px-4 flex flex-wrap gap-3 w-full text-center justify-start rounded-[13px] bg-[#EFEFEF1A] border border-[#CACACA] ">
             {loungePreferences.map((music, index) => (
               <button
+                type="button"
                 key={index}
                 onClick={() => toggleCategory(music)}
                 className={` h-[28px] px-2 text-[12px] rounded-full font-medium transition-all duration-200 ${
@@ -100,6 +102,7 @@ const Preferences = ({ handleNext, handlePrevious }) => {
           <div className="py-4 px-4 text-[12px] flex flex-wrap gap-3 w-full text-center justify-start rounded-[13px] bg-[#EFEFEF1A] border border-[#CACACA] ">
             {experiencePreferences.map((music, index) => (
               <button
+                type="button"
                 key={index}
                 onClick={() => toggleCategory(music)}
                 className={` h-[28px] px-2 rounded-full font-medium transition-all duration-200 ${

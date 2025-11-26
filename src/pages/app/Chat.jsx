@@ -3,6 +3,7 @@ import { FaArrowLeftLong } from "react-icons/fa6";
 import { useNavigate } from "react-router";
 import { chats, loungeManagers } from "../../static/MockData";
 import { useState } from "react";
+import { FaSearch } from "react-icons/fa";
 
 const Chat = () => {
   const navigate = useNavigate();
@@ -27,14 +28,17 @@ const Chat = () => {
           {/* Left Sidebar */}
           <div className="w-80 bg-white  flex flex-col">
             {/* Header */}
-            <div className="py-3 h-[81px] px-6 flex items-center justify-center">
+            <div className="py-3 h-[81px] px-6 flex items-center justify-center ">
               {/* Search Bar */}
-              <div className="w-full relative">
+
+              <div className="w-full flex items-center bg-gray-100 rounded-lg ">
+                <FaSearch className="text-[#9F9F9F] text-[16px]  ml-3" />
+
                 {/* <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" /> */}
                 <input
                   type="text"
                   placeholder="Search"
-                  className="w-full pl-10 pr-4 py-3 bg-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full  px-4 py-3 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
             </div>
@@ -97,7 +101,7 @@ const Chat = () => {
                 <div className="flex-1 overflow-y-auto py-2 pr-4 space-y-4 min-h-[400px] ">
                   {/* Today Label */}
                   <div className="flex justify-center ">
-                    <span className="px-3 py-1 bg-gray-200 text-gray-600 text-xs rounded-full">
+                    <span className="px-3 py-1 bg-gray-200 text-[#181818] text-xs rounded-md">
                       Today
                     </span>
                   </div>
@@ -106,16 +110,29 @@ const Chat = () => {
                   {currentChats.map((chat) => (
                     <div
                       key={chat.id}
-                      className={`flex  ${
-                        chat.isOwn ? "justify-end" : "justify-start"
-                      }`}
+                      className={
+                        chat.isOwn ? "flex justify-end" : "flex justify-start"
+                      }
                     >
+                      {/* avatar for incoming messages */}
                       {!chat.isOwn && (
-                        <div className="w-10 h-10 rounded-full bg-gradient flex items-center justify-center text-white font-semibold shrink-0">
+                        <div className="mx-2 w-10 h-10 rounded-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-white font-semibold flex-shrink-0">
                           {selectedUser.avatar}
                         </div>
                       )}
-                      <div className="flex flex-col items-end">
+
+                      <div
+                        className={`flex flex-col ${
+                          chat.isOwn ? "items-end" : "items-start"
+                        }`}
+                      >
+                        {/* show sender name above incoming messages */}
+                        {!chat.isOwn && (
+                          <span className="text-sm text-gray-500 mb-1 mt-1">
+                            {selectedUser.name}
+                          </span>
+                        )}
+
                         <div
                           className={`max-w-md rounded-lg ${
                             chat.isOwn
@@ -126,10 +143,17 @@ const Chat = () => {
                           <p className="text-sm">{chat.message}</p>
                         </div>
 
-                        <span className={`text-xs mt-1 text-black`}>
+                        <span
+                          className={`text-xs mt-1 ${
+                            chat.isOwn ? "text-black" : "text-gray-500"
+                          }`}
+                        >
                           {chat.time}
                         </span>
                       </div>
+
+                      {/* optional avatar placeholder for own messages to keep spacing consistent */}
+                      {chat.isOwn && <div className="w-10" />}
                     </div>
                   ))}
                 </div>
@@ -149,7 +173,7 @@ const Chat = () => {
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-gray-400">
+              <div className="flex-1 flex items-center justify-center text-gray-400 mt-[200px]">
                 <p>Select a conversation to start messaging</p>
               </div>
             )}

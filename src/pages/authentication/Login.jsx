@@ -48,7 +48,7 @@ const Login = () => {
       <div className="flex flex-col justify-center items-center h-auto ">
         <div className="my-8 space-y-3 xxl:w-[400px] xxl:ml-12 text-center">
           <p className=" xxl:text-[48px] text-[36px] font-[600] capitalize">
-            Login
+            Log In
           </p>
           <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] ">
             Please enter your details to login
