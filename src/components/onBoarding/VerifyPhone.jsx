@@ -82,8 +82,8 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
           <p className=" xxl:text-[48px] text-[32px] font-[600] capitalize">
             verification
           </p>
-          <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] w-[304px] ">
-            Please enter OTP code sent your phone.
+          <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] w-[384px] ">
+            Please enter OTP code sent to your phone.
           </p>
         </div>
 

@@ -83,7 +83,7 @@ const VerifyEmail = ({ handleNext, handlePrevious }) => {
             verification
           </p>
           <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] w-[304px] ">
-            Please enter OTP code sent your email.
+            Please enter OTP code sent to your email.
           </p>
         </div>
 
