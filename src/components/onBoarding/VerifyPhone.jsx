@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useRef, useState } from "react";
 import AuthButton from "../auth/AuthButton";
-// import { forgotLogo } from "../../assets/export";
+import { forgotLogo } from "../../assets/export";
 import TextCountDown from "./TextCountDown";
 import AuthSuccessModal from "../auth/AuthSuccessModal";
 import { FaArrowLeftLong } from "react-icons/fa6";
@@ -75,9 +75,9 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
         </button>
       </div>
       <div className="flex flex-col justify-center items-center h-auto ">
-        {/* <div>
+        <div>
           <img src={forgotLogo} alt="logo" className="w-[220px]" />
-        </div> */}
+        </div>
         <div className="mt-4 py-4 space-y-3 xxl:w-[400px] xxl:ml-12 text-center">
           <p className=" xxl:text-[48px] text-[32px] font-[600] capitalize">
             verification
