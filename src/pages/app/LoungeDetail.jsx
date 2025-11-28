@@ -1,7 +1,7 @@
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { useNavigate } from "react-router";
 import ImageCarousel from "../../components/loungeDetail/ImageCarousal";
-import { likeIcon, msgIcon } from "../../assets/export";
+import { likedIcon, likeIcon, msgIcon } from "../../assets/export";
 import { IoLocation } from "react-icons/io5";
 import { FaClock } from "react-icons/fa";
 import Button from "../../components/global/Button";
@@ -28,6 +28,7 @@ const LoungeDetail = () => {
   const [isEventAccepted, setIsEventAccepted] = useState(false);
   const [isEventSummary, setISEventSummary] = useState(false);
   const [isEventConfirmed, setIsEventConfirmed] = useState(false);
+  const [liked, setLiked] = useState(false);
 
   const [bookingData, setBookingData] = useState(null);
 
@@ -73,7 +74,7 @@ const LoungeDetail = () => {
 
   const handleEventConfirmed = () => {
     setIsEventConfirmed(false);
-    navigate("/app/home");
+    navigate("/app/bookings");
   };
 
   return (
@@ -104,8 +105,15 @@ const LoungeDetail = () => {
                   >
                     <img src={msgIcon} alt="msg" className="w-10" />
                   </div>
-                  <div className="cursor-pointer">
-                    <img src={likeIcon} alt="like" className="w-10" />
+                  <div
+                    onClick={() => setLiked((s) => !s)}
+                    className="cursor-pointer"
+                  >
+                    <img
+                      src={liked ? likedIcon : likeIcon}
+                      alt="like"
+                      className="w-10"
+                    />
                   </div>
                 </div>
               </div>
@@ -182,6 +190,10 @@ const LoungeDetail = () => {
               setIsBookingDetails(false);
               setISEventSummary(true);
             }}
+            onClickBack={() => {
+              setIsBookingDetails(false);
+              setIsBooking(true);
+            }}
           />
         )}
         {isEventRequest && (
@@ -196,8 +208,8 @@ const LoungeDetail = () => {
               setIsEventDetails(false);
               setIsEventRequest(true);
             }}
-            onClick={() => setIsEventDetails(false)}
-            onClose={handleEventDetailsClose}
+            onClick={handleEventDetailsClose}
+            onClose={() => setIsEventDetails(false)}
             eventData={eventData}
           />
         )}
@@ -211,12 +223,14 @@ const LoungeDetail = () => {
             description="Your request has been sent to the lounge manager for review. You’ll receive a response within 24 hours."
           />
         )}
+
         {isEventAccepted && (
           <EventAcceptedModal
             onClose={() => setIsEventAccepted(false)}
             onClick={handleEventAccepted}
           />
         )}
+
         {isEventSummary && (
           <EventSummaryModal
             onClick={handleEventSummary}

@@ -1,8 +1,10 @@
 /* eslint-disable react/prop-types */
 
+import { useNavigate } from "react-router";
 import { successCheck } from "../../assets/export";
 
-const EventConfirmedModal = ({ onClick, onClose }) => {
+const EventConfirmedModal = ({ onClick }) => {
+  const navigate = useNavigate("");
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
       <div className="bg-white rounded-[26px] shadow-md p-8 w-[515px] ">
@@ -27,7 +29,7 @@ const EventConfirmedModal = ({ onClick, onClose }) => {
               View My Bookings
             </button>
             <button
-              onClick={onClose}
+              onClick={() => navigate("/app/home")}
               className="flex-1 py-3 bg-[#21293514] rounded-lg text-gray-700 text-[13px] font-bold"
             >
               Go To Home

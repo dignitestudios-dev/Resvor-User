@@ -62,12 +62,12 @@ const MyBooking = () => {
               My Bookings
             </h2>
           </div>
-          <div className="w-[260px] flex ">
+          <div className="w-[280px] flex ">
             <button
               className={`text-[12px] py-3 px-6 rounded-l-2xl w-full ${
                 activeTab === "bookings"
-                  ? "bg-[#222246] text-white"
-                  : "bg-[#FFFFFF] text-[#222246]"
+                  ? " bg-[#FFFFFF] text-[#222246]"
+                  : " bg-[#222246] text-white"
               }`}
               onClick={() => setActiveTab("bookings")}
             >
@@ -77,12 +77,12 @@ const MyBooking = () => {
             <button
               className={`text-[12px] px-6 rounded-r-2xl w-full ${
                 activeTab === "events"
-                  ? "bg-[#222246] text-white"
-                  : "bg-[#FFFFFF] text-[#222246]"
+                  ? "bg-[#FFFFFF] text-[#222246]"
+                  : "bg-[#222246] text-white"
               }`}
               onClick={() => setActiveTab("events")}
             >
-              Event Booking
+              Event Bookings
             </button>
           </div>
         </div>

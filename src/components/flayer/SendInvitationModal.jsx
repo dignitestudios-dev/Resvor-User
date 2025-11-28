@@ -4,7 +4,7 @@ import Button from "../global/Button";
 import { guests } from "../../static/MockData";
 import { useState } from "react";
 
-const SendInvitationModal = ({ onClose, onClick }) => {
+const SendInvitationModal = ({ onClose, onClick, handleSuccess }) => {
   const [email, setEmail] = useState("");
   const [selectedGuests, setSelectedGuests] = useState([
     "sarah.johnson@email.com",
@@ -36,6 +36,7 @@ const SendInvitationModal = ({ onClose, onClick }) => {
       setSelectedGuests([]);
       setEmail("");
     }
+    handleSuccess(true);
   };
 
   return (

@@ -69,7 +69,7 @@ export default function ReservationDetails() {
                     </span>
                   </div>
                   <div className="flex items-center gap-1 mt-2">
-                    <IoLocation className="text-xl text-[#505050]" />
+                    <IoLocation className="text-xl text-[#010067]" />
                     <p className="text-[#505050] text-[16px] font-[500] ">
                       Times Square, New York, NY
                     </p>
@@ -118,7 +118,7 @@ export default function ReservationDetails() {
               </div>
 
               {/* Music & Special */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 text-sm">
+              <div className="grid grid-cols-1 lg:grid-cols-6 md:grid-cols-3 gap-4 mt-8 text-sm">
                 <div className="space-y-4">
                   <p className="font-semibold text-[#000000] text-[18px] ">
                     Preferred Music

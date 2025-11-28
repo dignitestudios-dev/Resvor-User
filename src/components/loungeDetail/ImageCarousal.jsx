@@ -1,10 +1,12 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Thumbs } from "swiper/modules";
+import { Thumbs, Navigation } from "swiper/modules";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 
 import "swiper/css";
 import "swiper/css/thumbs";
+import "swiper/css/navigation";
 import {
   loginSideImg,
   loungeImg,
@@ -16,26 +18,46 @@ const images = [loungeImg, qrSnap, NoInternetImage, loginSideImg];
 
 export default function ImageCarousel({ height }) {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
+  const swiperRef = useRef(null);
 
   return (
     <div className="w-full p-4">
       {/* Main Carousel */}
       <Swiper
-        modules={[Thumbs]}
+        ref={swiperRef}
+        modules={[Thumbs, Navigation]}
         thumbs={{ swiper: thumbsSwiper }}
         spaceBetween={10}
         slidesPerView={1}
         loop={true}
-        className={`rounded-xl overflow-hidden h-[${height}] mb-4`}
+        className={`rounded-xl overflow-hidden h-[${height}] mb-4 relative`}
       >
         {images.map((src, index) => (
           <SwiperSlide key={index}>
-            <div className="relative w-full">
+            <div className="relative w-full h-full">
               <img
                 src={src}
                 alt={`Slide ${index + 1}`}
-                className="object-cover w-full"
+                className="object-cover w-full h-full"
               />
+
+              {/* Left Arrow */}
+              <button
+                onClick={() => swiperRef.current?.swiper.slidePrev()}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-black rounded-full p-2 transition-all shadow-md"
+                aria-label="Previous slide"
+              >
+                <IoChevronBack size={24} />
+              </button>
+
+              {/* Right Arrow */}
+              <button
+                onClick={() => swiperRef.current?.swiper.slideNext()}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white text-black rounded-full p-2 transition-all shadow-md"
+                aria-label="Next slide"
+              >
+                <IoChevronForward size={24} />
+              </button>
             </div>
           </SwiperSlide>
         ))}

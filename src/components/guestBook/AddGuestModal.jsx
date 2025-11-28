@@ -29,7 +29,7 @@ const AddGuestModal = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-[#0A150F80] z-50 flex items-center justify-center">
-      <div className="bg-white rounded-[12px] w-[490px] max-w-[95%] pb-4 overflow-y-auto">
+      <div className="bg-white rounded-[12px] w-[490px] max-w-[95%] pb-10 overflow-y-auto">
         <div className="flex justify-between items-center px-8 pt-4 border-b border-b-[#00000033]">
           <h2 className="text-[28px] font-bold mb-4">Add New</h2>
           <div onClick={onClose} className="cursor-pointer">

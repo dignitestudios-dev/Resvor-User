@@ -78,7 +78,7 @@ const ChangePasswordModal = ({ onClose, handleOtpModal }) => {
           </div>
         </form>
         <div className="mt-8 mx-16 pb-4">
-          <Button text="Update" type="button" onClick={handleOtpModal} />
+          <Button text="Update" type="button" onClick={onClose} />
         </div>
       </div>
     </div>

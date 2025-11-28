@@ -46,7 +46,7 @@ export default function InputField({
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-5 top-2.5 text-gray-200 hover:text-gray-400"
+            className="absolute right-5 top-2.5 text-gray-400 hover:text-gray-400"
           >
             {showPassword ? <FaEye /> : <FaEyeSlash />}
           </button>

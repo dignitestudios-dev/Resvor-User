@@ -15,6 +15,7 @@ import Button from "../../components/global/Button";
 import FlayerFeeModal from "../../components/flayer/FlayerFeeModal";
 import ProceedFlayerModal from "../../components/flayer/ProceedFlayerModal";
 import SendInvitationModal from "../../components/flayer/SendInvitationModal";
+import AuthSuccessModal from "../../components/auth/AuthSuccessModal";
 
 const CreateFlyer = () => {
   const navigate = useNavigate();
@@ -34,6 +35,9 @@ const CreateFlyer = () => {
   const [sendProceed, setSendProceed] = useState(false);
   const [isFlayerFee, setIsFlayerFee] = useState(false);
   const [sendInvitationModal, setSendInvitationModal] = useState(false);
+  const [openField, setOpenField] = useState(null);
+
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -41,20 +45,21 @@ const CreateFlyer = () => {
   };
 
   const handleEventTypeChange = (option) => {
-    setFormData((prev) => {
-      const exists = prev.eventType.some((item) => item.id === option._id);
-      if (exists) {
-        return {
-          ...prev,
-          eventType: prev.eventType.filter((item) => item.id !== option._id),
-        };
-      } else {
-        return {
-          ...prev,
-          eventType: [...prev.eventType, { name: option.name, id: option._id }],
-        };
-      }
-    });
+    setFormData((prev) => ({ ...prev, eventType: [option] }));
+    // setFormData((prev) => {
+    //   const exists = prev.eventType.some((item) => item.id === option._id);
+    //   if (exists) {
+    //     return {
+    //       ...prev,
+    //       eventType: prev.eventType.filter((item) => item.id !== option._id),
+    //     };
+    //   } else {
+    //     return {
+    //       ...prev,
+    //       eventType: [...prev.eventType, { name: option.name, id: option._id }],
+    //     };
+    //   }
+    // });
   };
 
   const handleDateChange = (date) => {
@@ -162,15 +167,25 @@ const CreateFlyer = () => {
               <div className="grid grid-cols-2 gap-4">
                 <TimePickerField
                   text="Start Time"
-                  label="Select time"
+                  label="Select Time"
                   value={formData.startTime}
                   onChange={handleStartTimeChange}
+                  open={openField === "start"}
+                  onOpen={() =>
+                    setOpenField(openField === "start" ? null : "start")
+                  }
+                  position={"-left-4"}
                 />
                 <TimePickerField
                   text="End Time"
                   label="Select time"
                   value={formData.endTime}
                   onChange={handleEndTimeChange}
+                  open={openField === "end"}
+                  onOpen={() =>
+                    setOpenField(openField === "end" ? null : "end")
+                  }
+                  position={"-right-6"}
                 />
               </div>
 
@@ -325,6 +340,19 @@ const CreateFlyer = () => {
           <SendInvitationModal
             onClick={() => setSendInvitationModal(false)}
             onClose={() => setSendInvitationModal(false)}
+            handleSuccess={() => {
+              setSendInvitationModal(false);
+              setIsSuccess(true);
+            }}
+          />
+        )}
+        {isSuccess && (
+          <AuthSuccessModal
+            onClick={() => {
+              navigate("/app/flyers");
+            }}
+            title="Invitation sent"
+            description="your invitation sent to all guests"
           />
         )}
       </div>

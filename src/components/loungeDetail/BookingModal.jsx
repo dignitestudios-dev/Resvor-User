@@ -9,6 +9,8 @@ import Button from "./../global/Button";
 
 const BookingModal = ({ onClose, onNext }) => {
   const [startDate, setStartDate] = useState(null);
+  const [startTime, setStartTime] = useState(null);
+
   const [selectedTable, setSelectedTable] = useState([]);
   const [selectedPackage, setSelectedPackage] = useState([]);
   const [formData, setFormData] = useState({
@@ -22,7 +24,6 @@ const BookingModal = ({ onClose, onNext }) => {
   });
 
   const [openField, setOpenField] = useState(null);
-  const [endDate, setEndDate] = useState("");
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -102,7 +103,10 @@ const BookingModal = ({ onClose, onNext }) => {
           </div>
         </div>
         <div className="px-8 py-4">
-          <div className="w-full flex items-center gap-2">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full flex items-center gap-2 "
+          >
             <DatePickerField
               label="Select Date"
               value={startDate}
@@ -111,11 +115,11 @@ const BookingModal = ({ onClose, onNext }) => {
             <TimePickerField
               text="Time"
               label="Select Time"
-              value={endDate}
-              onChange={setEndDate}
-              open={openField === "end"}
-              onOpen={() => setOpenField(openField === "end" ? null : "end")}
-              position={"left-0"}
+              value={startTime}
+              onChange={setStartTime}
+              open={openField === "time"}
+              onOpen={() => setOpenField(openField === "time" ? null : "time")}
+              position={"-right-4"}
             />
           </div>
           <div>

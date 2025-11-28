@@ -7,7 +7,7 @@ const EventBookingsTable = ({ events }) => {
   return (
     <div className="bg-white rounded-xl overflow-y-auto">
       <table className="w-full">
-        <thead className="sticky top-0 z-10">
+        <thead className="sticky top-0 z-0">
           <tr className="bg-[#E8E8FF] text-[14.82px] text-[#202224]">
             {/* <th className="px-4 py-5 text-left text-nowrap font-[500]">#</th> */}
             <th className="pr-4 pl-6 py-5 text-left text-nowrap font-[500] ">

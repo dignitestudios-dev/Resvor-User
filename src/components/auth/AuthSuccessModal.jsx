@@ -4,7 +4,7 @@ import { successCheck } from "../../assets/export";
 
 const AuthSuccessModal = ({ onClick, title, description }) => {
   return (
-    <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
+    <div className="fixed -inset-6 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
       <div className="bg-white rounded-[12px] shadow-md p-8 w-[515px] h-[340px] ">
         <div className="flex justify-end items-center pb-2 " onClick={onClick}>
           <span className="cursor-pointer rounded-sm p-[2px]">

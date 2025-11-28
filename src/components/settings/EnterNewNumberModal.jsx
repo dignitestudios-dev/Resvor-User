@@ -50,6 +50,7 @@ const EnterNewNumberModal = ({ onClose, onNext }) => {
 
           <div>
             <PhoneInput
+              placeholderText="text-black"
               id="newNumber"
               name="newNumber"
               value={newNumber}

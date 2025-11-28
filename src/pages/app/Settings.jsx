@@ -111,7 +111,13 @@ const Settings = () => {
                 onClick={() => setKey(item.key)}
                 className="h-[50px] bg-[#F9FAFA] text-[#212935] rounded-lg px-4 text-center cursor-pointer flex items-center justify-between "
               >
-                <p className="text-[14px] font-[500]">{item?.label}</p>
+                <p
+                  className={`text-[14px] font-[500] ${
+                    item?.key === "logout" ? "text-red-500" : "text-black"
+                  }`}
+                >
+                  {item?.label}
+                </p>
                 <IoIosArrowForward className="text-[#212935]" />
               </div>
             ))}

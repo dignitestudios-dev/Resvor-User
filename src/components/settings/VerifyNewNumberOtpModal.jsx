@@ -2,11 +2,14 @@
 import { useRef, useState } from "react";
 import { RxCross2 } from "react-icons/rx";
 import Button from "../global/Button";
+import TextCountDown from "../onBoarding/TextCountDown";
 
 const VerifyNewNumberOtpModal = ({ onClose, onNext, newNumber }) => {
   const inputs = useRef([]);
   const [otp, setOtp] = useState(Array(6).fill(""));
   const [error, setError] = useState("");
+  const [isActive, setIsActive] = useState(true);
+  const [seconds, setSeconds] = useState(30);
 
   const handleChange = (e, index) => {
     const { value } = e.target;
@@ -72,7 +75,7 @@ const VerifyNewNumberOtpModal = ({ onClose, onNext, newNumber }) => {
               Verify New Number
             </h2>
             <p className="text-[#565656] text-[16px]">
-              Please enter OTP code sent to your new phone number.
+              Please enter OTP sent to your new phone number.
             </p>
           </div>
 
@@ -83,7 +86,7 @@ const VerifyNewNumberOtpModal = ({ onClose, onNext, newNumber }) => {
                   inputMode="numeric"
                   key={index}
                   type="password"
-                  placeholder="0"
+                  placeholder=""
                   maxLength="1"
                   value={digit}
                   onChange={(e) => handleChange(e, index)}
@@ -99,14 +102,26 @@ const VerifyNewNumberOtpModal = ({ onClose, onNext, newNumber }) => {
             )}
 
             <div className="flex items-center justify-center gap-2 pl-4 mt-4 mb-3 relative z-10">
-              <p className="text-center text-[14px] leading-[21.6px]">
+              <p className="text-center text-[14px] leading-[21.6px] text-black ">
                 Didn&apos;t receive the code yet?
-                <span
-                  onClick={handleResendOtp}
-                  className="font-[600] pl-1 cursor-pointer text-blue-950"
-                >
-                  Resend now
-                </span>
+                {isActive ? (
+                  <TextCountDown
+                    isActive={isActive}
+                    setIsActive={setIsActive}
+                    seconds={seconds}
+                    setSeconds={setSeconds}
+                  />
+                ) : (
+                  <span
+                    type="button"
+                    // disabled={resendLoading}
+                    onClick={handleResendOtp}
+                    className="font-[600] pl-1 cursor-pointer"
+                  >
+                    Resend now
+                    {/* {resendLoading ? "Resending..." : "Resend"} */}
+                  </span>
+                )}
               </p>
             </div>
 

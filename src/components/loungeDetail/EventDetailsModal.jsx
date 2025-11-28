@@ -2,7 +2,7 @@
 import { RxCross2 } from "react-icons/rx";
 import Button from "../global/Button";
 
-const EventDetailsModal = ({ onClose, eventData, onClickBack }) => {
+const EventDetailsModal = ({ onClose, eventData, onClickBack, onClick }) => {
   const {
     eventType = "Birthday Party",
     date = "26 Dec, 2024",
@@ -27,7 +27,13 @@ const EventDetailsModal = ({ onClose, eventData, onClickBack }) => {
         {/* Header */}
         <div className="flex justify-between items-center px-8 pt-4 border-b-2 border-b-gray-300">
           <h2 className="text-[28px] font-bold mb-4">Event Details</h2>
-          <div onClick={onClose} className="cursor-pointer">
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="cursor-pointer"
+          >
             <RxCross2 className="text-[28px] text-[#181818]" />
           </div>
         </div>
@@ -151,7 +157,7 @@ const EventDetailsModal = ({ onClose, eventData, onClickBack }) => {
 
           {/* Action Buttons */}
           <div className="space-y-2 mt-8">
-            <Button text="Send Request" type="button" onClick={onClose} />
+            <Button text="Send Request" type="button" onClick={onClick} />
             <button
               onClick={onClickBack}
               className="w-full bg-[#E8E8E8] text-[#181818] text-[14px] rounded-[8px] py-2 font-semibold hover:bg-[#D8D8D8] transition"

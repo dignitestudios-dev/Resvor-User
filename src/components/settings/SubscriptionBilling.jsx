@@ -7,11 +7,11 @@ import UpdatePlan from "./UpdatePlan";
 const SubscriptionBilling = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("billing");
-  const [subscriptionModal, setSubscriptionModal] = useState(false);
+  // const [subscriptionModal, setSubscriptionModal] = useState(false);
 
   const tabs = [
     { key: "billing", label: "Billing" },
-    { key: "plan", label: "Plan" },
+    { key: "plan", label: "Plans" },
   ];
 
   return (

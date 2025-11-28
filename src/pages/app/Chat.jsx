@@ -160,11 +160,11 @@ const Chat = () => {
 
                 {/* Input Area */}
                 <div className="bg-white border-t border-gray-200 p-4">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 bg-[#EEEEEE] p-1 rounded-xl">
                     <input
                       type="text"
                       placeholder="Type Here..."
-                      className="flex-1 px-4 py-3 bg-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="flex-1 px-4 py-3 text-sm bg-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary "
                     />
                     <button className="w-10 h-10 bg-indigo-950 text-white rounded-lg flex items-center justify-center hover:bg-primary/90 transition-all">
                       <BsFillSendFill className="text-[20px]" />

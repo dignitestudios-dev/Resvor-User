@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useRef, useState } from "react";
 import { RxCross2 } from "react-icons/rx";
+import TextCountDown from "../onBoarding/TextCountDown";
 
 const PasswordOtpModal = ({ onClose, onClick, onNext }) => {
   console.log("🚀 ~ PasswordOtpModal ~ onClose:", onClose);
@@ -88,7 +89,7 @@ const PasswordOtpModal = ({ onClose, onClick, onNext }) => {
                 Verification
               </h2>
               <p className="text-[#565656] text-[16px]">
-                Please enter OTP code sent to your Email and Number.
+                Please enter OTP sent to your Number.
               </p>
             </div>
 
@@ -99,7 +100,7 @@ const PasswordOtpModal = ({ onClose, onClick, onNext }) => {
                     inputMode="numeric"
                     key={index}
                     type="password"
-                    placeholder="0"
+                    placeholder=""
                     maxLength="1"
                     value={digit}
                     onChange={(e) => handleChange(e, index)}
@@ -111,14 +112,26 @@ const PasswordOtpModal = ({ onClose, onClick, onNext }) => {
                 ))}
               </div>
               <div className="flex items-center justify-center gap-2 pl-4 mt-4 mb-3 relative z-10">
-                <p className="text-center text-[14px] leading-[21.6px] ">
+                <p className="text-center text-[14px] leading-[21.6px] text-black ">
                   Didn&apos;t receive the code yet?
-                  <span
-                    type="button"
-                    className="font-[600] pl-1 cursor-pointer text-blue-950"
-                  >
-                    Resend now
-                  </span>
+                  {isActive ? (
+                    <TextCountDown
+                      isActive={isActive}
+                      setIsActive={setIsActive}
+                      seconds={seconds}
+                      setSeconds={setSeconds}
+                    />
+                  ) : (
+                    <span
+                      type="button"
+                      // disabled={resendLoading}
+                      onClick={handleResendOtp}
+                      className="font-[600] pl-1 cursor-pointer"
+                    >
+                      Resend now
+                      {/* {resendLoading ? "Resending..." : "Resend"} */}
+                    </span>
+                  )}
                 </p>
               </div>
               <div className="w-full flex justify-center pl-4 mt-4 space-y-4 ">

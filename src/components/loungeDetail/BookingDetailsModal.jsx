@@ -2,7 +2,7 @@
 import { RxCross2 } from "react-icons/rx";
 import Button from "../global/Button";
 
-const BookingDetailsModal = ({ onClose, bookingData, onNext }) => {
+const BookingDetailsModal = ({ onClose, bookingData, onNext, onClickBack }) => {
   const {
     name = "Mike Smith",
     email = "designer@gmail.com",
@@ -33,15 +33,21 @@ const BookingDetailsModal = ({ onClose, bookingData, onNext }) => {
 
           <div className="grid grid-cols-3 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2 mb-4">
             <div>
-              <p className="font-semibold text-[#000000] mb-1">Name</p>
+              <p className="font-medium text-[14px] text-[#000000] mb-1">
+                Name
+              </p>
               <p className="text-[#000000]">{name}</p>
             </div>
             <div className="border-l-2 border-b-gray-300 pl-1">
-              <p className="font-semibold text-[#000000] mb-1">Email Address</p>
+              <p className="font-medium text-[14px] text-[#000000] mb-1">
+                Email Address
+              </p>
               <p className="text-[#000000] break-all">{email}</p>
             </div>
             <div className="border-l-2 border-b-gray-300 pl-1">
-              <p className="font-semibold text-[#000000] mb-1">Phone Number</p>
+              <p className="font-medium text-[14px] text-[#000000] mb-1">
+                Phone Number
+              </p>
               <p className="text-[#000000]">{phone}</p>
             </div>
           </div>
@@ -49,33 +55,37 @@ const BookingDetailsModal = ({ onClose, bookingData, onNext }) => {
           <div className="grid grid-cols-2 gap-6 mb-4 border-b-2 border-b-gray-300 pb-2">
             <div>
               <p className="text-[13px] text-[#9B9B9B] mb-1">Date</p>
-              <p className="font-semibold text-[#000000]">{date}</p>
+              <p className="font-semibold text-[14px] text-[#000000]">{date}</p>
             </div>
             <div>
               <p className="text-[13px] text-[#9B9B9B] mb-1">Time</p>
-              <p className="font-semibold text-[#000000]">{time}</p>
+              <p className="font-semibold text-[14px] text-[#000000]">{time}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2 mb-4">
             <div>
-              <p className="font-semibold text-[#000000] mb-1">Guest Count</p>
+              <p className="font-medium text-[14px] text-[#000000] mb-1">
+                Guest Count
+              </p>
               <p className="text-[#000000]">{guestCount}</p>
             </div>
             <div>
-              <p className="font-semibold text-[#000000] mb-1">
+              <p className="font-medium text-[14px] text-[#000000] mb-1">
                 Children (If any)
               </p>
               <p className="text-[#000000]">{children}</p>
             </div>
             <div>
-              <p className="font-semibold text-[#000000] mb-1">Table</p>
+              <p className="font-medium text-[14px] text-[#000000] mb-1">
+                Table
+              </p>
               <p className="text-[#000000]">{table}</p>
             </div>
           </div>
 
           <div className="mb-4">
-            <p className="font-semibold text-[#000000] mb-3">
+            <p className="font-semibold text-[16px] text-[#000000] mb-3">
               Services and Packages
             </p>
             <div className="grid grid-cols-2 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2 mb-4">
@@ -105,7 +115,7 @@ const BookingDetailsModal = ({ onClose, bookingData, onNext }) => {
           <div className="space-y-3 mt-8">
             <Button text="Next" type="button" onClick={onNext} />
             <button
-              onClick={onClose}
+              onClick={onClickBack}
               className="w-full bg-[#E8E8E8] text-[#181818] text-[14px] rounded-[8px] py-2 font-semibold hover:bg-[#D8D8D8] transition"
             >
               Back

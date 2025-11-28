@@ -49,7 +49,12 @@ const UserProfile = () => {
             </div>
             <div className="grid grid-cols-3 gap-6">
               {[...Array(3)].map((item, index) => (
-                <LoungeCard key={index} setLiked={setLiked} liked={liked} />
+                <LoungeCard
+                  key={index}
+                  setLiked={setLiked}
+                  liked={liked}
+                  position="bottom-64 right-8"
+                />
               ))}
             </div>
           </div>

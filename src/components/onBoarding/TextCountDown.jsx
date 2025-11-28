@@ -17,7 +17,7 @@ const TextCountDown = ({ isActive, setIsActive, seconds, setSeconds }) => {
 
   return (
     <span className="countdown">
-      <p className="xxl:text-[22px] xxl:mt-4 text-[13px] text-white font-bold">
+      <p className="xxl:text-[22px] xxl:mt-4 text-[13px]  font-bold">
         0:{seconds}
       </p>
     </span>

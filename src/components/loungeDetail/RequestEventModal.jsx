@@ -9,6 +9,8 @@ import Button from "./../global/Button";
 
 const RequestEventModal = ({ onClose, onNext }) => {
   const [startDate, setStartDate] = useState(null);
+  const [startTime, setStartTime] = useState(null);
+
   const [selectedType, setSelectedType] = useState([]);
   const [selectedSeating, setSelectedSeating] = useState([]);
   const [selectedPackage, setSelectedPackage] = useState([]);
@@ -36,15 +38,16 @@ const RequestEventModal = ({ onClose, onNext }) => {
 
   const handleSelect = (option) => {
     const name = option?.name || option;
-    setSelectedType((prev) => {
-      const exists = prev.some((item) => item.name === name);
+    setSelectedType([name]);
+    // setSelectedType((prev) => {
+    //   const exists = prev.some((item) => item.name === name);
 
-      if (exists) {
-        return prev.filter((item) => item.name !== name);
-      } else {
-        return [...prev, { name }];
-      }
-    });
+    //   if (exists) {
+    //     return prev.filter((item) => item.name !== name);
+    //   } else {
+    //     return [...prev, { name }];
+    //   }
+    // });
   };
 
   const handleSelectSeating = (option) => {
@@ -163,8 +166,8 @@ const RequestEventModal = ({ onClose, onNext }) => {
             <TimePickerField
               text="Start Time"
               label="Select Time"
-              value={startDate}
-              onChange={setStartDate}
+              value={startTime}
+              onChange={setStartTime}
               open={openField === "start"}
               onOpen={() =>
                 setOpenField(openField === "start" ? null : "start")

@@ -32,8 +32,8 @@ const EditProfileModal = ({ onClose, onClick, initialData = {} }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#0A150F80] z-50 flex items-center justify-center">
-      <div className="bg-white rounded-[12px] w-[880px] max-w-[95%] pb-6 overflow-y-auto">
+    <div className="fixed -inset-6 bg-[#0A150F80] z-50 flex items-center justify-center">
+      <div className="bg-white rounded-[12px] w-[880px] max-w-[95%]  overflow-y-auto">
         <div className="flex justify-between items-center px-8 pt-4 ">
           <h2 className="text-[28px] font-bold mb-4">Edit Profile</h2>
           <div onClick={onClose} className="cursor-pointer">
@@ -72,6 +72,7 @@ const EditProfileModal = ({ onClose, onClick, initialData = {} }) => {
               <InputField
                 label="Email Address"
                 text="email"
+                disabled={true}
                 placeholder="designer@gmail.com"
                 type="email"
                 id={`email`}
@@ -82,6 +83,7 @@ const EditProfileModal = ({ onClose, onClick, initialData = {} }) => {
               />
 
               <InputField
+                disabled={true}
                 label="Phone Number"
                 text="phone"
                 placeholder="Phone number"
@@ -118,7 +120,7 @@ const EditProfileModal = ({ onClose, onClick, initialData = {} }) => {
                 <div
                   className={`flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5`}
                 >
-                  <div className="flex flex-wrap py-1 pl-4 w-[80%] text-[#FFFFFF] font-thin text-[14px]">
+                  <div className="flex flex-wrap py-1 pl-4 w-[80%] text-[black] font-thin text-[14px]">
                     Date of Birth: {dateModalData?.dobDate?.day}{" "}
                     {dateModalData?.dobDate?.month}{" "}
                     {dateModalData?.dobDate?.year}

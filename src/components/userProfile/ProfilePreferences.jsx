@@ -34,7 +34,7 @@ const ProfilePreferences = () => {
         </div>
       </div>
       <div className="mt-4 max-w-[440px] mx-6">
-        <label className="block text-[14px] font-[500] mb-1">
+        <label className="block text-[16px] font-[500] mt-1 mb-1">
           Music Genres
         </label>
 
@@ -53,7 +53,7 @@ const ProfilePreferences = () => {
             </button>
           ))}
         </div>
-        <label className="block text-[16px] font-[500] mb-1">
+        <label className="block text-[16px] font-[500] mt-2 mb-1">
           Lounge Types
         </label>
 
@@ -72,7 +72,7 @@ const ProfilePreferences = () => {
             </button>
           ))}
         </div>
-        <label className="block text-[16px] font-[500] mb-1">
+        <label className="block text-[16px] font-[500] mt-2 mb-1">
           Music Genres
         </label>
 

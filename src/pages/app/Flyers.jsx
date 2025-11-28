@@ -12,8 +12,8 @@ const Flyers = () => {
             <button type="button" onClick={() => navigate(-1)}>
               <FaArrowLeftLong color="white" size={20} />
             </button>
-            <h2 className="text-white text-[30px] mt-0 font-bold leading-[48px] capitalize">
-              Guestbook
+            <h2 className="text-white text-[32px] mt-0 font-semibold leading-[48px] capitalize">
+              Campaign and Flyers
             </h2>
           </div>
         </div>

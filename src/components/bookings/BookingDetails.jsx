@@ -54,7 +54,7 @@ export default function BookingDetails() {
                     </span>
                   </div>
                   <div className="flex items-center gap-1 mt-2">
-                    <IoLocation className="text-xl text-[#505050]" />
+                    <IoLocation className="text-xl text-[#010067]" />
                     <p className="text-[#505050] text-[16px] font-[500] ">
                       Times Square, New York, NY
                     </p>

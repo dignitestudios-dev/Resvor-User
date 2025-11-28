@@ -7,7 +7,7 @@ const Button = ({ text, onClick, type, disabled = false }) => {
       disabled={disabled}
       type={type}
       onClick={onClick}
-      className="flex-1 py-2 bg-gradient-to-l from-[#012C57] to-[#061523] text-white text-[13px] rounded-lg w-full"
+      className="flex-1 py-2.5 bg-gradient-to-l from-[#012C57] to-[#061523] text-white text-[13px] rounded-lg w-full"
     >
       {text}
     </button>

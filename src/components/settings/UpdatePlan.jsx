@@ -30,11 +30,13 @@ const UpdatePlan = ({ setSubscriptionModal, subscriptionModal }) => {
             </li>
           </ul>
           <div>
-            <Button
-              text="Update Plan"
+            <button
               type="button"
               onClick={() => setCancelSubscriptionModal(true)}
-            />
+              className="w-full bg-[#E8E8E8] text-red-500 text-[14px] rounded-[8px] py-2 font-semibold hover:bg-[#D8D8D8] transition"
+            >
+              Cancel Subscription
+            </button>
           </div>
         </div>
 
@@ -70,11 +72,11 @@ const UpdatePlan = ({ setSubscriptionModal, subscriptionModal }) => {
             $7.99
           </div>
           <ul className="space-y-3 mb-8">
-            <li className="text-gray-300 flex items-center">
+            <li className="text-[#181818] text-[14px] font-[500] flex items-center">
               <span className="mr-3">•</span>
               15 Guests Per Event
             </li>
-            <li className="text-gray-300 flex items-center">
+            <li className="text-[#181818] text-[14px] font-[500] flex items-center">
               <span className="mr-3">•</span>
               Unlimited Event
             </li>

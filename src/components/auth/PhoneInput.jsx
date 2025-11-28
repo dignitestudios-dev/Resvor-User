@@ -11,6 +11,7 @@ const PhoneInput = ({
   error,
   touched,
   label,
+  placeholderText = null,
 }) => {
   // const handlePhoneChange = (e) => {
   //   const formattedValue = e.target.value.replace(/[^0-9]/g, "");
@@ -52,7 +53,9 @@ const PhoneInput = ({
 
         <input
           type="text"
-          className={`text-white w-full px-4 py-2 text-sm rounded-[15px] bg-transparent ring-1 ring-transparent 
+          className={`${
+            placeholderText ? placeholderText : "text-white"
+          } w-full px-4 py-2 text-sm rounded-[15px] bg-transparent ring-1 ring-transparent 
             focus:ring-2 focus:ring-transparent focus:outline-none pr-12 placeholder:font-light placeholder:text-[12px] placeholder:text-[#E6E6F0]`}
           placeholder="123-456-7890"
           value={value}

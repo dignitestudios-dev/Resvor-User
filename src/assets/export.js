@@ -32,6 +32,7 @@ import heart from "./Heart.png";
 import heartRed from "./HeartRed.png";
 import msgIcon from "./msgIcon.png";
 import likeIcon from "./likeIcon.png";
+import likedIcon from "./likedIcon.png";
 import floorPlan from "./floorPlan.png";
 import toggled from "./toggled.png";
 import unToggled from "./unToggled.png";
@@ -76,6 +77,7 @@ export {
   heartRed,
   msgIcon,
   likeIcon,
+  likedIcon,
   floorPlan,
   toggled,
   unToggled,
