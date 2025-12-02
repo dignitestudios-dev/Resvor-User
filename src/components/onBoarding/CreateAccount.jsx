@@ -5,18 +5,15 @@ import AuthInput from "../auth/AuthInput";
 import { useNavigate } from "react-router";
 import { phoneFormatter } from "../../lib/helpers";
 import PhoneInput from "../auth/PhoneInput";
+import { signUpSchema } from "../../schema/authentication/authSchema";
+import { signUpValues } from "../../init/authentication/authValues";
 
 const CreateAccount = ({ handleNext }) => {
   const navigate = useNavigate();
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
-      initialValues: {
-        email: "",
-        number: "",
-        password: "",
-        confPassword: "",
-      },
-      validationSchema: null, // Add your validation schema here if needed
+      initialValues: signUpValues,
+      validationSchema: signUpSchema,
       validateOnChange: true,
       validateOnBlur: true,
       onSubmit: async (values, action) => {
@@ -77,7 +74,7 @@ const CreateAccount = ({ handleNext }) => {
           <div>
             <PhoneInput
               label={"Phone Number"}
-              value={values.number}
+              value={phoneFormatter(values.number)}
               id={"number"}
               name={"number"}
               onChange={handleChange}
@@ -144,14 +141,14 @@ const CreateAccount = ({ handleNext }) => {
         I accept the{" "}
         <span
           className="text-[#E6E6E6] font-semibold cursor-pointer"
-          onClick={() => console.log("first")}
+          onClick={() => navigate("/auth/terms")}
         >
           Terms & Conditions
         </span>{" "}
         and{" "}
         <span
           className="text-[#E6E6E6] font-semibold cursor-pointer"
-          onClick={() => console.log("second")}
+          onClick={() => navigate("/auth/privacy")}
         >
           Privacy Policy
         </span>

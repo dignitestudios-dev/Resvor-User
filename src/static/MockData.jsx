@@ -1,5 +1,35 @@
 import { flyer, loungeImg, flyerThree, flyerTwo } from "../assets/export";
 
+export const loungeData = [
+  {
+    id: 1,
+    name: "Highbar Rooftop - New York, NY",
+    time: "12:00 PM",
+    location: "New York",
+    description: "Rooftop Vibes, House Music, Sunset.....",
+    extras: "VIP Cabanas, Bottle Service, Private.....",
+    image: loungeImg, // import or dynamic URL
+  },
+  {
+    id: 2,
+    name: "Skyline Terrace - Los Angeles, CA",
+    time: "9:00 PM",
+    location: "Los Angeles",
+    description: "Chill Beats, Open Air, Night Lights.....",
+    extras: "Craft Cocktails, DJ Sets, Lounge Seating.....",
+    image: flyerTwo,
+  },
+  {
+    id: 3,
+    name: "Oceanview Lounge - Miami, FL",
+    time: "6:30 PM",
+    location: "Miami",
+    description: "Beachside Vibes, Tropical House, Sunset.....",
+    extras: "Private Booths, Bottle Service, Poolside.....",
+    image: flyerThree,
+  },
+];
+
 export const flyerData = [
   { id: 1, name: "Summer Sale Flyer", image: flyer },
   { id: 2, name: "New Arrivals Flyer", image: flyerThree },

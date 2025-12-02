@@ -1,24 +1,26 @@
-import { heart, heartRed, loungeImg } from "../../assets/export";
+/* eslint-disable react/prop-types */
+import { heart, heartRed } from "../../assets/export";
 import { GoClockFill } from "react-icons/go";
 import { HiPercentBadge } from "react-icons/hi2";
 import { IoLocation } from "react-icons/io5";
 import { BiSolidBadgeDollar } from "react-icons/bi";
 import { useNavigate } from "react-router";
 import { useState } from "react";
-// eslint-disable-next-line react/prop-types
-const LoungeCard = ({ position = null }) => {
+
+const LoungeCard = ({ position = null, item, key }) => {
   const [liked, setLiked] = useState(false);
   const navigate = useNavigate();
   return (
     <div
+      key={key}
       onClick={() => navigate("/app/lounge-detail")}
       className="rounded-[24px] p-4 bg-white relative cursor-pointer"
       style={{ boxShadow: "6px 6px 54px 0px #00000014" }}
     >
       <div>
         <img
-          src={loungeImg}
-          className="rounded-[12px] w-full"
+          src={item.image}
+          className="rounded-[12px] w-full h-[200px] object-cover"
           alt="Venue Logo"
         />
       </div>
@@ -39,26 +41,24 @@ const LoungeCard = ({ position = null }) => {
         />
       </div>
       <div className="mt-6 ">
-        <p className="text-[22px] font-[600] py-2">
-          Highbar Rooftop - New York, NY
-        </p>
+        <p className="text-[22px] font-[600] py-2">{item?.name}</p>
         <ul className="space-y-2 list-none">
           <li className="flex items-center gap-2 text-[#6E6E6E]">
             <GoClockFill className="text-lg" />
-            <span>Time: 12:00 PM</span>
+            <span>Time: {item?.location}</span>
           </li>
           <li className="flex items-center gap-2 text-[#6E6E6E]">
             <IoLocation className="text-xl" />
-            <span>Location: New York</span>
+            <span>Location: {item?.location}</span>
           </li>
 
           <li className="flex items-center gap-2 text-[#6E6E6E]">
             <BiSolidBadgeDollar className="text-xl" />
-            <span>Rooftop Vibes, House Music, Sunset.....</span>
+            <span>{item?.description}</span>
           </li>
           <li className="flex items-center gap-2 text-[#6E6E6E]">
             <HiPercentBadge className="text-xl" />
-            <span>VIP Cabanas, Bottle Service, Private.....</span>
+            <span>{item?.extras}</span>
           </li>
         </ul>
       </div>

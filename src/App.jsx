@@ -20,6 +20,8 @@ import ReservationDetails from "./components/bookings/ReservationDetails";
 import Flyers from "./pages/app/Flyers";
 import CreateFlyer from "./pages/app/CreateFlyer";
 import Chat from "./pages/app/Chat";
+import TermsAndConditions from "./pages/app/TermsAndConditions";
+import PrivacyPolicy from "./pages/app/PrivacyPolicy";
 
 function App() {
   return (
@@ -38,6 +40,8 @@ function App() {
         <Route path="user-profile" element={<UserProfile />} />
         <Route path="settings" element={<Settings />} />
         <Route path="subscription-billing" element={<SubscriptionBilling />} />
+        <Route path="terms" element={<TermsAndConditions />} />
+        <Route path="privacy" element={<PrivacyPolicy />} />
       </Route>
 
       <Route path="auth" element={<AuthLayout />}>
@@ -46,6 +50,8 @@ function App() {
         <Route path="verify-forget-otp" element={<VerifyForgotOtp />} />
         <Route path="update-password" element={<UpdatePassword />} />
         <Route path="signup" element={<SignUp />} />
+        <Route path="terms" element={<TermsAndConditions />} />
+        <Route path="privacy" element={<PrivacyPolicy />} />
       </Route>
 
       <Route
