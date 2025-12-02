@@ -3,6 +3,7 @@ import { FaSearch } from "react-icons/fa";
 import { useState } from "react";
 import LoungeCard from "../../components/global/LoungeCard";
 import FilterDropdown from "../../components/global/FilterDropdown";
+import { loungeData } from "../../static/MockData";
 
 const Home = () => {
   const [open, setOpen] = useState(false);
@@ -58,7 +59,7 @@ const Home = () => {
       </div>
 
       <div
-        className="absolute top-[300px] lg:top-1/4 md:top-1/4 left-1/2 -translate-x-1/2 
+        className="absolute top-[300px] lg:top-1/3 lg:mt-8 mt-0 md:top-1/4 left-1/2 -translate-x-1/2 
              w-full max-w-md md:max-w-xl bg-white rounded-[16px] 
              md:p-4 p-2 px-4 z-50"
         style={{ boxShadow: "0px 4px 30px rgba(0,0,0,0.25)" }}
@@ -121,8 +122,8 @@ const Home = () => {
           )}
         </div>
         <div className="grid md:grid-cols-3 grid-cols-1 gap-6 md:px-10 px-4 mt-6">
-          {[...Array(6)].map((item, index) => (
-            <LoungeCard key={index} />
+          {loungeData.map((item, index) => (
+            <LoungeCard key={index} item={item} />
           ))}
         </div>
       </div>

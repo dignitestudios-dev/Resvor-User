@@ -1,4 +1,3 @@
-import { useLogin } from "../../hooks/api/Post";
 import { useFormik } from "formik";
 import { useNavigate } from "react-router";
 import AuthInput from "../../components/auth/AuthInput";
@@ -6,21 +5,24 @@ import AuthButton from "../../components/auth/AuthButton";
 import { forgotLogo } from "../../assets/export";
 import { useState } from "react";
 import AuthSuccessModal from "./../../components/auth/AuthSuccessModal";
+import { updatePasswordSchema } from "../../schema/authentication/authSchema";
+import { updatePasswordValues } from "../../init/authentication/authValues";
 
 const UpdatePassword = () => {
   const navigate = useNavigate();
   const [requestSendModal, setRequestSendModal] = useState(false);
-
-  const { loading } = useLogin();
+  const [state, setState] = useState("idle");
 
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
-      initialValues: { password: "", confPassword: "" },
-      validationSchema: "",
+      initialValues: updatePasswordValues,
+      validationSchema: updatePasswordSchema,
       validateOnChange: true,
       validateOnBlur: true,
-      onSubmit: async (values, action) => {
-        console.log("🚀 ~ ForgotPassword ~ action:", action);
+      onSubmit: async (values) => {
+        setState("loading");
+        console.log("🚀 ~ UpdatePassword ~ values:", values);
+
         setRequestSendModal(true);
         // const data = {
         //   email: values?.email,
@@ -86,7 +88,11 @@ const UpdatePassword = () => {
             </div>
           </div>
           <div className="xxl:w-[650px] lg:w-[350px] mt-6 mb-4">
-            <AuthButton text={"Update"} loading={loading} disabled={loading} />
+            <AuthButton
+              text={"Update"}
+              loading={state === "loading"}
+              disabled={state === "loading"}
+            />
           </div>
         </form>
       </div>

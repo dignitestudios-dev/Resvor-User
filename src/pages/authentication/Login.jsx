@@ -1,31 +1,30 @@
-import { useLogin } from "../../hooks/api/Post";
-import { processLogin } from "../../lib/utils";
 import { useFormik } from "formik";
-import { loginValues } from "../../init/authentication/dummyLoginValues";
-import { signInSchema } from "../../schema/authentication/dummyLoginSchema";
 import { useNavigate } from "react-router";
 import AuthInput from "../../components/auth/AuthInput";
 import AuthButton from "../../components/auth/AuthButton";
 import { loginSideImg } from "../../assets/export";
+import { logInSchema } from "../../schema/authentication/authSchema";
+import { useState } from "react";
+import { loginValues } from "../../init/authentication/authValues";
 
 const Login = () => {
   const navigate = useNavigate();
-
-  const { loading, postData } = useLogin();
+  const [state, setState] = useState("idle");
 
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
       initialValues: loginValues,
-      validationSchema: signInSchema,
+      validationSchema: logInSchema,
       validateOnChange: true,
       validateOnBlur: true,
-      onSubmit: async (values, action) => {
-        console.log("🚀 ~ Login ~ action:", action);
+      onSubmit: async (values) => {
+        setState("loading");
         const data = {
           email: values?.email,
           password: values?.password,
         };
-        postData("/admin/login", false, null, data, processLogin);
+        console.log("🚀 ~ Login ~ data:", data);
+        navigate("/app/home");
 
         // Use the loading state to show loading spinner
         // Use the response if you want to perform any specific functionality
@@ -104,11 +103,9 @@ const Login = () => {
 
             <div className="xxl:w-[650px] lg:w-[350px] w-full md:mx-0 mx-2 mt-1 mb-4">
               <AuthButton
-                onClick={() => navigate("/app/home")}
-                type="button"
                 text={"Login"}
-                loading={loading}
-                disabled={loading}
+                loading={state === "loading"}
+                disabled={state === "loading"}
               />
             </div>
           </div>

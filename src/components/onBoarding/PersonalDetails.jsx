@@ -8,37 +8,46 @@ import { useState } from "react";
 import TagsInputField from "./TagsInputField";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import TagsModal from "./TagsModal";
+import { personalDetailValues } from "../../init/onBoarding/onBoardValues";
+import { personalDetailSchema } from "../../schema/onBoarding/onBoardSchema";
 
 const PersonalDetails = ({ handleNext, handlePrevious }) => {
-  const [userImage, setUserImage] = useState("");
-  console.log("🚀 ~ PersonalDetails ~ userImage:", userImage);
   const [dateModalData, setDateModalData] = useState("");
-  console.log("🚀 ~ PersonalDetails ~ dateModalData:", dateModalData);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const closeModal = () => setModalIsOpen(false);
 
-  const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
-    useFormik({
-      initialValues: "",
-      validationSchema: "",
-      validateOnChange: true,
-      validateOnBlur: true,
-      onSubmit: async (values, action) => {
-        console.log("🚀 ~ CreateAccount ~ action:", action);
-        console.log("🚀 ~ CreateAccount ~ values:", values);
-        handleNext();
+  const {
+    values,
+    handleBlur,
+    handleChange,
+    handleSubmit,
+    setFieldValue,
+    errors,
+    touched,
+  } = useFormik({
+    initialValues: personalDetailValues,
+    validationSchema: personalDetailSchema,
+    validateOnChange: true,
+    validateOnBlur: true,
+    onSubmit: async (values, action) => {
+      console.log("🚀 ~ CreateAccount ~ action:", action);
+      console.log("🚀 ~ CreateAccount ~ values:", values);
+      handleNext();
 
-        // Use the loading state to show loading spinner
-        // Use the response if you want to perform any specific functionality
-        // Otherwise you can just pass a callback that will process everything
-      },
-    });
+      // Use the loading state to show loading spinner
+      // Use the response if you want to perform any specific functionality
+      // Otherwise you can just pass a callback that will process everything
+    },
+  });
+  console.log("🚀 ~ PersonalDetails ~ errors:", errors);
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.currentTarget.files?.[0];
     if (file) {
-      setUserImage(file);
-      //   setFieldValue("userImage", file);
+      // set file in Formik state
+      setFieldValue("profile", file);
+      // set preview separately
+      setFieldValue("userImage", URL.createObjectURL(file));
     }
   };
   return (
@@ -60,47 +69,44 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
       <form onSubmit={handleSubmit}>
         <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-10">
           <div className="flex items-center xl:w-[500px] lg:w-[400px] md:w-[500px] w-[320px]">
-            <div className="md:w-[80px] w-[60px] md:h-[80px] h-[60px] rounded-full  overflow-hidden">
+            <div className="md:w-[80px] w-[60px] md:h-[80px] h-[60px] rounded-full overflow-hidden">
               <img
-                className="object-cover md:w-[80px] w-[60px] md:h-[80px] h-[60px] "
-                src={
-                  values.userImage
-                    ? URL.createObjectURL(values.userImage)
-                    : uploadIcon
-                }
+                className="object-cover md:w-[80px] w-[60px] md:h-[80px] h-[60px]"
+                src={values.userImage ? values.userImage : uploadIcon}
+                alt="Profile Preview"
               />
             </div>
-            <div className="pl-2 ">
+            <div className="pl-2">
               <p className="text-[#BEC2C9]">
                 <span className="relative text-white capitalize underline pl-4">
                   Upload profile picture
                   <input
                     type="file"
                     accept=".jpg,.jpeg,.png"
-                    onChange={(e) => handleFileChange(e)}
+                    onChange={handleFileChange}
                     className="absolute inset-0 opacity-0 cursor-pointer -left-24"
                   />
                 </span>
               </p>
-              {touched.userImage && errors.userImage && (
-                <p className="text-red-600 text-xs mt-1">{errors.userImage}</p>
+              {touched.profile && errors.profile && (
+                <p className="text-red-600 text-xs mt-1">{errors.profile}</p>
               )}
             </div>
           </div>
           <div className=" w-full">
             <AuthInput
               label={"Full Name"}
-              text={"Name"}
+              text={"fullName"}
               placeholder={"Enter full name"}
               type={"text"}
-              id={"name"}
-              name={"name"}
+              id={"fullName"}
+              name={"fullName"}
               maxLength={30}
-              value={values.email}
+              value={values.fullName}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={errors?.email}
-              touched={touched?.email}
+              error={errors?.fullName}
+              touched={touched?.fullName}
             />
           </div>
           <div>

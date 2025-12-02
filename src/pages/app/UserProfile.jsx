@@ -7,6 +7,7 @@ import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { useNavigate } from "react-router";
 import LoungeCard from "../../components/global/LoungeCard";
 import { useState } from "react";
+import { loungeData } from "../../static/MockData";
 
 const UserProfile = () => {
   const navigate = useNavigate();
@@ -48,8 +49,9 @@ const UserProfile = () => {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-6">
-              {[...Array(3)].map((item, index) => (
+              {loungeData.map((item, index) => (
                 <LoungeCard
+                  item={item}
                   key={index}
                   setLiked={setLiked}
                   liked={liked}
