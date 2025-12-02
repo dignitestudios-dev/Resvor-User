@@ -66,7 +66,7 @@ const Footer = () => {
               We’re always happy to help.
             </h4>
             <a href="mailto:info@codeclean.com" className="text-white">
-              info@resvor.com
+              info@codeclean.com
             </a>
           </div>
         </div>
@@ -81,7 +81,7 @@ const Footer = () => {
           </p>
           <div className="flex gap-4 text-white">
             <a
-              onClick={() => navigate("/app/terms")}
+              onClick={() => setIsOpen(true)}
               className="hover:underline cursor-pointer"
             >
               Terms of Services
@@ -89,7 +89,7 @@ const Footer = () => {
             {/* <TermsConditionModal isOpen={isOpen} setIsOpen={setIsOpen} /> */}
             <span>|</span>
             <a
-              onClick={() => navigate("/app/privacy")}
+              onClick={() => setIsOpentwo(true)}
               className="hover:underline cursor-pointer"
             >
               Privacy Policy

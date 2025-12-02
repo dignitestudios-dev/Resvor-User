@@ -7,9 +7,6 @@ import {
 } from "../../static/PreferenceCategories";
 import AuthButton from "../auth/AuthButton";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { useFormik } from "formik";
-import { preferencesSchema } from "../../schema/onBoarding/onBoardSchema";
-import { preferencesValues } from "../../init/onBoarding/onBoardValues";
 
 const Preferences = ({ handleNext, handlePrevious }) => {
   const [activeCategories, setActiveCategories] = useState([]);
@@ -17,37 +14,16 @@ const Preferences = ({ handleNext, handlePrevious }) => {
   const toggleCategory = (category) => {
     if (activeCategories.includes(category)) {
       setActiveCategories(activeCategories.filter((cat) => cat !== category));
-      setFieldValue(
-        "preferences",
-        activeCategories.filter((c) => c !== category)
-      );
     } else {
       setActiveCategories([...activeCategories, category]);
-      setFieldValue("preferences", [...activeCategories, category]);
     }
   };
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   console.log("handle submit call");
-  //   handleNext();
-  // };
-
-  const { handleSubmit, setFieldValue, errors, touched } = useFormik({
-    initialValues: preferencesValues,
-    validationSchema: preferencesSchema,
-    validateOnChange: true,
-    validateOnBlur: true,
-    onSubmit: async (values, action) => {
-      console.log("🚀 ~ CreateAccount ~ action:", action);
-      console.log("🚀 ~ CreateAccount ~ values:", values);
-      handleNext();
-
-      // Use the loading state to show loading spinner
-      // Use the response if you want to perform any specific functionality
-      // Otherwise you can just pass a callback that will process everything
-    },
-  });
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("handle submit call");
+    handleNext();
+  };
 
   return (
     <div className="flex flex-col justify-center items-center h-auto ">
@@ -65,7 +41,7 @@ const Preferences = ({ handleNext, handlePrevious }) => {
           based on your vibe.
         </p>
       </div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={(e) => handleSubmit(e)}>
         <div className="mt-4 max-w-[440px]">
           <label className="block text-[16px] font-[500] text-white mb-1">
             Lounge Types
@@ -140,9 +116,6 @@ const Preferences = ({ handleNext, handlePrevious }) => {
             ))}
           </div>
         </div>
-        {touched.preferences && errors.preferences && (
-          <p className="text-red-600 text-xs mt-1">{errors.preferences}</p>
-        )}
 
         <div className="mt-6 w-full flex justify-center">
           <div className="xxl:w-[650px] w-[380px] mt-1 mb-4">

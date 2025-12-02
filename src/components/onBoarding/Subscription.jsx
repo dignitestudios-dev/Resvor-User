@@ -75,10 +75,7 @@ const Subscription = ({ handlePrevious }) => {
                 </ul>
 
                 <button
-                  onClick={() => {
-                    setIsVip(true);
-                    setSubscriptionModal(true);
-                  }}
+                  onClick={() => setSubscriptionModal(true)}
                   className="w-full bg-white text-black py-2.5 rounded-xl text-[13px] font-semibold"
                 >
                   Buy Now
@@ -98,13 +95,7 @@ const Subscription = ({ handlePrevious }) => {
                   <li className="flex items-center">• Unlimited Event</li>
                 </ul>
 
-                <button
-                  onClick={() => {
-                    setIsVip(true);
-                    setSubscriptionModal(true);
-                  }}
-                  className="w-full bg-white text-black py-2.5 rounded-xl text-[13px] font-semibold"
-                >
+                <button className="w-full bg-white text-black py-2.5 rounded-xl text-[13px] font-semibold">
                   Buy Now
                 </button>
               </div>
@@ -122,13 +113,7 @@ const Subscription = ({ handlePrevious }) => {
                   <li className="flex items-center">• Unlimited Event</li>
                 </ul>
 
-                <button
-                  onClick={() => {
-                    setIsVip(true);
-                    setSubscriptionModal(true);
-                  }}
-                  className="w-full bg-white text-black py-2.5 rounded-xl text-[13px] font-semibold"
-                >
+                <button className="w-full bg-white text-black py-2.5 rounded-xl text-[13px] font-semibold">
                   Buy Now
                 </button>
               </div>

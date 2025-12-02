@@ -1,30 +1,31 @@
+import { useLogin } from "../../hooks/api/Post";
+import { processLogin } from "../../lib/utils";
 import { useFormik } from "formik";
 import { useNavigate } from "react-router";
 import AuthInput from "../../components/auth/AuthInput";
 import AuthButton from "../../components/auth/AuthButton";
 import { forgotLogo } from "../../assets/export";
 import { MdOutlineChevronLeft } from "react-icons/md";
-import { forgotPasswordSchema } from "../../schema/authentication/authSchema";
-import { useState } from "react";
-import { forgotPasswordValues } from "../../init/authentication/authValues";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
-  const [state, setState] = useState("idle");
+
+  const { loading, postData } = useLogin();
 
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
-      initialValues: forgotPasswordValues,
-      validationSchema: forgotPasswordSchema,
+      initialValues: "",
+      validationSchema: "",
       validateOnChange: true,
       validateOnBlur: true,
-      onSubmit: async (values) => {
-        setState("loading");
+      onSubmit: async (values, action) => {
+        console.log("🚀 ~ ForgotPassword ~ action:", action);
         const data = {
           email: values?.email,
+          password: values?.password,
         };
-        console.log("🚀 ~ ForgotPassword ~ data:", data);
         navigate("/auth/verify-forget-otp");
+        postData("/admin/login", false, null, data, processLogin);
 
         // Use the loading state to show loading spinner
         // Use the response if you want to perform any specific functionality
@@ -69,8 +70,8 @@ const ForgotPassword = () => {
           <div className="xxl:w-[650px]  lg:w-[350px] w-full mt-6 mb-4">
             <AuthButton
               text={"Send OTP"}
-              loading={state === "loading"}
-              disabled={state === "loading"}
+              loading={loading}
+              disabled={loading}
             />
           </div>
         </form>
