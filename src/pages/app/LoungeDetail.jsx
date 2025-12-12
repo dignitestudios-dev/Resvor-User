@@ -16,14 +16,22 @@ import AuthSuccessModal from "../../components/auth/AuthSuccessModal";
 import EventAcceptedModal from "../../components/loungeDetail/EventAcceptedModal";
 import EventSummaryModal from "../../components/loungeDetail/EventSummaryModal";
 import EventConfirmedModal from "../../components/loungeDetail/EventConfirmedModal";
+import EventServiceModal from "../../components/loungeDetail/EventServiceModal";
+import BookingServiceModal from "../../components/loungeDetail/BookingServiceModal";
 
 const LoungeDetail = () => {
   const [activeTab, setActiveTab] = useState("about");
   const [isBooking, setIsBooking] = useState(false);
   const [isEventRequest, setIsEventRequest] = useState(false);
+  const [isEventServices, setIsEventServices] = useState(false);
+
   const [isEventDetails, setIsEventDetails] = useState(false);
   const [eventData, setEventData] = useState(null);
+  const [eventServices, setEventServices] = useState(null);
+  const [isBookingServices, setIsBookingServices] = useState(null);
+
   const [isBookingDetails, setIsBookingDetails] = useState(false);
+  const [bookingServiceData, setBookingServiceData] = useState(null);
   const [isEventSubmit, setIsEventSubmit] = useState(false);
   const [isEventAccepted, setIsEventAccepted] = useState(false);
   const [isEventSummary, setISEventSummary] = useState(false);
@@ -37,6 +45,12 @@ const LoungeDetail = () => {
   const handleEventRequestNext = (data) => {
     setEventData(data);
     setIsEventRequest(false);
+    setIsEventServices(true);
+  };
+
+  const handleServiceRequestNext = (data) => {
+    setEventServices(data);
+    setIsEventServices(false);
     setIsEventDetails(true);
   };
 
@@ -49,7 +63,14 @@ const LoungeDetail = () => {
   const handleBookingNext = (data) => {
     setBookingData(data);
     setIsBooking(false);
+    setIsBookingServices(true);
+  };
+
+  const handleBookingServiceNext = (data) => {
     setIsBookingDetails(true);
+    setIsBookingServices(false);
+
+    setBookingServiceData(data);
   };
 
   const handleBookingDetailsClose = () => {
@@ -182,10 +203,17 @@ const LoungeDetail = () => {
             onNext={handleBookingNext}
           />
         )}
+        {isBookingServices && (
+          <BookingServiceModal
+            onClose={() => setIsBookingServices(false)}
+            onNext={handleBookingServiceNext}
+          />
+        )}
         {isBookingDetails && (
           <BookingDetailsModal
             onClose={handleBookingDetailsClose}
             bookingData={bookingData}
+            bookingServiceData={bookingServiceData}
             onNext={() => {
               setIsBookingDetails(false);
               setISEventSummary(true);
@@ -202,6 +230,12 @@ const LoungeDetail = () => {
             onNext={handleEventRequestNext}
           />
         )}
+        {isEventServices && (
+          <EventServiceModal
+            onClose={() => setIsEventServices(false)}
+            onNext={handleServiceRequestNext}
+          />
+        )}
         {isEventDetails && (
           <EventDetailsModal
             onClickBack={() => {
@@ -211,6 +245,7 @@ const LoungeDetail = () => {
             onClick={handleEventDetailsClose}
             onClose={() => setIsEventDetails(false)}
             eventData={eventData}
+            serviceData={eventServices}
           />
         )}
         {isEventSubmit && (

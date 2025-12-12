@@ -38,7 +38,7 @@ const EditGuestModal = ({ onClose, guestData }) => {
     <div className="fixed inset-0 bg-[#0A150F80] z-50 flex items-center justify-center">
       <div className="bg-white rounded-[12px] w-[490px] max-w-[95%] pb-10 overflow-y-auto">
         <div className="flex justify-between items-center px-8 pt-4 border-b border-b-[#00000033]">
-          <h2 className="text-[28px] font-bold mb-4">Edit Guest</h2>
+          <h2 className="text-[28px] font-bold mb-4">Edit Entry</h2>
           <div onClick={onClose} className="cursor-pointer">
             <RxCross2 className="text-[28px] text-[#181818]" />
           </div>

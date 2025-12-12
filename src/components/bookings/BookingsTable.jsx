@@ -1,9 +1,9 @@
 /* eslint-disable react/prop-types */
 import { IoIosArrowForward } from "react-icons/io";
 import { useNavigate } from "react-router";
-import { binIcon, editIcon } from "../../assets/export";
+// import { binIcon, editIcon } from "../../assets/export";
 
-const BookingsTable = ({ users }) => {
+const BookingsTable = ({ users, onSort, sortConfig }) => {
   const navigate = useNavigate();
   return (
     <>
@@ -12,8 +12,20 @@ const BookingsTable = ({ users }) => {
           <thead className="sticky top-0 z-0">
             <tr className="bg-[#E8E8FF] text-[14.82px] text-[#202224]">
               {/* <th className="px-4 py-5 text-left text-nowrap font-[500]">#</th> */}
-              <th className="pr-4 pl-8 py-5 text-left text-nowrap font-[500] ">
-                Lounge Name
+              <th
+                onClick={() => onSort("name")}
+                className="pr-4 pl-8 py-5 text-left text-nowrap font-[500] "
+              >
+                Lounge Name{" "}
+                {sortConfig.key === "name" ? (
+                  sortConfig.direction === "asc" ? (
+                    <span className="cursor-pointer">↑</span>
+                  ) : (
+                    <span className="cursor-pointer">↓</span>
+                  )
+                ) : (
+                  ""
+                )}
               </th>
               <th className="px-4 py-5 text-left text-nowrap font-[500] ">
                 Location
@@ -25,10 +37,13 @@ const BookingsTable = ({ users }) => {
                 Time
               </th>
               <th className="px-4 py-5 text-left text-nowrap font-[500] ">
-                Guest Limit
+                Guest Count
               </th>
               <th className="px-4 py-5 text-left text-nowrap font-[500] ">
                 Seating Area
+              </th>
+              <th className="px-4 py-5 text-left text-nowrap font-[500] ">
+                Status
               </th>
               <th className="px-4 py-5 text-left text-nowrap font-[500] ">
                 Action
@@ -61,6 +76,8 @@ const BookingsTable = ({ users }) => {
                 <td className="px-4 py-6">{user.guestLimit}</td>
 
                 <td className={"px-4 py-6 "}>{user.seatingArea}</td>
+                <td className={"px-4 py-6 "}>{user.status}</td>
+
                 <td className="px-4 py-6 text-nowrap underline cursor-pointer">
                   <div
                     onClick={() => navigate(`/app/bookingDetails/${index}`)}
@@ -102,7 +119,7 @@ const BookingsTable = ({ users }) => {
             </div>
             <div className="flex justify-between mb-2">
               <span className="text-gray-500 text-sm font-medium">
-                Guest Limit
+                Guest Count
               </span>
               <span className="text-gray-800">{user.guestLimit}</span>
             </div>
@@ -111,6 +128,10 @@ const BookingsTable = ({ users }) => {
                 Seating Area
               </span>
               <span className="text-gray-800">{user.seatingArea}</span>
+            </div>
+            <div className="flex justify-between mb-2">
+              <span className="text-gray-500 text-sm font-medium">Status</span>
+              <span className="text-gray-800">{user.status}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500 text-sm font-medium">Action</span>

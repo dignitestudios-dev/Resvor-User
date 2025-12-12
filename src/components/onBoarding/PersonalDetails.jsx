@@ -111,7 +111,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
           </div>
           <div>
             <label className="block text-[14px] font-[500] text-white mb-2">
-              Add birthday and special dates
+              Add Birthday and Special Dates
             </label>
 
             <TagsInputField setModalIsOpen={setModalIsOpen} />

@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import AuthButton from "../../components/auth/AuthButton";
 import { forgotLogo } from "../../assets/export";
 import { useRef, useState } from "react";
@@ -6,8 +6,11 @@ import CountDown from "../../components/auth/CountDown";
 import { FaArrowLeftLong } from "react-icons/fa6";
 
 const VerifyForgotOtp = () => {
+  const location = useLocation();
+  const email = location?.state?.email;
+
   const navigate = useNavigate();
-  const [otp, setOtp] = useState(Array(6).fill(""));
+  const [otp, setOtp] = useState(Array(5).fill(""));
   const inputs = useRef([]);
 
   const [isActive, setIsActive] = useState(true);
@@ -64,12 +67,13 @@ const VerifyForgotOtp = () => {
       />
 
       {/* Title */}
-      <div className="text-center space-y-2 max-w-[90%] mb-6">
+      <div className="text-center space-y-2 max-w-[38%] mb-6">
         <p className="text-[24px] sm:text-[32px] lg:text-[42px] font-semibold">
-          Check your email
+          Verify OTP
         </p>
         <p className="text-[14px] sm:text-[16px] lg:text-[18px] text-[#E6E6E6]">
-          We have sent password recovery instructions to your email.
+          A One-Time Password (OTP) has been sent to your registered email (
+          {email}). Please enter it to proceed.
         </p>
       </div>
 
@@ -107,12 +111,12 @@ const VerifyForgotOtp = () => {
 
         {/* Button & Countdown */}
         <div
-          className="  w-full 
+          className=" w-full 
           max-w-[300px]
           sm:max-w-[350px]
           md:max-w-[400px]
           lg:max-w-[450px]
-          xl:max-w-[550px]
+          xl:max-w-[450px]
           flex flex-col gap-4"
         >
           <AuthButton text="Verify" />
@@ -122,6 +126,16 @@ const VerifyForgotOtp = () => {
             seconds={seconds}
             setSeconds={setSeconds}
           />
+          <button
+            onClick={() => navigate("/auth/forget-password")}
+            type="button"
+            className=" px-4 py-2 text-sm font-semibold text-red-500 
+             border border-red-400 rounded-lg 
+             hover:bg-red-50 hover:text-red-600 
+             transition-colors duration-200 ease-in-out"
+          >
+            Wrong email? Change it
+          </button>
         </div>
       </form>
     </div>

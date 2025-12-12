@@ -22,6 +22,7 @@ import CreateFlyer from "./pages/app/CreateFlyer";
 import Chat from "./pages/app/Chat";
 import TermsAndConditions from "./pages/app/TermsAndConditions";
 import PrivacyPolicy from "./pages/app/PrivacyPolicy";
+import Notifications from "./pages/app/Notifications";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
         <Route path="subscription-billing" element={<SubscriptionBilling />} />
         <Route path="terms" element={<TermsAndConditions />} />
         <Route path="privacy" element={<PrivacyPolicy />} />
+        <Route path="notifications" element={<Notifications />} />
       </Route>
 
       <Route path="auth" element={<AuthLayout />}>

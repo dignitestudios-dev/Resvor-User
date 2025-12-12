@@ -24,7 +24,9 @@ const ForgotPassword = () => {
           email: values?.email,
         };
         console.log("🚀 ~ ForgotPassword ~ data:", data);
-        navigate("/auth/verify-forget-otp");
+        navigate("/auth/verify-forget-otp", {
+          state: { email: values?.email },
+        });
 
         // Use the loading state to show loading spinner
         // Use the response if you want to perform any specific functionality

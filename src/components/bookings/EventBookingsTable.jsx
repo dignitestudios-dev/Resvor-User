@@ -2,7 +2,7 @@
 import { IoIosArrowForward } from "react-icons/io";
 import { useNavigate } from "react-router";
 
-const EventBookingsTable = ({ events }) => {
+const EventBookingsTable = ({ events, onSort, sortConfig }) => {
   const navigate = useNavigate();
   return (
     <div className="bg-white rounded-xl overflow-y-auto">
@@ -10,8 +10,20 @@ const EventBookingsTable = ({ events }) => {
         <thead className="sticky top-0 z-0">
           <tr className="bg-[#E8E8FF] text-[14.82px] text-[#202224]">
             {/* <th className="px-4 py-5 text-left text-nowrap font-[500]">#</th> */}
-            <th className="pr-4 pl-6 py-5 text-left text-nowrap font-[500] ">
-              Event Name
+            <th
+              onClick={() => onSort("name")}
+              className="pr-4 pl-6 py-5 text-left text-nowrap font-[500] "
+            >
+              Event Name{" "}
+              {sortConfig.key === "name" ? (
+                sortConfig.direction === "asc" ? (
+                  <span className="cursor-pointer">↑</span>
+                ) : (
+                  <span className="cursor-pointer">↓</span>
+                )
+              ) : (
+                ""
+              )}
             </th>
             <th className="px-4 py-5 text-left text-nowrap font-[500] ">
               Location
@@ -23,13 +35,16 @@ const EventBookingsTable = ({ events }) => {
               Event Time
             </th>
             <th className="px-4 py-5 text-left text-nowrap font-[500] ">
-              Guest Limit
+              Guest Count
             </th>
             <th className="px-4 py-5 text-left text-nowrap font-[500] ">
               Event Type
             </th>
             <th className="px-4 py-5 text-left text-nowrap font-[500] ">
               Seating Area
+            </th>
+            <th className="px-4 py-5 text-left text-nowrap font-[500] ">
+              Status
             </th>
             <th className="px-4 py-5 text-left text-nowrap font-[500] ">
               Action
@@ -63,6 +78,7 @@ const EventBookingsTable = ({ events }) => {
               <td className="px-4 py-6">{user.eventType}</td>
 
               <td className={"px-4 py-6 "}>{user.seatingArea}</td>
+              <td className={"px-4 py-6 "}>{user.status}</td>
               <td className="px-4 py-6 text-nowrap underline cursor-pointer">
                 <div
                   onClick={() => navigate(`/app/reservationDetails/${index}`)}

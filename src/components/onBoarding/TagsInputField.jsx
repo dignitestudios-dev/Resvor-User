@@ -1,14 +1,18 @@
 /* eslint-disable react/prop-types */
 
-const TagsInputField = ({ setModalIsOpen, isLight = false }) => {
+const TagsInputField = ({ setModalIsOpen, isLight = false, text = null }) => {
   const openModal = () => setModalIsOpen(true);
 
   return (
     <div
       className={`flex items-end border border-gray-400 bg-white/10 backdrop-blur-[28.9px] text-sm rounded-[15px] overflow-hidden p-[3px]`}
     >
-      <div className="flex flex-wrap pb-1.5 px-2 w-[80%] text-[#9F9F9F] italic font-[300]">
-        add birthday
+      <div
+        className={`flex flex-wrap pb-1.5 px-2 w-[80%] ${
+          text ? "text-[#727272]" : "text-[#E6E6F0]"
+        } italic font-[300]`}
+      >
+        {text ? text : "Add birthday"}
       </div>
       <div className="flex items-start h-full justify-end w-[20%]">
         {isLight ? (

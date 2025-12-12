@@ -121,7 +121,7 @@ const AddGuestModal = ({ onClose }) => {
           </div>
         </form>
         <div className="mt-8 mx-8">
-          <Button text="Add New" type="button" onClick={onClose} />
+          <Button text="Confirm" type="button" onClick={onClose} />
         </div>
       </div>
       {modalIsOpen && (

@@ -2,7 +2,14 @@
 import { RxCross2 } from "react-icons/rx";
 import Button from "../global/Button";
 
-const EventDetailsModal = ({ onClose, eventData, onClickBack, onClick }) => {
+const EventDetailsModal = ({
+  onClose,
+  eventData,
+  serviceData,
+  onClickBack,
+  onClick,
+}) => {
+  console.log("🚀 ~ EventDetailsModal ~ serviceData:", serviceData);
   const {
     eventType = "Birthday Party",
     date = "26 Dec, 2024",
@@ -14,11 +21,8 @@ const EventDetailsModal = ({ onClose, eventData, onClickBack, onClick }) => {
     guestCount = "30 Guests",
     preferredMusic = "Hip Hop, R&B, Rock",
     specialRequest = "Birthday Signage",
-    servicesPackages = "Food and Drink Package, Bottle Package",
-    preferredSeatingArea = "Outdoor Terrace/ Rooftop",
     budget = "$1000",
     ticketAtDoor = "None",
-    instructions = "The standard Lorem Ipsum passage, m ipsum dolor sit amet, cectetur adipiscing elit, sed do eiusm. The standard.",
   } = eventData || {};
 
   return (
@@ -116,13 +120,21 @@ const EventDetailsModal = ({ onClose, eventData, onClickBack, onClick }) => {
                 <p className="font-semibold text-[#000000] mb-1">
                   Services and Packages
                 </p>
-                <p className="text-[#000000]">{servicesPackages}</p>
+                {serviceData?.selectedPackage?.map((item) => (
+                  <p key={item.id} className="text-[#000000]">
+                    {item.title} - {item.price}$
+                  </p>
+                ))}
               </div>
               <div className="border-l-2 border-b-gray-300 pl-1">
                 <p className="font-semibold text-[#000000] mb-1">
                   Preferred Seating Area
                 </p>
-                <p className="text-[#000000]">{preferredSeatingArea}</p>
+                {serviceData?.selectedSeating?.map((item, index) => (
+                  <p key={index} className="text-[#000000]">
+                    {item.name}
+                  </p>
+                ))}
               </div>
             </div>
           </div>
@@ -144,16 +156,17 @@ const EventDetailsModal = ({ onClose, eventData, onClickBack, onClick }) => {
             </div>
           </div>
 
-          {/* Instructions Section */}
-          <div className="mb-6">
-            <p className="font-semibold text-[#000000] mb-1">
-              Any Instruction{" "}
-              <span className="text-[#727272] text-[11px]">(optional)</span>
-            </p>
-            <p className="text-[#000000] text-[12px] leading-5">
-              {instructions}
-            </p>
-          </div>
+          {serviceData?.instruction && (
+            <div className="mb-6">
+              <p className="font-semibold text-[#000000] mb-1">
+                Any Instruction{" "}
+                <span className="text-[#727272] text-[11px]">(optional)</span>
+              </p>
+              <p className="text-[#000000] text-[12px] leading-5">
+                {serviceData?.instruction}
+              </p>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="space-y-2 mt-8">

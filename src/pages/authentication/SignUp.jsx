@@ -23,6 +23,7 @@ export default function SignUp() {
     { icon: FaClipboardList, title: "Subscription" },
   ];
   const [email, setEmail] = useState("");
+  console.log("🚀 ~ SignUp ~ email:", email);
   const steps = providerSteps.map((step, index) => ({
     ...step,
     completed: index < currentStep,

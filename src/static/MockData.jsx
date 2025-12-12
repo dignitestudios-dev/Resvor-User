@@ -95,6 +95,9 @@ export const loungeManagers = [
     time: "2 min ago",
     unread: 5,
     avatar: "JD",
+    email: "johndoe@gmail.com",
+    phone: "+156823154",
+    country: "New York, USA",
   },
   {
     id: 2,
@@ -103,6 +106,9 @@ export const loungeManagers = [
     time: "5 min ago",
     unread: 0,
     avatar: "DS",
+    email: "johndoe@gmail.com",
+    phone: "+156823154",
+    country: "New York, USA",
   },
 ];
 
@@ -247,5 +253,65 @@ export const invoices = [
     description: "Subscription plan",
     total: "$150.00",
     status: "Paid",
+  },
+];
+
+export const servicesData = [
+  {
+    id: 1,
+    title: "VIP Table",
+    includes: [
+      "Lorem ipsum dolor sit amet.",
+      "Lorem ipsum dolor sit amet.",
+      "Lorem ipsum dolor sit amet.",
+      "Lorem ipsum dolor sit amet.",
+    ],
+    price: 400,
+    img: loungeImg,
+  },
+  {
+    id: 2,
+    title: "Premium Lounge",
+    includes: [
+      "Private seating area.",
+      "Complimentary drinks.",
+      "High-end lighting setup.",
+    ],
+    price: 550,
+    img: loungeImg,
+  },
+  {
+    id: 3,
+    title: "Standard Table",
+    includes: [
+      "Comfortable seating.",
+      "Basic service.",
+      "Good view of main stage.",
+    ],
+    price: 250,
+    img: loungeImg,
+  },
+  {
+    id: 4,
+    title: "Exclusive Suite",
+    includes: [
+      "Dedicated waiter.",
+      "Premium bottle service.",
+      "VIP rest area.",
+      "Priority entry.",
+    ],
+    price: 800,
+    img: loungeImg,
+  },
+  {
+    id: 5,
+    title: "Balcony Table",
+    includes: [
+      "Great top-view seating.",
+      "Semi-private space.",
+      "Fast-entry lane.",
+    ],
+    price: 350,
+    img: loungeImg,
   },
 ];

@@ -6,9 +6,9 @@ import TextCountDown from "./TextCountDown";
 import AuthSuccessModal from "../auth/AuthSuccessModal";
 import { FaArrowLeftLong } from "react-icons/fa6";
 
-const VerifyEmail = ({ handleNext, handlePrevious }) => {
+const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
   const inputs = useRef([]);
-  const [otp, setOtp] = useState(Array(6).fill(""));
+  const [otp, setOtp] = useState(Array(5).fill(""));
 
   const [isActive, setIsActive] = useState(true);
   const [seconds, setSeconds] = useState(30);
@@ -80,15 +80,16 @@ const VerifyEmail = ({ handleNext, handlePrevious }) => {
         </div>
         <div className="mt-4 py-4 space-y-3 xxl:w-[400px] xxl:ml-12 text-center">
           <p className=" xxl:text-[48px] text-[32px] font-[600] capitalize">
-            verification
+            Verify OTP
           </p>
-          <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] w-[304px] ">
-            Please enter OTP code sent to your email.
+          <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] w-[440px] ">
+            A One-Time Password (OTP) has been sent to your registered email (
+            {email}). Please enter it to proceed.
           </p>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[460px] md:w-[550px] w-[320px] mt-4">
+          <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[390px] md:w-[550px] w-[320px] mt-4">
             <div className="xxl:w-[600px] xxl:m-4 grid grid-cols-6 sm:gap-20 gap-4 xl:w-[340px] lg:w-[360px] md:w-[550px] w-full">
               {otp.map((digit, index) => (
                 <input
@@ -108,7 +109,7 @@ const VerifyEmail = ({ handleNext, handlePrevious }) => {
             </div>
             <div className="flex items-center justify-center gap-2 pl-4 mt-4 mb-3 relative z-10">
               <p className="text-center text-[14px] leading-[21.6px] text-white ">
-                Didn&apos;t receive the code yet?
+                Didn’t receive the OTP?
                 {isActive ? (
                   <TextCountDown
                     isActive={isActive}
@@ -123,7 +124,7 @@ const VerifyEmail = ({ handleNext, handlePrevious }) => {
                     onClick={handleResendOtp}
                     className="font-[600] pl-1 cursor-pointer"
                   >
-                    Resend now
+                    Resend
                     {/* {resendLoading ? "Resending..." : "Resend"} */}
                   </span>
                 )}

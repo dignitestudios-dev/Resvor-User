@@ -3,12 +3,16 @@ import { useFormik } from "formik";
 import AuthButton from "../auth/AuthButton";
 import AuthInput from "../auth/AuthInput";
 import { useNavigate } from "react-router";
-import { phoneFormatter } from "../../lib/helpers";
-import PhoneInput from "../auth/PhoneInput";
+// import { phoneFormatter } from "../../lib/helpers";
+// import PhoneInput from "../auth/PhoneInput";
 import { signUpSchema } from "../../schema/authentication/authSchema";
 import { signUpValues } from "../../init/authentication/authValues";
+import PhoneInput from "../auth/PhoneInput";
+// import CountrySelect from "./CountrySelect";
 
-const CreateAccount = ({ handleNext }) => {
+const CreateAccount = ({ handleNext, setEmail }) => {
+  // const [country, setCountry] = useState("");
+
   const navigate = useNavigate();
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
@@ -18,7 +22,7 @@ const CreateAccount = ({ handleNext }) => {
       validateOnBlur: true,
       onSubmit: async (values, action) => {
         console.log("🚀 ~ CreateAccount ~ action:", action);
-        console.log("🚀 ~ CreateAccount ~ values:", values);
+        setEmail(values?.email);
         handleNext();
 
         // Use the loading state to show loading spinner
@@ -26,6 +30,7 @@ const CreateAccount = ({ handleNext }) => {
         // Otherwise you can just pass a callback that will process everything
       },
     });
+
   return (
     <div className="flex flex-col justify-center items-center h-auto ">
       <div className="mt-4 xxl:w-[400px] xxl:ml-12 text-center space-y-4">
@@ -72,9 +77,11 @@ const CreateAccount = ({ handleNext }) => {
             />
           </div>
           <div>
+            {/* <CountrySelect value={country} onChange={setCountry} /> */}
+
             <PhoneInput
               label={"Phone Number"}
-              value={phoneFormatter(values.number)}
+              value={values.number}
               id={"number"}
               name={"number"}
               onChange={handleChange}

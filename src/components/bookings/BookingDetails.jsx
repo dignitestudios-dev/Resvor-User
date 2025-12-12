@@ -68,7 +68,7 @@ export default function BookingDetails() {
                   <p className="font-semibold text-[#000000] text-[18px]">
                     Check-in Date
                   </p>
-                  <p className="text-[#000000] text-[16px]">26 Dec, 2024</p>
+                  <p className="text-[#000000] text-[16px]">05/26/2024</p>
                 </div>
                 <div className="space-y-6">
                   <p className="font-semibold text-[#000000] text-[18px]">

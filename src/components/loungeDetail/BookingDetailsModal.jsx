@@ -2,7 +2,18 @@
 import { RxCross2 } from "react-icons/rx";
 import Button from "../global/Button";
 
-const BookingDetailsModal = ({ onClose, bookingData, onNext, onClickBack }) => {
+const BookingDetailsModal = ({
+  onClose,
+  bookingData,
+  onNext,
+  onClickBack,
+  bookingServiceData,
+}) => {
+  console.log(
+    "🚀 ~ BookingDetailsModal ~ bookingServiceData:",
+    bookingServiceData
+  );
+
   const {
     name = "Mike Smith",
     email = "designer@gmail.com",
@@ -90,27 +101,32 @@ const BookingDetailsModal = ({ onClose, bookingData, onNext, onClickBack }) => {
             </p>
             <div className="grid grid-cols-2 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2 mb-4">
               <div>
-                <p className="text-[#000000] py-2">
-                  {services.split(",")[0]} <span>20$</span>
-                </p>{" "}
+                {bookingServiceData?.selectedPackage?.map((item) => (
+                  <p key={item.id} className="text-[#000000]">
+                    {item.title} - {item.price}$
+                  </p>
+                ))}
               </div>
               <div className="border-l-2 border-b-gray-300 pl-1 py-2">
-                <p className="text-[#000000]">
-                  {services.split(",").slice(1).join(", ")}
-                </p>
+                {bookingServiceData?.selectedSeating?.map((item, index) => (
+                  <p key={index} className="text-[#000000]">
+                    {item.name}
+                  </p>
+                ))}
               </div>
             </div>
           </div>
-
-          <div className="mb-6">
-            <p className="font-semibold text-[#181818] mb-2">
-              Any Instruction{" "}
-              <span className="text-[#727272] text-[11px]">(optional)</span>
-            </p>
-            <p className="text-[#6B6B6B] text-[12px] leading-5">
-              {instructions}
-            </p>
-          </div>
+          {bookingServiceData?.instructions && (
+            <div className="mb-6">
+              <p className="font-semibold text-[#181818] mb-2">
+                Any Instruction{" "}
+                <span className="text-[#727272] text-[11px]">(optional)</span>
+              </p>
+              <p className="text-[#6B6B6B] text-[12px] leading-5">
+                {instructions}
+              </p>
+            </div>
+          )}
 
           <div className="space-y-3 mt-8">
             <Button text="Next" type="button" onClick={onNext} />

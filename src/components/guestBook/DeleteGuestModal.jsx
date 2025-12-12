@@ -19,10 +19,11 @@ const DeleteGuestModal = ({ onClose, onConfirm }) => {
           </div>
 
           <h3 className="text-[20px] font-bold text-black mb-2">
-            Delete This Guest
+            Confirm Removal
           </h3>
           <p className="text-sm text-gray-600 mb-6">
-            Are you sure you want delete this Guest. Please confirm to proceed.
+            Removing your entry will unsubscribe you from all lounge updates,
+            announcements, and special offers. Would you like to continue?
           </p>
 
           <div className="flex gap-3 w-full">
@@ -36,7 +37,7 @@ const DeleteGuestModal = ({ onClose, onConfirm }) => {
               onClick={onConfirm}
               className="flex-1 py-2  bg-red-600 hover:opacity-90 text-white text-[13px] rounded-lg w-full"
             >
-              Delete
+              Remove
             </button>
           </div>
         </div>

@@ -74,16 +74,6 @@ const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
           </label>
           <div className="flex justify-between items-center gap-2 p-1">
             <DateInput
-              text="day"
-              placeholder="Day"
-              type="text"
-              id={`day`}
-              name={`day`}
-              maxLength={2}
-              value={dobDate.day}
-              onChange={(e) => handleDobChange("day", e.target.value)}
-            />
-            <DateInput
               text="month"
               placeholder="Month"
               type="text"
@@ -92,6 +82,16 @@ const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
               maxLength={2}
               value={dobDate.month}
               onChange={(e) => handleDobChange("month", e.target.value)}
+            />
+            <DateInput
+              text="day"
+              placeholder="Date"
+              type="text"
+              id={`day`}
+              name={`day`}
+              maxLength={2}
+              value={dobDate.day}
+              onChange={(e) => handleDobChange("day", e.target.value)}
             />
             <DateInput
               text="year"
@@ -113,6 +113,7 @@ const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
                   </label>
                   <div className="px-1">
                     <AuthInput
+                      textColor={true}
                       text="specialDate"
                       placeholder="e.g. Anniversary"
                       type="text"
@@ -129,7 +130,7 @@ const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
 
                 <div>
                   <label className="block text-[14px] font-[500] text-[#181818] mb-2 mt-6">
-                    When Is Your Birthday?{" "}
+                    Add Date
                     <span className="text-[#CACACA]">(required)</span>
                   </label>
                   <div className="flex justify-between items-center gap-2 p-1">
@@ -140,6 +141,7 @@ const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
                       id={`day-${index}`}
                       name={`day-${index}`}
                       value={date.day}
+                      maxLength={2}
                       onChange={(e) =>
                         handleChange(index, "day", e.target.value)
                       }
@@ -151,6 +153,7 @@ const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
                       id={`month-${index}`}
                       name={`month-${index}`}
                       value={date.month}
+                      maxLength={2}
                       onChange={(e) =>
                         handleChange(index, "month", e.target.value)
                       }
@@ -162,6 +165,7 @@ const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
                       id={`year-${index}`}
                       name={`year-${index}`}
                       value={date.year}
+                      maxLength={4}
                       onChange={(e) =>
                         handleChange(index, "year", e.target.value)
                       }
@@ -190,7 +194,7 @@ const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
                   className="flex items-center gap-2 pt-3 cursor-pointer"
                 >
                   <p className="text-[#181818] text-[14px] font-[500]">
-                    + Add more Special Dates
+                    + Add More Special Dates
                   </p>
                 </button>
               </div>
@@ -207,7 +211,7 @@ const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
               onClick={handleDateData}
               className="bg-gradient-to-l from-[#012C57] to-[#061523] text-white text-[13px] px-4 py-3 rounded-[12px] w-[97%]"
             >
-              Add Date And Continue
+              Continue
             </button>
           </div>
         </div>

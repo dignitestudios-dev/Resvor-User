@@ -25,11 +25,20 @@ const CountDown = ({ isActive, setIsActive, seconds, setSeconds }) => {
     <button
       type="button"
       onClick={() => handleRestart()}
-      className="w-full py-3 bg-transparent border-[1px] border-[#CACACA] text-white text-sm font-[700] rounded-[12px] hover:opacity-90 transition"
+      className={`w-full py-3 text-sm font-[700] rounded-[12px] transition
+    ${
+      seconds > 0
+        ? "bg-gray-500 border-gray-400 text-gray-300 cursor-not-allowed opacity-70"
+        : "bg-transparent border-[1px] border-[#CACACA] text-white hover:opacity-90"
+    }
+  `}
+      disabled={seconds > 0}
     >
       <div className="flex justify-center items-center">
         <span className="mr-1">
-          Resend Code {seconds > 0 && "00:" + seconds + "s"}
+          {seconds > 0
+            ? `Resend in 00:${seconds}s`
+            : "Didn’t receive the OTP? Resend"}
         </span>
       </div>
     </button>

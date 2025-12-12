@@ -1,8 +1,8 @@
 export const settingOptions = [
-  {
-    key: "notification",
-    label: "Notification Settings",
-  },
+  // {
+  //   key: "notification",
+  //   label: "Notification Settings",
+  // },
   {
     key: "subscription",
     label: "Subscription Plan",

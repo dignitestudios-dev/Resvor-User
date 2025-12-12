@@ -10,6 +10,10 @@ const GuestBook = () => {
   const navigate = useNavigate();
   const [addGuest, setAddGuest] = useState(false);
   const [editGuest, setEditGuest] = useState(null);
+  const [sortConfig, setSortConfig] = useState({
+    key: "name",
+    direction: "asc",
+  });
   const [guestToDeleteIndex, setGuestToDeleteIndex] = useState(null);
   const [users, setUsers] = useState([
     {
@@ -43,6 +47,31 @@ const GuestBook = () => {
       setUsers((prev) => prev.filter((_, i) => i !== guestToDeleteIndex));
       setGuestToDeleteIndex(null);
     }
+  };
+
+  const sortedUsers = [...users].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+
+    let valA = a[sortConfig.key];
+    let valB = b[sortConfig.key];
+
+    // Convert guestLimit to number for numeric sorting
+    if (sortConfig.key === "guestLimit") {
+      valA = parseInt(valA, 10);
+      valB = parseInt(valB, 10);
+    }
+
+    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  const requestSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
   };
 
   return (
@@ -81,8 +110,20 @@ const GuestBook = () => {
               <table className="w-full">
                 <thead className="sticky top-0 z-0">
                   <tr className="bg-[#E8E8FF] text-[14.82px]">
-                    <th className="pl-8 pr-4 py-5 text-left text-nowrap font-[500] ">
-                      Lounge Name
+                    <th
+                      onClick={() => requestSort("name")}
+                      className="pl-8 pr-4 py-5 text-left text-nowrap font-[500] "
+                    >
+                      Lounge Name{" "}
+                      {sortConfig.key === "name" ? (
+                        sortConfig.direction === "asc" ? (
+                          <span className="cursor-pointer">↑</span>
+                        ) : (
+                          <span className="cursor-pointer">↓</span>
+                        )
+                      ) : (
+                        ""
+                      )}
                     </th>
                     <th className="px-4 py-5 text-left text-nowrap font-[500] ">
                       Full Name
@@ -96,7 +137,7 @@ const GuestBook = () => {
                   </tr>
                 </thead>
                 <tbody className="mt-10">
-                  {users.map((user, index) => (
+                  {sortedUsers.map((user, index) => (
                     <tr
                       key={index}
                       className="border-b border-[#D4D4D4] text-[14.82px]"

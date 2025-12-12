@@ -42,11 +42,11 @@ const UpdatePassword = () => {
           <img src={forgotLogo} alt="logo" className="w-[220px]" />
         </div>
         <div className="mt-4 py-4 space-y-3 xxl:w-[400px] xxl:ml-12 text-center">
-          <p className=" xxl:text-[48px] text-[32px] font-[600] capitalize">
-            create new password
+          <p className=" xxl:text-[48px] text-[32px] font-[600]">
+            Create a New Password
           </p>
           <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] font-[400] ">
-            Enter new password to reset.
+            Enter a strong, secure password to update your account.
           </p>
         </div>
 
@@ -103,8 +103,8 @@ const UpdatePassword = () => {
             setRequestSendModal(false);
             navigate("/auth/login");
           }}
-          title="Password Updated"
-          description="Your password has been updated successfully."
+          title="Password Reset Successful"
+          description="You can now log in with your new password."
         />
       )}
     </div>

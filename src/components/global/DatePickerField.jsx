@@ -26,7 +26,7 @@ const DatePickerField = ({
         onClick={() => setShowPicker(!showPicker)}
       >
         <span className={"text-[#727272]"}>
-          {value ? moment(value).format("MM-DD-YYYY") : label}
+          {value ? moment(value).format("MM/DD/YYYY") : label}
         </span>
         <IoCalendarOutline className="text-blue-950 text-[20px]" />
       </div>

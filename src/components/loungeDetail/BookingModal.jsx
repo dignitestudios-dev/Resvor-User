@@ -1,18 +1,15 @@
 /* eslint-disable react/prop-types */
 import { RxCross2 } from "react-icons/rx";
 import DatePickerField from "../global/DatePickerField";
-import { useEffect, useState } from "react";
-import TimePickerField from "../global/TimePickerField";
+import { useState } from "react";
+// import TimePickerField from "../global/TimePickerField";
 import InputField from "../auth/InputField";
-import FilterSelectableField from "../global/FilterSelectableField";
 import Button from "./../global/Button";
 
 const BookingModal = ({ onClose, onNext }) => {
   const [startDate, setStartDate] = useState(null);
   const [startTime, setStartTime] = useState(null);
 
-  const [selectedTable, setSelectedTable] = useState([]);
-  const [selectedPackage, setSelectedPackage] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -23,27 +20,14 @@ const BookingModal = ({ onClose, onNext }) => {
     instructions: "",
   });
 
-  const [openField, setOpenField] = useState(null);
+  // const [openField, setOpenField] = useState(null);
 
   // Close dropdown on outside click
-  useEffect(() => {
-    const close = () => setOpenField(null);
-    window.addEventListener("click", close);
-    return () => window.removeEventListener("click", close);
-  }, []);
-
-  const handleSelect = (option) => {
-    const name = option?.name || option;
-    setSelectedTable((prev) => {
-      const exists = prev.some((item) => item.name === name);
-
-      if (exists) {
-        return prev.filter((item) => item.name !== name);
-      } else {
-        return [...prev, { name }];
-      }
-    });
-  };
+  // useEffect(() => {
+  //   const close = () => setOpenField(null);
+  //   window.addEventListener("click", close);
+  //   return () => window.removeEventListener("click", close);
+  // }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -67,33 +51,19 @@ const BookingModal = ({ onClose, onNext }) => {
         ? `${formData.guestCount} Guests`
         : "6 Guests",
       children: formData.children || "None",
-      table: selectedTable[0]?.name || "Table No 15",
-      services:
-        selectedPackage.map((p) => p.name).join(", ") ||
-        "Food and Drink Package, Bottle Package",
-      instructions: formData.instructions || "",
+      // table: selectedTable[0]?.name || "Table No 15",
+      // services:
+      //   selectedPackage.map((p) => p.name).join(", ") ||
+      //   "Food and Drink Package, Bottle Package",
+      // instructions: formData.instructions || "",
     };
 
     if (onNext) onNext(bookingData);
   };
 
-  const handleSelectPackage = (option) => {
-    const name = option?.name || option?.title || option;
-    const price = option?.price || null;
-    setSelectedPackage((prev) => {
-      const exists = prev.some((item) => item.name === name);
-
-      if (exists) {
-        return prev.filter((item) => item.name !== name);
-      } else {
-        return [...prev, { name, price }];
-      }
-    });
-  };
-
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-[12px] w-[440px] pb-2 h-[700px] overflow-y-scroll ">
+      <div className="bg-white rounded-[12px] w-[440px] pb-2 h-[570px]  ">
         <div
           className={`flex justify-between items-center  px-8 pt-4 border-b-2 border-b-gray-300`}
         >
@@ -112,7 +82,7 @@ const BookingModal = ({ onClose, onNext }) => {
               value={startDate}
               onChange={setStartDate}
             />
-            <TimePickerField
+            {/* <TimePickerField
               text="Time"
               label="Select Time"
               value={startTime}
@@ -120,7 +90,21 @@ const BookingModal = ({ onClose, onNext }) => {
               open={openField === "time"}
               onOpen={() => setOpenField(openField === "time" ? null : "time")}
               position={"-right-4"}
-            />
+            /> */}
+            <div className="w-full">
+              <label className="block text-[14px] font-[500] text-[#181818] mb-2">
+                Time
+              </label>
+              <input
+                type="time"
+                data-slot="input"
+                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ring-[#CACACA]
+  focus:ring-2 focus:ring-gray-200 focus:outline-none  placeholder:font-light placeholder:text-[12px] placeholder:text-[#E6E6F0]
+  }`}
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
+            </div>
           </div>
           <div>
             <div className="px-1 py-2">
@@ -185,48 +169,6 @@ const BookingModal = ({ onClose, onNext }) => {
                 value={formData.children}
                 onChange={handleInputChange}
               />
-            </div>
-            <div className="my-2 mx-1">
-              <FilterSelectableField
-                label="Select table"
-                placeholder={"Select table"}
-                options={["Table No 2", "Table No 5", "Table No 20"]}
-                value={selectedTable}
-                onChange={handleSelect}
-              />
-            </div>
-            <div className="my-2 mx-1">
-              <FilterSelectableField
-                label="Select Services & packages"
-                placeholder={"Select Services & packages"}
-                options={[
-                  { title: "Vip table package", price: "20$" },
-                  { title: "Food and drink package", price: "40$" },
-                  { title: "Birthday packages", price: "25$" },
-                ]}
-                value={selectedPackage}
-                onChange={handleSelectPackage}
-              />
-            </div>
-            <div className="px-1 ">
-              <div>
-                <label className="block text-[14px] font-[500] text-[#181818] mb-2">
-                  Any Instructions{" "}
-                  <span className="text-[12px] text-[#727272]">(optional)</span>
-                </label>
-                <div className="relative">
-                  <textarea
-                    type="text"
-                    name="instructions"
-                    value={formData.instructions}
-                    onChange={handleInputChange}
-                    placeholder="add text here"
-                    maxLength={300}
-                    className={`w-full px-4 py-2 text-sm rounded-[15px] bg-transparent ring-1 ring-[#CACACA] 
-                            focus:ring-2 focus:ring-gray-200 focus:outline-none pr-12 placeholder:font-light placeholder:text-[12px] placeholder:text-[#727272] `}
-                  ></textarea>
-                </div>
-              </div>
             </div>
             <div className="mt-4 px-1">
               <Button text="Next" type="button" onClick={handleNext} />

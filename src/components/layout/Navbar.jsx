@@ -73,6 +73,7 @@ const Navbar = () => {
       message:
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed adipiscing elit",
       time: "12:30 AM",
+      unreadCount: 1,
     },
     {
       title: "Your Booking is Approved",
@@ -194,7 +195,7 @@ const Navbar = () => {
             />
             {/* Show unread count badge if there are unread notifications */}
             {notifications.filter((n) => n.unreadCount > 0).length > 0 && (
-              <div className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full w-[13px] h-[13px] flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full w-[14px] h-[14px] flex items-center justify-center">
                 {notifications.filter((n) => n.unreadCount > 0).length}
               </div>
             )}
@@ -219,7 +220,7 @@ const Navbar = () => {
                           updatedNotifications[idx].unreadCount = 0; // Mark as read
                           setNotifications(updatedNotifications);
                         }}
-                        className="cursor-pointer"
+                        className="cursor-auto"
                       >
                         <div className="flex w-full justify-between">
                           <div>
@@ -247,6 +248,16 @@ const Navbar = () => {
                   ) : (
                     <p className="text-gray-700">No notifications</p>
                   )}
+                </div>
+                <div className="flex justify-center items-center">
+                  <button
+                    onClick={() => {
+                      navigate("/app/notifications");
+                    }}
+                    className="text-sm text-blue-600 font-medium px-4 mt-2 rounded-lg hover:bg-blue-50 cursor-pointer transition"
+                  >
+                    View All
+                  </button>
                 </div>
               </div>
             )}
