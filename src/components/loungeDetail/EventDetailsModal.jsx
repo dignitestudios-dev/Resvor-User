@@ -120,11 +120,13 @@ const EventDetailsModal = ({
                 <p className="font-semibold text-[#000000] mb-1">
                   Services and Packages
                 </p>
-                {serviceData?.selectedPackage?.map((item) => (
-                  <p key={item.id} className="text-[#000000]">
-                    {item.title} - {item.price}$
-                  </p>
-                ))}
+
+                {serviceData?.selectedPackage.length > 0 &&
+                  serviceData?.selectedPackage?.map((item) => (
+                    <p key={item.id} className="text-[#000000]">
+                      {item.title} - {item.price}$
+                    </p>
+                  ))}
               </div>
               <div className="border-l-2 border-b-gray-300 pl-1">
                 <p className="font-semibold text-[#000000] mb-1">

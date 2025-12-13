@@ -50,7 +50,7 @@ const BookingServiceModal = ({ onClose, onNext }) => {
         <div
           className={`flex justify-between items-center  px-8 pt-4 border-b-2 border-b-gray-300`}
         >
-          <h2 className="text-[28px] font-bold mb-4">Request Event</h2>
+          <h2 className="text-[28px] font-bold mb-4">Make Reservation</h2>
           <div onClick={onClose} className="cursor-pointer">
             <RxCross2 className="text-[28px] text-[#181818]" />
           </div>
@@ -58,7 +58,7 @@ const BookingServiceModal = ({ onClose, onNext }) => {
         <div className="px-8 py-4 relative">
           <div
             onClick={() => setFloorPlanModal(true)}
-            className="absolute underline text-[12px] text-indigo-950 rounded-md cursor-pointer right-0 pr-10 top-6"
+            className="absolute underline text-[12px] text-indigo-950 rounded-md cursor-pointer right-0 pr-10 top-6 z-50"
           >
             View Floor Plan
           </div>

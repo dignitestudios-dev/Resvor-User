@@ -9,7 +9,7 @@ const EventSummaryModal = ({ onClose, onClick }) => {
         <div
           className={`flex justify-between items-center  px-8 pt-4 border-b-2 border-b-gray-300`}
         >
-          <h2 className="text-[28px] font-bold mb-4">Request Event</h2>
+          <h2 className="text-[28px] font-bold mb-4">Make Reservation</h2>
           <div onClick={onClose} className="cursor-pointer">
             <RxCross2 className="text-[28px] text-[#181818]" />
           </div>

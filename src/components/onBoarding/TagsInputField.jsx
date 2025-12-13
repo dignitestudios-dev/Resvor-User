@@ -8,9 +8,9 @@ const TagsInputField = ({ setModalIsOpen, isLight = false, text = null }) => {
       className={`flex items-end border border-gray-400 bg-white/10 backdrop-blur-[28.9px] text-sm rounded-[15px] overflow-hidden p-[3px]`}
     >
       <div
-        className={`flex flex-wrap pb-1.5 px-2 w-[80%] ${
+        className={`flex flex-wrap pb-1.5 px-2 w-[80%] text-[12px] ${
           text ? "text-[#727272]" : "text-[#E6E6F0]"
-        } italic font-[300]`}
+        }  font-[300]`}
       >
         {text ? text : "Add birthday"}
       </div>

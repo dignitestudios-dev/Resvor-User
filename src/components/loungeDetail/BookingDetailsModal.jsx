@@ -23,7 +23,7 @@ const BookingDetailsModal = ({
     guestCount = "6 Guests",
     children = "None",
     table = "Table No 15",
-    services = "Food and Drink Package, Bottle Package",
+    // services = "Food and Drink Package, Bottle Package",
     instructions = "The standard Lorem Ipsum passage, m ipsum dolor sit amet, cectetur adipiscing elit, sed do eiusmod. The standard.",
   } = bookingData || {};
 
@@ -31,7 +31,7 @@ const BookingDetailsModal = ({
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
       <div className="bg-white rounded-[12px] w-[440px] pb-2 h-[640px] overflow-y-auto">
         <div className="flex justify-between items-center px-8 pt-4 border-b-2 border-b-gray-300">
-          <h2 className="text-[28px] font-bold mb-4">Book Now</h2>
+          <h2 className="text-[28px] font-bold mb-4">Make Reservation</h2>
           <div onClick={onClose} className="cursor-pointer">
             <RxCross2 className="text-[28px] text-[#181818]" />
           </div>
@@ -101,11 +101,12 @@ const BookingDetailsModal = ({
             </p>
             <div className="grid grid-cols-2 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2 mb-4">
               <div>
-                {bookingServiceData?.selectedPackage?.map((item) => (
-                  <p key={item.id} className="text-[#000000]">
-                    {item.title} - {item.price}$
-                  </p>
-                ))}
+                {bookingServiceData?.selectedPackage.length > 0 &&
+                  bookingServiceData?.selectedPackage?.map((item) => (
+                    <p key={item.id} className="text-[#000000]">
+                      {item.title} - {item.price}$
+                    </p>
+                  ))}
               </div>
               <div className="border-l-2 border-b-gray-300 pl-1 py-2">
                 {bookingServiceData?.selectedSeating?.map((item, index) => (

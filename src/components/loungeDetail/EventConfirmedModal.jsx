@@ -14,7 +14,7 @@ const EventConfirmedModal = ({ onClick }) => {
           </div>
           <div className="mt-4 space-y-3 xxl:w-[400px] xxl:ml-12 text-center">
             <p className=" xxl:text-[48px] text-[32px] text-[#181818] font-[600] capitalize">
-              Booking Confirmed!
+              Reservation Confirmed!
             </p>
             <p className="xxl:text-[26px] text-[16px] text-[#565656] capitalize ">
               Your Event request at Highbar Roooftop - NYC is confirmed. You’ll
@@ -26,7 +26,7 @@ const EventConfirmedModal = ({ onClick }) => {
               onClick={onClick}
               className="flex-1 py-3 bg-gradient-to-l from-[#012C57] to-[#061523] text-white text-[13px] font-semibold rounded-lg w-full"
             >
-              View My Bookings
+              View My Reservation
             </button>
             <button
               onClick={() => navigate("/app/home")}

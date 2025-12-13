@@ -182,7 +182,7 @@ const LoungeDetail = () => {
                 <div className="w-full">
                   <Button
                     type="button"
-                    text="Book Now"
+                    text="Make Reservation"
                     onClick={() => setIsBooking(true)}
                   />
                 </div>
