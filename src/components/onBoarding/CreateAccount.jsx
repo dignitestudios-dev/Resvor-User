@@ -1,3 +1,4 @@
+"use client";
 /* eslint-disable react/prop-types */
 import { useFormik } from "formik";
 import AuthButton from "../auth/AuthButton";
@@ -8,10 +9,12 @@ import { useNavigate } from "react-router";
 import { signUpSchema } from "../../schema/authentication/authSchema";
 import { signUpValues } from "../../init/authentication/authValues";
 import PhoneInput from "../auth/PhoneInput";
+import { useState } from "react";
 // import CountrySelect from "./CountrySelect";
 
 const CreateAccount = ({ handleNext, setEmail }) => {
   // const [country, setCountry] = useState("");
+  const [acceptedPolicy, setAcceptedPolicy] = useState(false);
 
   const navigate = useNavigate();
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
@@ -126,9 +129,34 @@ const CreateAccount = ({ handleNext, setEmail }) => {
             />
           </div>
         </div>
-        <div className="mt-6 ">
+        <div className="mt-6 flex items-start gap-2 text-[12px] text-[#CACACA]">
+          <input
+            type="checkbox"
+            checked={acceptedPolicy}
+            onChange={() => setAcceptedPolicy(!acceptedPolicy)}
+            className="mt-[2px] h-3 w-3 cursor-pointer accent-indigo-600"
+          />
+
+          <span>
+            I accept the{" "}
+            <span
+              className="text-[#E6E6E6] font-semibold cursor-pointer"
+              onClick={() => navigate("/auth/terms")}
+            >
+              Terms & Conditions
+            </span>{" "}
+            and{" "}
+            <span
+              className="text-[#E6E6E6] font-semibold cursor-pointer"
+              onClick={() => navigate("/auth/privacy")}
+            >
+              Privacy Policy
+            </span>
+          </span>
+        </div>
+        <div className="mt-1 ">
           <div className="xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-1 mb-4">
-            <AuthButton text={"Sign Up"} />
+            <AuthButton text={"Sign Up"} disabled={!acceptedPolicy} />
           </div>
         </div>
       </form>
@@ -143,22 +171,6 @@ const CreateAccount = ({ handleNext, setEmail }) => {
             Login
           </span>
         </p>
-      </div>
-      <div className="mt-6 text-[12px] text-[#CACACA] ">
-        I accept the{" "}
-        <span
-          className="text-[#E6E6E6] font-semibold cursor-pointer"
-          onClick={() => navigate("/auth/terms")}
-        >
-          Terms & Conditions
-        </span>{" "}
-        and{" "}
-        <span
-          className="text-[#E6E6E6] font-semibold cursor-pointer"
-          onClick={() => navigate("/auth/privacy")}
-        >
-          Privacy Policy
-        </span>
       </div>
     </div>
   );
