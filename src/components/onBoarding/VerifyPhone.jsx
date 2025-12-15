@@ -107,8 +107,8 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
               ))}
             </div>
             <div className="flex items-center justify-center gap-2  mt-4 mb-3 relative z-10">
-              <p className="text-center text-[16px] leading-[21.6px] text-white ">
-                Didn’t receive the OTP?
+              <p className="text-center text-[14px] leading-[21.6px] text-white ">
+                {isActive ? "OTP resend in" : "Didn’t receive the OTP?"}
                 {isActive ? (
                   <TextCountDown
                     isActive={isActive}
@@ -121,7 +121,7 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
                     type="button"
                     // disabled={resendLoading}
                     onClick={handleResendOtp}
-                    className=" font-medium pl-1 cursor-pointer"
+                    className="font-[600] pl-1 cursor-pointer"
                   >
                     Resend
                     {/* {resendLoading ? "Resending..." : "Resend"} */}
