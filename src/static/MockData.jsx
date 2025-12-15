@@ -1,4 +1,10 @@
-import { flyer, loungeImg, flyerThree, flyerTwo } from "../assets/export";
+import {
+  flyer,
+  loungeImg,
+  flyerThree,
+  flyerTwo,
+  loungeTwo,
+} from "../assets/export";
 
 export const loungeData = [
   {
@@ -17,7 +23,7 @@ export const loungeData = [
     location: "Los Angeles",
     description: "Chill Beats, Open Air, Night Lights.....",
     extras: "Craft Cocktails, DJ Sets, Lounge Seating.....",
-    image: flyerTwo,
+    image: loungeTwo,
   },
   {
     id: 3,
@@ -26,7 +32,7 @@ export const loungeData = [
     location: "Miami",
     description: "Beachside Vibes, Tropical House, Sunset.....",
     extras: "Private Booths, Bottle Service, Poolside.....",
-    image: flyerThree,
+    image: loungeImg,
   },
 ];
 

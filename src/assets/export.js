@@ -43,6 +43,7 @@ import danger from "./Danger.png";
 import dangerBlue from "./dangerBlue.png";
 import flyerTwo from "./flyerTwo.png";
 import flyerThree from "./flyerThree.png";
+import loungeTwo from "./loungeTwo.jpg";
 // export {
 //     FILENAME(PASCALCASE)
 // }
@@ -88,4 +89,5 @@ export {
   flyerThree,
   danger,
   dangerBlue,
+  loungeTwo,
 };
