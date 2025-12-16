@@ -2,11 +2,9 @@
 import { useState, useRef, useEffect } from "react";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 
-export default function StatusDropdown({ value, onChange }) {
+export default function StatusDropdown({ value, onChange, options }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-
-  const options = ["All", "Completed", "Pending"];
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
