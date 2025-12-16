@@ -142,11 +142,13 @@ const MyBooking = () => {
                 />
               </div>
             ) : (
-              <StatusDropdown
-                value={statusFilter}
-                onChange={setStatusFilter}
-                options={["All", "Approval", "Upcoming"]}
-              />
+              <div className="text-white absolute top-40 right-44 z-50 w-[180px]">
+                <StatusDropdown
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  options={["All", "Approval", "Upcoming"]}
+                />
+              </div>
             )}
           </div>
         </div>
