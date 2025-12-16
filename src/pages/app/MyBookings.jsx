@@ -66,6 +66,26 @@ const MyBooking = () => {
       status: "Completed",
       eventType: "Birthday Party",
     },
+    {
+      name: "John Doe",
+      date: "12-05-25",
+      time: "08:00AM 09:00PM",
+      guestLimit: "04",
+      seatingArea: "Rooftop",
+      location: "Dallas, TX – 802 PainEase Plaza",
+      status: "Upcoming",
+      eventType: "Birthday Party",
+    },
+    {
+      name: "Jane Smith",
+      date: "12-05-25",
+      time: "08:00AM 09:00PM",
+      guestLimit: "04",
+      seatingArea: "Rooftop",
+      location: "Chicago, IL – 1204 Windy Lane",
+      status: "Approval",
+      eventType: "Birthday Party",
+    },
   ];
 
   const filteredUsers = statusFilter
