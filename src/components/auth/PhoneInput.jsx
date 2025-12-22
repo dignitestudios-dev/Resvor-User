@@ -46,18 +46,28 @@ const PhoneInput = ({
 
   return (
     <div>
-      <label className="text-[14px] font-[500] text-white">{label}</label>
+      <label
+        className={`text-[14px] font-[500] ${
+          placeholderText ? placeholderText : "text-white"
+        }`}
+      >
+        {label}
+      </label>
 
       <div
-        className="flex items-center p-0 w-full pl-2 rounded-[15px] border border-[#CACACA]
-        placeholder:text-[12px] placeholder:font-[400] placeholder:text-[#E6E6F0] text-[#E6E6F0] bg-white/10 backdrop-blur-[28.9px] px-3 h-full"
+        className={`flex items-center p-0 w-full pl-2 rounded-[15px] border border-[#CACACA]
+        placeholder:text-[12px] placeholder:font-[400] placeholder:text-[#E6E6F0] ${
+          placeholderText ? placeholderText : "text-[#E6E6F0]"
+        } bg-white/10 backdrop-blur-[28.9px] px-3 h-full`}
       >
         <div className="w-[20%] ml-2 mb-[1px]">
           {/* Country Dropdown */}
           <select
             value={selected.iso2}
             onChange={handleCountryChange}
-            className="bg-transparent text-white text-sm outline-none w-[25%]"
+            className={`bg-transparent ${
+              placeholderText ? placeholderText : "text-white"
+            } text-sm outline-none w-[25%]`}
           >
             {countries.map((c) => (
               <option

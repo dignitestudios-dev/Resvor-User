@@ -7,36 +7,44 @@ import { useFormik } from "formik";
 import { changPasswordValues } from "../../init/app/appValues";
 import { changePasswordSchema } from "../../schema/app/appSchema";
 import PhoneInput from "../auth/PhoneInput";
-import { phoneFormatter } from "../../lib/helpers";
+// import { phoneFormatter } from "../../lib/helpers";
 import TagsInputField from "../onBoarding/TagsInputField";
 import { useState } from "react";
 import { binIcon } from "../../assets/export";
 import TagsModal from "../onBoarding/TagsModal";
+import LoungeSelectField from "../global/LoungeSelectField";
 
 const EditGuestModal = ({ onClose, guestData }) => {
   const [dateModalData, setDateModalData] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const closeModal = () => setModalIsOpen(false);
 
-  const { values, handleBlur, handleChange, errors, touched, handleSubmit } =
-    useFormik({
-      initialValues: {
-        name: guestData?.name || "",
-        email: guestData?.email || "",
-        number: guestData?.phone || "",
-        lounge: guestData?.lounge || "",
-        ...changPasswordValues,
-      },
-      validationSchema: changePasswordSchema,
-      onSubmit: async (values) => {
-        console.log("🚀 ~ EditGuestModal ~ values:", values);
-        onClose();
-      },
-    });
+  const {
+    values,
+    handleBlur,
+    handleChange,
+    errors,
+    touched,
+    setFieldValue,
+    handleSubmit,
+  } = useFormik({
+    initialValues: {
+      name: guestData?.name || "",
+      email: guestData?.email || "",
+      number: guestData?.phone || "",
+      lounge: guestData?.lounge || "",
+      ...changPasswordValues,
+    },
+    validationSchema: changePasswordSchema,
+    onSubmit: async (values) => {
+      console.log("🚀 ~ EditGuestModal ~ values:", values);
+      onClose();
+    },
+  });
 
   return (
     <div className="fixed inset-0 bg-[#0A150F80] z-50 flex items-center justify-center">
-      <div className="bg-white rounded-[12px] w-[490px] max-w-[95%] pb-10 overflow-y-auto">
+      <div className="bg-white rounded-[12px] h-[630px] w-[490px] max-w-[95%] pb-10 overflow-y-auto">
         <div className="flex justify-between items-center px-8 pt-4 border-b border-b-[#00000033]">
           <h2 className="text-[28px] font-bold mb-4">Edit Entry</h2>
           <div onClick={onClose} className="cursor-pointer">
@@ -77,7 +85,7 @@ const EditGuestModal = ({ onClose, guestData }) => {
               Phone Number
             </label>
             <PhoneInput
-              value={phoneFormatter(values.number)}
+              value={values.number}
               id={"number"}
               name={"number"}
               onChange={handleChange}
@@ -85,6 +93,7 @@ const EditGuestModal = ({ onClose, guestData }) => {
               error={errors.number}
               touched={touched.number}
               autoComplete="off"
+              placeholderText={"text-black"}
             />
             <div>
               <label className="block text-[14px] font-[500] text-[#181818] mb-2">
@@ -113,17 +122,23 @@ const EditGuestModal = ({ onClose, guestData }) => {
                 </div>
               )}
             </div>
-            <InputField
+            <LoungeSelectField
               label="Lounge Name"
-              placeholder="Lounge Name"
-              id="lounge"
+              placeholder="Search lounge..."
               name="lounge"
               value={values.lounge}
-              onChange={handleChange}
+              onChange={(value) => setFieldValue("lounge", value)}
               onBlur={handleBlur}
               error={errors.lounge}
               touched={touched.lounge}
-              maxLength={50}
+              options={[
+                "Sky Lounge",
+                "Blue Moon Lounge",
+                "Rooftop Vibes",
+                "Elite Club",
+                "Sunset Terrace",
+                "Urban Nights",
+              ]}
             />
           </div>
         </form>

@@ -15,7 +15,7 @@ const LoungeCard = ({ position = null, item, key }) => {
       key={key}
       onClick={() => navigate("/app/lounge-detail")}
       className="rounded-[24px] p-4 bg-white relative cursor-pointer"
-      style={{ boxShadow: "6px 6px 54px 0px #00000014" }}
+      style={{ boxShadow: "0px 0px 4px 0px rgba(0, 0, 0, 0.1)" }}
     >
       <div>
         <img
