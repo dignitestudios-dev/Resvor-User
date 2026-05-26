@@ -2,12 +2,7 @@ export const personalDetailValues = {
   profile: null,
   userImage: null,
   fullName: "",
-  dobDate: {
-    day: "",
-    month: "",
-    year: "",
-  },
-  specialDates: [],
+  specialDatesData: null,
   location: "",
 };
 
