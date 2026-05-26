@@ -10,23 +10,38 @@ import { signUpSchema } from "../../schema/authentication/authSchema";
 import { signUpValues } from "../../init/authentication/authValues";
 import PhoneInput from "../auth/PhoneInput";
 import { useState } from "react";
+import { useUserDetails } from "../../hooks/api/Post";
+import { ErrorToast } from "../global/Toaster";
 // import CountrySelect from "./CountrySelect";
+import { phoneFormatter } from "./../../lib/helpers";
 
 const CreateAccount = ({ handleNext, setEmail }) => {
   // const [country, setCountry] = useState("");
   const [acceptedPolicy, setAcceptedPolicy] = useState(false);
 
   const navigate = useNavigate();
+
+  // eslint-disable-next-line no-unused-vars
+  const userDetailsMutation = useUserDetails();
+
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
       initialValues: signUpValues,
       validationSchema: signUpSchema,
       validateOnChange: true,
       validateOnBlur: true,
-      onSubmit: async (values, action) => {
-        console.log("🚀 ~ CreateAccount ~ action:", action);
-        setEmail(values?.email);
-        handleNext();
+      onSubmit: async (values) => {
+        try {
+          const response = await userDetailsMutation.mutateAsync(values);
+          console.log("🚀 ~ CreateAccount ~ response:", response);
+          setEmail(values.email);
+          handleNext();
+        } catch (error) {
+          console.error(error);
+          handleNext();
+
+          ErrorToast("Something went wrong. Please try again.");
+        }
 
         // Use the loading state to show loading spinner
         // Use the response if you want to perform any specific functionality
@@ -84,7 +99,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
 
             <PhoneInput
               label={"Phone Number"}
-              value={values.number}
+              value={phoneFormatter(values.number)}
               id={"number"}
               name={"number"}
               onChange={handleChange}

@@ -10,10 +10,14 @@ import { FaArrowLeftLong } from "react-icons/fa6";
 import TagsModal from "./TagsModal";
 import { personalDetailValues } from "../../init/onBoarding/onBoardValues";
 import { personalDetailSchema } from "../../schema/onBoarding/onBoardSchema";
+import { ErrorToast } from "../global/Toaster";
 
 const PersonalDetails = ({ handleNext, handlePrevious }) => {
-  const [dateModalData, setDateModalData] = useState("");
+  // const [dateModalData, setDateModalData] = useState("");
+  const [fieldError, setFieldError] = useState("");
+  console.log("🚀 ~ PersonalDetails ~ fieldError:", fieldError);
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [imageError, setImageError] = useState("");
   const closeModal = () => setModalIsOpen(false);
 
   const {
@@ -32,6 +36,14 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
     onSubmit: async (values, action) => {
       console.log("🚀 ~ CreateAccount ~ action:", action);
       console.log("🚀 ~ CreateAccount ~ values:", values);
+
+      if (
+        !values?.specialDatesData?.dobDate?.day ||
+        !values?.specialDatesData?.dobDate?.month
+      ) {
+        setFieldError("specialDatesData", "Birthday is required");
+        return;
+      }
       handleNext();
 
       // Use the loading state to show loading spinner
@@ -41,10 +53,59 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
   });
   console.log("🚀 ~ PersonalDetails ~ errors:", errors);
 
-  const handleFileChange = (e) => {
+  const validateImageResolution = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      const img = new Image();
+
+      reader.onload = (e) => {
+        img.onload = () => {
+          if (img.width >= 215 && img.height >= 215) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        };
+        img.onerror = () => resolve(false);
+        img.src = e.target.result;
+      };
+
+      reader.onerror = () => resolve(false);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (e) => {
     const file = e.currentTarget.files?.[0];
+    setImageError("");
+
     if (file) {
-      // set file in Formik state
+      // Check file type
+      if (!["image/jpeg", "image/png"].includes(file.type)) {
+        const errorMsg = "Only JPEG and PNG formats are allowed";
+        setImageError(errorMsg);
+        ErrorToast(errorMsg);
+        return;
+      }
+
+      // Check file size (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        const errorMsg = "File size must not exceed 10MB";
+        setImageError(errorMsg);
+        ErrorToast(errorMsg);
+        return;
+      }
+
+      // Check image resolution (215x215)
+      const isValidResolution = await validateImageResolution(file);
+      if (!isValidResolution) {
+        const errorMsg = "Image resolution must be at least 215x215";
+        setImageError(errorMsg);
+        ErrorToast(errorMsg);
+        return;
+      }
+
+      // If all validations pass, set file in Formik state
       setFieldValue("profile", file);
       // set preview separately
       setFieldValue("userImage", URL.createObjectURL(file));
@@ -88,7 +149,10 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
                   />
                 </span>
               </p>
-              {touched.profile && errors.profile && (
+              {imageError && (
+                <p className="text-red-600 text-xs mt-1">{imageError}</p>
+              )}
+              {touched.profile && errors.profile && !imageError && (
                 <p className="text-red-600 text-xs mt-1">{errors.profile}</p>
               )}
             </div>
@@ -115,25 +179,57 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
             </label>
 
             <TagsInputField setModalIsOpen={setModalIsOpen} />
-            {dateModalData && (
-              <div
-                className={`flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5`}
-              >
-                <div className="flex flex-wrap py-1 pl-4 w-[80%] text-[#FFFFFF] font-thin text-[14px]">
-                  Date of Birth: {dateModalData?.dobDate?.day}{" "}
-                  {dateModalData?.dobDate?.month} {dateModalData?.dobDate?.year}
-                </div>
-                <div className="flex items-start h-full justify-end w-[20%]">
-                  <button
-                    type="button"
-                    onClick={() => setDateModalData("")}
-                    className="py-1.5 rounded-xl"
-                  >
-                    <img src={binIcon} alt="bin" className="pr-2 w-7" />
-                  </button>
+            {values?.specialDatesData && (
+              <div className="flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5">
+                <div className="flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5 w-full">
+                  <div className="flex flex-wrap py-1 pl-4 w-[80%] text-[#FFFFFF] font-thin text-[14px]">
+                    Date of Birth: {values?.specialDatesData?.dobDate?.day}{" "}
+                    {values?.specialDatesData?.dobDate?.month}{" "}
+                    {values?.specialDatesData?.dobDate?.year}
+                  </div>
+
+                  <div className="flex items-start h-full justify-end w-[20%]">
+                    <button
+                      type="button"
+                      onClick={() => setFieldValue("specialDatesData", null)}
+                      className="py-1.5 rounded-xl"
+                    >
+                      <img src={binIcon} alt="bin" className="pr-2 w-7" />
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
+
+            {errors.specialDatesData && (
+              <p className="text-red-600 text-[12px] mt-1">
+                {errors.specialDatesData}
+              </p>
+            )}
+            {/* {dateModalData && (
+              <div
+                className={`flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5`}
+              >
+                <div
+                  className={`flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5`}
+                >
+                  <div className="flex flex-wrap py-1 pl-4 w-[80%] text-[#FFFFFF] font-thin text-[14px]">
+                    Date of Birth: {dateModalData?.dobDate?.day}{" "}
+                    {dateModalData?.dobDate?.month}{" "}
+                    {dateModalData?.dobDate?.year}
+                  </div>
+                  <div className="flex items-start h-full justify-end w-[20%]">
+                    <button
+                      type="button"
+                      onClick={() => setDateModalData("")}
+                      className="py-1.5 rounded-xl"
+                    >
+                      <img src={binIcon} alt="bin" className="pr-2 w-7" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )} */}
           </div>
           <div className=" w-full">
             <AuthInput
@@ -143,12 +239,12 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
               type={"text"}
               id={"location"}
               name={"location"}
-              maxLength={30}
-              value={values.email}
+              maxLength={100}
+              value={values.location}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={errors?.email}
-              touched={touched?.email}
+              error={errors?.location}
+              touched={touched?.location}
             />
           </div>
           <div>
@@ -165,7 +261,8 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
         <TagsModal
           isOpen={modalIsOpen}
           onClose={closeModal}
-          setDateModalData={setDateModalData}
+          setFieldValue={setFieldValue}
+          setFieldError={setFieldError}
         />
       )}
     </div>

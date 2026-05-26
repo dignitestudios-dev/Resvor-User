@@ -6,7 +6,7 @@ import DateInput from "../auth/DateInput";
 import AuthInput from "../auth/AuthInput";
 import { useState } from "react";
 
-const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
+const TagsModal = ({ isOpen, onClose, setFieldValue, setFieldError }) => {
   const [specialDates, setSpecialDates] = useState([]);
   const [dobDate, setDobDate] = useState({ day: "", month: "", year: "" });
 
@@ -41,7 +41,24 @@ const TagsModal = ({ isOpen, onClose, setDateModalData }) => {
   };
 
   const handleDateData = () => {
-    setDateModalData({ dobDate: dobDate, specialDates: specialDates });
+    // setDateModalData({ dobDate: dobDate, specialDates: specialDates });
+    // onClose();
+    if (!dobDate.day || !dobDate.month) {
+      setFieldError("specialDatesData", "Birthday is required");
+      return;
+    }
+
+    const payload = {
+      dobDate,
+      specialDates,
+    };
+
+    // save into formik
+    setFieldValue("specialDatesData", payload);
+
+    // clear error immediately
+    setFieldError("specialDatesData", "");
+
     onClose();
   };
 

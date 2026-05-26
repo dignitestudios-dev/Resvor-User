@@ -8,10 +8,7 @@ export const personalDetailValues = {
     year: "",
   },
   specialDates: [],
-  location: {
-    lat: "",
-    lng: "",
-  },
+  location: "",
 };
 
 export const preferencesValues = {
