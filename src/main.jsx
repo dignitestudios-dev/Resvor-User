@@ -4,13 +4,17 @@ import "./index.css";
 import App from "./App.jsx";
 import { BrowserRouter } from "react-router";
 import ReactQueryProvider from "./providers/ReactQueryProvider.jsx";
+import { ToasterContainer } from "./components/global/Toaster.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ReactQueryProvider>
+      <ToasterContainer />
       <BrowserRouter>
+      
         <App />
       </BrowserRouter>
+
     </ReactQueryProvider>
   </StrictMode>,
 );

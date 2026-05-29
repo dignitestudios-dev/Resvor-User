@@ -1,58 +1,12 @@
 import axios from "../../axios";
-import { useMutation } from "@tanstack/react-query";
-import { processError } from "../../lib/utils";
-
-// Generic mutation function for POST requests
-const postRequest = async ({
-  url,
-  data,
-  isFormData = false,
-  formData = null,
-}) => {
-  const response = await axios.post(url, isFormData ? formData : data);
-  return response?.data;
-};
-
-// Generic mutation hook factory
-export const usePostMutation = (onSuccess, onError) => {
-  return useMutation({
-    mutationFn: postRequest,
-    onSuccess: (data) => {
-      if (typeof onSuccess === "function") {
-        onSuccess(data);
-      }
-    },
-    onError: (error) => {
-      processError(error);
-      if (typeof onError === "function") {
-        onError(error);
-      }
-    },
-  });
-};
 
 // Example: User Details Mutation
-export const submitUserDetails = async (payload) => {
-  const { data } = await axios.post("/auth/userDetails", payload);
+export const submitSignUp = async (payload) => {
+  
+  const { data } = await axios.post("/auth/onboarding/register", payload);
   return data;
 };
 
-export const useUserDetails = (onSuccess, onError) => {
-  return useMutation({
-    mutationFn: submitUserDetails,
-    onSuccess: (data) => {
-      if (typeof onSuccess === "function") {
-        onSuccess(data);
-      }
-    },
-    onError: (error) => {
-      processError(error);
-      if (typeof onError === "function") {
-        onError(error);
-      }
-    },
-  });
-};
 
 // Example: Login Mutation
 export const submitLogin = async (credentials) => {
@@ -60,42 +14,29 @@ export const submitLogin = async (credentials) => {
   return data;
 };
 
-export const useLogin = (onSuccess, onError) => {
-  return useMutation({
-    mutationFn: submitLogin,
-    onSuccess: (data) => {
-      if (typeof onSuccess === "function") {
-        onSuccess(data);
-      }
-    },
-    onError: (error) => {
-      processError(error);
-      if (typeof onError === "function") {
-        onError(error);
-      }
-    },
-  });
-};
 
-// Example: Sign Up Mutation
-export const submitSignUp = async (payload) => {
-  const { data } = await axios.post("/auth/signup", payload);
+export const submitVerifyEmail = async (payload) => {
+  
+  const { data } = await axios.post("/auth/onboarding/verify-email", payload);
   return data;
 };
 
-export const useSignUp = (onSuccess, onError) => {
-  return useMutation({
-    mutationFn: submitSignUp,
-    onSuccess: (data) => {
-      if (typeof onSuccess === "function") {
-        onSuccess(data);
-      }
-    },
-    onError: (error) => {
-      processError(error);
-      if (typeof onError === "function") {
-        onError(error);
-      }
-    },
-  });
+export const submitVerifyPhone = async (payload) => {
+  
+  const { data } = await axios.post("/auth/onboarding/verify-mobile-number", payload);
+  return data;
 };
+
+export const submitPersonalDetails = async (payload) => {
+  const { data } = await axios.post("/auth/onboarding/profile", payload);
+  return data;
+};
+
+// api/onboarding.js
+export const submitPreferences = async (payload) => {
+  const { data } = await axios.post("/auth/onboarding/preferences", payload);
+  return data;
+};
+
+// Example: Sign Up Mutation
+

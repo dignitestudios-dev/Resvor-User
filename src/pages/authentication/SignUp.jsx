@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoCall, IoMail } from "react-icons/io5";
 import { FaIdCard } from "react-icons/fa";
 import { IoMdPerson } from "react-icons/io";
@@ -12,13 +12,29 @@ import PersonalDetails from "./../../components/onBoarding/PersonalDetails";
 import Preferences from "../../components/onBoarding/Preferences";
 import { FaClipboardList } from "react-icons/fa";
 import Subscription from "../../components/onBoarding/Subscription";
+import { mapOnboardingStepToIndex } from "../../static/onboardingStepMapper";
+import { useAuthMe } from "../../hooks/queries/useQueries";
 export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0);
+
+  const { data: authData, isLoading } = useAuthMe(); // 👈 fetch current step
+
+  // 👇 once API responds, set the correct step
+  useEffect(() => {
+    if (authData?.success) {
+      const stepIndex = mapOnboardingStepToIndex(authData.data.onboardingStep);
+      setCurrentStep(stepIndex);
+    } else if (!isLoading) {
+      setCurrentStep(0); // fallback if API fails
+    }
+  }, [authData, isLoading]);
+
   const providerSteps = [
     { icon: IoMdPerson, title: "Your Details" },
     { icon: IoMail, title: "Verify Email" },
-    { icon: IoCall, title: "Verify Number" },
     { icon: FaIdCard, title: "Personal details" },
+        { icon: IoCall, title: "Verify Number" },
+
     { icon: HiCalendarDateRange, title: "Preferences" },
     { icon: FaClipboardList, title: "Subscription" },
   ];
@@ -58,14 +74,15 @@ export default function SignUp() {
               handleNext={handleNext}
               handlePrevious={handlePrevious}
             />
+         
           ) : currentStep === 2 ? (
-            <VerifyPhone
-              email={email}
+            <PersonalDetails
               handleNext={handleNext}
               handlePrevious={handlePrevious}
             />
-          ) : currentStep === 3 ? (
-            <PersonalDetails
+             ) : currentStep === 3 ? (
+            <VerifyPhone
+              email={email}
               handleNext={handleNext}
               handlePrevious={handlePrevious}
             />

@@ -9,22 +9,19 @@ import { useNavigate } from "react-router";
 import { signUpSchema } from "../../schema/authentication/authSchema";
 import { signUpValues } from "../../init/authentication/authValues";
 import PhoneInput from "../auth/PhoneInput";
-import { useState } from "react";
-import { useUserDetails } from "../../hooks/api/Post";
 import { ErrorToast } from "../global/Toaster";
 // import CountrySelect from "./CountrySelect";
 import { phoneFormatter } from "./../../lib/helpers";
+import Cookies from "js-cookie";
+import { useSignUp } from "../../hooks/mutations/OnboardingMutations";
 
 const CreateAccount = ({ handleNext, setEmail }) => {
-  // const [country, setCountry] = useState("");
-  const [acceptedPolicy, setAcceptedPolicy] = useState(false);
-
   const navigate = useNavigate();
 
   // eslint-disable-next-line no-unused-vars
-  const userDetailsMutation = useUserDetails();
+  const signupMutation = useSignUp();
 
-  const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
+  const { values, handleBlur, handleChange, handleSubmit, errors, touched, isValid } =
     useFormik({
       initialValues: signUpValues,
       validationSchema: signUpSchema,
@@ -32,20 +29,26 @@ const CreateAccount = ({ handleNext, setEmail }) => {
       validateOnBlur: true,
       onSubmit: async (values) => {
         try {
-          const response = await userDetailsMutation.mutateAsync(values);
-          console.log("🚀 ~ CreateAccount ~ response:", response);
-          setEmail(values.email);
-          handleNext();
+          const data = {
+            email: values.email,
+            password: values.password,
+          };
+
+          const response = await signupMutation.mutateAsync(data);
+          
+          if (response?.success) {
+            // Server automatically sets HTTP-only cookie
+            // No need to manually store token
+            Cookies.set("email", values.email, { expires: 1 });
+            setEmail(values.email);
+            handleNext();
+          } else {
+            ErrorToast(response?.message || "Something went wrong. Please try again.");
+          }
         } catch (error) {
-          console.error(error);
-          handleNext();
-
-          ErrorToast("Something went wrong. Please try again.");
+          console.error("Signup error:", error);
+          ErrorToast(error?.response?.data?.message || "Something went wrong. Please try again.");
         }
-
-        // Use the loading state to show loading spinner
-        // Use the response if you want to perform any specific functionality
-        // Otherwise you can just pass a callback that will process everything
       },
     });
 
@@ -63,7 +66,8 @@ const CreateAccount = ({ handleNext, setEmail }) => {
       <form onSubmit={handleSubmit}>
         <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-10">
           {/* <div className=" w-full">
-            <AuthInput
+            <AuthInput3
+            p 
               label={"Name"}
               text={"Name"}
               placeholder={"Enter your name"}
@@ -97,7 +101,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
           <div>
             {/* <CountrySelect value={country} onChange={setCountry} /> */}
 
-            <PhoneInput
+            {/* <PhoneInput
               label={"Phone Number"}
               value={phoneFormatter(values.number)}
               id={"number"}
@@ -107,7 +111,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
               error={errors.number}
               touched={touched.number}
               autoComplete="off"
-            />
+            /> */}
           </div>
           <div className=" w-full">
             <AuthInput
@@ -136,7 +140,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
               name={"confPassword"}
               showToggle={true}
               maxLength={250}
-              value={values.confPassword}
+              // value={values.confPassword}
               onChange={handleChange}
               onBlur={handleBlur}
               error={errors?.confPassword}
@@ -147,31 +151,45 @@ const CreateAccount = ({ handleNext, setEmail }) => {
         <div className="mt-6 flex items-start gap-2 text-[12px] text-[#CACACA]">
           <input
             type="checkbox"
-            checked={acceptedPolicy}
-            onChange={() => setAcceptedPolicy(!acceptedPolicy)}
+            checked={values.acceptedPolicy}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            id="acceptedPolicy"
+            name="acceptedPolicy"
             className="mt-[2px] h-3 w-3 cursor-pointer accent-indigo-600"
           />
 
-          <span>
-            I accept the{" "}
-            <span
-              className="text-[#E6E6E6] font-semibold cursor-pointer"
-              onClick={() => navigate("/auth/terms")}
-            >
-              Terms & Conditions
-            </span>{" "}
-            and{" "}
-            <span
-              className="text-[#E6E6E6] font-semibold cursor-pointer"
-              onClick={() => navigate("/auth/privacy")}
-            >
-              Privacy Policy
+          <div className="flex flex-col gap-1 flex-1">
+            <span>
+              I accept the{" "}
+              <span
+                className="text-[#E6E6E6] font-semibold cursor-pointer hover:underline"
+                onClick={() => navigate("/auth/terms")}
+              >
+                Terms & Conditions
+              </span>{" "}
+              and{" "}
+              <span
+                className="text-[#E6E6E6] font-semibold cursor-pointer hover:underline"
+                onClick={() => navigate("/auth/privacy")}
+              >
+                Privacy Policy
+              </span>
             </span>
-          </span>
+            {errors.acceptedPolicy && touched.acceptedPolicy && (
+              <p className="text-red-500 text-[11px] font-medium mb-2">
+                {errors.acceptedPolicy}
+              </p>
+            )}
+          </div>
         </div>
         <div className="mt-1 ">
           <div className="xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-1 mb-4">
-            <AuthButton text={"Sign Up"} disabled={!acceptedPolicy} />
+            <AuthButton 
+              text={"Sign Up"} 
+              disabled={!isValid} 
+              loading={signupMutation.isPending}
+            />
           </div>
         </div>
       </form>

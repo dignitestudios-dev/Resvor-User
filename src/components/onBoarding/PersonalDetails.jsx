@@ -11,6 +11,9 @@ import TagsModal from "./TagsModal";
 import { personalDetailValues } from "../../init/onBoarding/onBoardValues";
 import { personalDetailSchema } from "../../schema/onBoarding/onBoardSchema";
 import { ErrorToast } from "../global/Toaster";
+import { usePersonalDetails } from "../../hooks/mutations/OnboardingMutations";
+import PhoneInput from "../auth/PhoneInput";
+import { phoneFormatter, phoneToE164 } from "../../lib/helpers";
 
 const PersonalDetails = ({ handleNext, handlePrevious }) => {
   // const [dateModalData, setDateModalData] = useState("");
@@ -19,6 +22,8 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [imageError, setImageError] = useState("");
   const closeModal = () => setModalIsOpen(false);
+  
+  const personalDetailsMutation = usePersonalDetails();
 
   const {
     values,
@@ -44,11 +49,30 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
         setFieldError("specialDatesData", "Birthday is required");
         return;
       }
-      handleNext();
 
-      // Use the loading state to show loading spinner
-      // Use the response if you want to perform any specific functionality
-      // Otherwise you can just pass a callback that will process everything
+      try {
+        const payload = {
+          fullName: values.fullName,
+          phoneNumber: phoneToE164(values.number) || "",
+          specialDates: [
+            {
+              occasion: "DOB",
+              date: `${values.specialDatesData.dobDate.month}-${values.specialDatesData.dobDate.day}-${values.specialDatesData.dobDate.year}`
+            }
+          ]
+        };
+
+        const response = await personalDetailsMutation.mutateAsync(payload);
+
+        if (response?.success) {
+          handleNext();
+        } else {
+          ErrorToast(response?.message || "Something went wrong. Please try again.");
+        }
+      } catch (error) {
+        console.error("Personal details error:", error);
+        ErrorToast(error?.response?.data?.message || "Something went wrong. Please try again.");
+      }
     },
   });
   console.log("🚀 ~ PersonalDetails ~ errors:", errors);
@@ -130,7 +154,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
       <form onSubmit={handleSubmit}>
         <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-10">
           <div className="flex items-center xl:w-[500px] lg:w-[400px] md:w-[500px] w-[320px]">
-            <div className="md:w-[80px] w-[60px] md:h-[80px] h-[60px] rounded-full overflow-hidden">
+            {/* <div className="md:w-[80px] w-[60px] md:h-[80px] h-[60px] rounded-full overflow-hidden">
               <img
                 className="object-cover md:w-[80px] w-[60px] md:h-[80px] h-[60px]"
                 src={values.userImage ? values.userImage : uploadIcon}
@@ -155,7 +179,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
               {touched.profile && errors.profile && !imageError && (
                 <p className="text-red-600 text-xs mt-1">{errors.profile}</p>
               )}
-            </div>
+            </div> */}
           </div>
           <div className=" w-full">
             <AuthInput
@@ -173,6 +197,17 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
               touched={touched?.fullName}
             />
           </div>
+          <PhoneInput
+              label={"Phone Number"}
+              value={phoneFormatter(values.number)}
+              id={"number"}
+              name={"number"}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.number}
+              touched={touched.number}
+              autoComplete="off"
+            />
           <div>
             <label className="block text-[14px] font-[500] text-white mb-2">
               Add Birthday and Special Dates
@@ -253,7 +288,10 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
         </div>
         <div className="mt-6 ">
           <div className="xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-1 mb-4">
-            <AuthButton text={"Next"} />
+            <AuthButton 
+              text={"Next"} 
+              loading={personalDetailsMutation.isPending}
+            />
           </div>
         </div>
       </form>

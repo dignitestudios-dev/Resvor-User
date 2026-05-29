@@ -12,9 +12,15 @@ export const updatePasswordValues = {
   confPassword: "",
 };
 
-export const signUpValues = {
-  email: "",
-  number: "",
+export const verifyEmailValues = {
   password: "",
   confPassword: "",
+};
+
+export const signUpValues = {
+  email: "",
+  // number: "",
+  password: "",
+  confPassword: "",
+  acceptedPolicy: false,
 };

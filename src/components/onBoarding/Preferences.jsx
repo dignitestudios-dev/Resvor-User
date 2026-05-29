@@ -10,143 +10,146 @@ import { FaArrowLeftLong } from "react-icons/fa6";
 import { useFormik } from "formik";
 import { preferencesSchema } from "../../schema/onBoarding/onBoardSchema";
 import { preferencesValues } from "../../init/onBoarding/onBoardValues";
+import { usePreferences } from "../../hooks/mutations/OnboardingMutations";
 
 const Preferences = ({ handleNext, handlePrevious }) => {
-  const [activeCategories, setActiveCategories] = useState([]);
+  const preferencesMutation = usePreferences();
 
-  const toggleCategory = (category) => {
-    if (activeCategories.includes(category)) {
-      setActiveCategories(activeCategories.filter((cat) => cat !== category));
-      setFieldValue(
-        "preferences",
-        activeCategories.filter((c) => c !== category)
-      );
-    } else {
-      setActiveCategories([...activeCategories, category]);
-      setFieldValue("preferences", [...activeCategories, category]);
-    }
+  // 👇 3 separate states instead of one shared activeCategories
+  const [activeMusicGenres, setActiveMusicGenres] = useState([]);
+  const [activeLoungeTypes, setActiveLoungeTypes] = useState([]);
+  const [activeExperiences, setActiveExperiences] = useState([]);
+
+  // 👇 reusable toggle that updates both local state and formik field
+  const toggleItem = (item, activeList, setActiveList, fieldName) => {
+    const updated = activeList.includes(item)
+      ? activeList.filter((i) => i !== item)
+      : [...activeList, item];
+    setActiveList(updated);
+    setFieldValue(fieldName, updated);
   };
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   console.log("handle submit call");
-  //   handleNext();
-  // };
-
   const { handleSubmit, setFieldValue, errors, touched } = useFormik({
-    initialValues: preferencesValues,
+    initialValues: preferencesValues, // { musicGenres: [], loungeTypes: [], preferredExperiences: [] }
     validationSchema: preferencesSchema,
     validateOnChange: true,
     validateOnBlur: true,
-    onSubmit: async (values, action) => {
-      console.log("🚀 ~ CreateAccount ~ action:", action);
-      console.log("🚀 ~ CreateAccount ~ values:", values);
-      handleNext();
+    onSubmit: async (values) => {
+      try {
+        const payload = {
+          musicGenres: values.musicGenres,
+          loungeTypes: values.loungeTypes,
+          preferredExperiences: values.preferredExperiences,
+        };
+        console.log("🚀 ~ payload:", payload); // verify here before API call
 
-      // Use the loading state to show loading spinner
-      // Use the response if you want to perform any specific functionality
-      // Otherwise you can just pass a callback that will process everything
+        const response = await preferencesMutation.mutateAsync(payload);
+
+        if (response?.success) {
+          handleNext();
+        } else {
+          ErrorToast(response?.message || "Something went wrong. Please try again.");
+        }
+      } catch (error) {
+        ErrorToast(error?.response?.data?.message || "Something went wrong. Please try again.");
+      }
     },
   });
 
+  console.log("errors----> ", errors)
+
   return (
-    <div className="flex flex-col justify-center items-center h-auto ">
-      <div className="flex justify-start items-center absolute top-12 left-0">
-        <button type="button" onClick={() => handlePrevious()}>
-          <FaArrowLeftLong color="white" size={24} />
-        </button>
-      </div>
-      <div className="mt-4 xxl:w-[400px] xxl:ml-12 text-center space-y-4 max-w-[440px] px-4">
-        <p className="xxl:text-[48px] text-[32px] text-[#E6E6E6] font-[600] capitalize">
-          Tell Us What You’re Into
-        </p>
-        <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] ">
-          We’ll personalize your lounge suggestions, event invites, and offers
-          based on your vibe.
-        </p>
-      </div>
+    <div className="flex flex-col justify-center items-center h-auto">
+      ...
       <form onSubmit={handleSubmit}>
+
+        {/* Music Genres */}
         <div className="mt-4 max-w-[440px]">
-          <label className="block text-[16px] font-[500] text-white mb-1">
-            Lounge Types
-          </label>
-          <label className="block text-[14px] font-[500] text-white mb-2">
-            What kind of lounges do you prefer?
-          </label>
+          <label className="block text-[16px] font-[500] text-white mb-1">Music Genres</label>
+          <label className="block text-[14px] font-[500] text-white mb-2">What kind of music do you prefer?</label>
           <div className="py-4 px-4 flex flex-wrap gap-3 w-full text-center justify-start rounded-[13px] bg-[#EFEFEF1A] border border-[#CACACA]">
             {musicPreferences.map((music, index) => (
               <button
                 type="button"
                 key={index}
-                onClick={() => toggleCategory(music)}
-                className={` h-[28px] px-2 text-[12px] rounded-full font-medium transition-all duration-200 ${
-                  activeCategories.includes(music)
-                    ? "bg-white text-[#181818] "
-                    : "bg-[#99999926] text-[white] hover:bg-[#8a898926]"
+                onClick={() => toggleItem(music, activeMusicGenres, setActiveMusicGenres, "musicGenres")} // 👈
+                className={`h-[28px] px-2 text-[12px] rounded-full font-medium transition-all duration-200 ${
+                  activeMusicGenres.includes(music) // 👈
+                    ? "bg-white text-[#181818]"
+                    : "bg-[#99999926] text-white hover:bg-[#8a898926]"
                 }`}
               >
                 {music}
               </button>
             ))}
           </div>
+          {touched.musicGenres && errors.musicGenres && (
+  <p className="text-red-600 text-xs mt-1">{errors.musicGenres}</p>
+)}
         </div>
 
+        {/* Lounge Types */}
         <div className="mt-4 max-w-[440px]">
-          <label className="block text-[16px] font-[500] text-white mb-1">
-            Lounge Types
-          </label>
-          <label className="block text-[14px] font-[500] text-white mb-2">
-            What kind of lounges do you prefer?
-          </label>
-          <div className="py-4 px-4 flex flex-wrap gap-3 w-full text-center justify-start rounded-[13px] bg-[#EFEFEF1A] border border-[#CACACA] ">
-            {loungePreferences.map((music, index) => (
+          <label className="block text-[16px] font-[500] text-white mb-1">Lounge Types</label>
+          <label className="block text-[14px] font-[500] text-white mb-2">What kind of lounges do you prefer?</label>
+          <div className="py-4 px-4 flex flex-wrap gap-3 w-full text-center justify-start rounded-[13px] bg-[#EFEFEF1A] border border-[#CACACA]">
+            {loungePreferences.map((lounge, index) => (
               <button
                 type="button"
                 key={index}
-                onClick={() => toggleCategory(music)}
-                className={` h-[28px] px-2 text-[12px] rounded-full font-medium transition-all duration-200 ${
-                  activeCategories.includes(music)
-                    ? "bg-white text-[#181818] "
-                    : "bg-[#99999926] text-[white] hover:bg-[#8a898926]"
+                onClick={() => toggleItem(lounge, activeLoungeTypes, setActiveLoungeTypes, "loungeTypes")} // 👈
+                className={`h-[28px] px-2 text-[12px] rounded-full font-medium transition-all duration-200 ${
+                  activeLoungeTypes.includes(lounge) // 👈
+                    ? "bg-white text-[#181818]"
+                    : "bg-[#99999926] text-white hover:bg-[#8a898926]"
                 }`}
               >
-                {music}
+                {lounge}
               </button>
             ))}
           </div>
+          {touched.loungeTypes && errors.loungeTypes && (
+  <p className="text-red-600 text-xs mt-1">{errors.loungeTypes}</p>
+)}
+
         </div>
 
+        {/* Preferred Experiences */}
         <div className="mt-4 max-w-[440px]">
-          <label className="block text-[16px] font-[500] text-white mb-1">
-            Preferred Experiences
-          </label>
-          <label className="block text-[14px] font-[500] text-white mb-2">
-            What Experiences are you interested in?
-          </label>
-          <div className="py-4 px-4 text-[12px] flex flex-wrap gap-3 w-full text-center justify-start rounded-[13px] bg-[#EFEFEF1A] border border-[#CACACA] ">
-            {experiencePreferences.map((music, index) => (
+          <label className="block text-[16px] font-[500] text-white mb-1">Preferred Experiences</label>
+          <label className="block text-[14px] font-[500] text-white mb-2">What experiences are you interested in?</label>
+          <div className="py-4 px-4 text-[12px] flex flex-wrap gap-3 w-full text-center justify-start rounded-[13px] bg-[#EFEFEF1A] border border-[#CACACA]">
+            {experiencePreferences.map((exp, index) => (
               <button
                 type="button"
                 key={index}
-                onClick={() => toggleCategory(music)}
-                className={` h-[28px] px-2 rounded-full font-medium transition-all duration-200 ${
-                  activeCategories.includes(music)
-                    ? "bg-white text-[#181818] "
-                    : "bg-[#99999926] text-[white] hover:bg-[#8a898926]"
+                onClick={() => toggleItem(exp, activeExperiences, setActiveExperiences, "preferredExperiences")} // 👈
+                className={`h-[28px] px-2 rounded-full font-medium transition-all duration-200 ${
+                  activeExperiences.includes(exp) // 👈
+                    ? "bg-white text-[#181818]"
+                    : "bg-[#99999926] text-white hover:bg-[#8a898926]"
                 }`}
               >
-                {music}
+                {exp}
               </button>
             ))}
           </div>
+          {touched.preferredExperiences && errors.preferredExperiences && (
+  <p className="text-red-600 text-xs mt-1">{errors.preferredExperiences}</p>
+)}
         </div>
+
         {touched.preferences && errors.preferences && (
           <p className="text-red-600 text-xs mt-1">{errors.preferences}</p>
         )}
 
         <div className="mt-6 w-full flex justify-center">
           <div className="xxl:w-[650px] w-[380px] mt-1 mb-4">
-            <AuthButton type="submit" text={"Add"} />
+            <AuthButton
+              type="submit"
+              text={preferencesMutation.isPending ? "Saving..." : "Add"}
+              disabled={preferencesMutation.isPending}
+            />
           </div>
         </div>
       </form>

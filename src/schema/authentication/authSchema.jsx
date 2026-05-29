@@ -109,10 +109,10 @@ export const signUpSchema = Yup.object({
       }
     ),
 
-  number: Yup.string()
-    .transform((value) => value.replace(/\D/g, "")) // Remove all non-numeric chars
-    .matches(/^[0-9]{10}$/, "Phone number must be exactly 10 digits.")
-    .required("Please enter your phone number"),
+  // number: Yup.string()
+  //   .transform((value) => value.replace(/\D/g, "")) // Remove all non-numeric chars
+  //   .matches(/^[0-9]{10}$/, "Phone number must be exactly 10 digits.")
+  //   .required("Please enter your phone number"),
 
   password: Yup.string()
     .required("Please enter your password")
@@ -129,4 +129,8 @@ export const signUpSchema = Yup.object({
   confPassword: Yup.string()
     .required("Please confirm your password")
     .oneOf([Yup.ref("password")], "Password does not match"),
+
+  acceptedPolicy: Yup.boolean()
+    .required("You must accept the Terms & Conditions and Privacy Policy")
+    .oneOf([true], "You must accept the Terms & Conditions and Privacy Policy"),
 });

@@ -26,3 +26,11 @@ export const phoneFormatter = (input) => {
 
   return cleaned;
 };
+
+// Add this utility function
+export const phoneToE164 = (formattedPhone, countryCode = "+1") => {
+  const digits = formattedPhone.replace(/\D/g, ""); // Strip all non-numeric chars
+  // Remove leading 0 if present (e.g. 03001234567 → 3001234567)
+  const normalized = digits.startsWith("0") ? digits.slice(1) : digits;
+  return `${countryCode}${normalized}`;
+};

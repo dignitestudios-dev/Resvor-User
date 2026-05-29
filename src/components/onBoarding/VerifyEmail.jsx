@@ -5,10 +5,13 @@ import { forgotLogo } from "../../assets/export";
 import TextCountDown from "./TextCountDown";
 import AuthSuccessModal from "../auth/AuthSuccessModal";
 import { FaArrowLeftLong } from "react-icons/fa6";
+import { ErrorToast } from "../global/Toaster";
+import { useVerifyEmail } from './../../hooks/mutations/OnboardingMutations';
 
 const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
   const inputs = useRef([]);
-  const [otp, setOtp] = useState(Array(5).fill(""));
+  const verifyEmailMutation = useVerifyEmail();
+  const [otp, setOtp] = useState(Array(6).fill(""));
 
   const [isActive, setIsActive] = useState(true);
   const [seconds, setSeconds] = useState(30);
@@ -50,7 +53,18 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setRequestSendModal(true);
+    try {
+      const response = await verifyEmailMutation.mutateAsync({otp:otp.join("")});
+      
+      if (response?.success) {
+        setRequestSendModal(true);
+      } else {
+        ErrorToast(response?.message || "Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      console.error("Email verification error:", err);
+      ErrorToast(err?.response?.data?.message || "Something went wrong. Please try again.");
+    }
   };
 
   const handleResendOtp = async () => {
@@ -132,7 +146,7 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
             </div>
             <div className="w-full flex justify-center pl-4 mt-4 space-y-4 ">
               <div className="w-[360px] ">
-                <AuthButton text="Verify" />
+                <AuthButton text="Verify" loading={verifyEmailMutation.isPending} />
               </div>
             </div>
             <div className="w-full flex justify-center pl-4 mt-4 space-y-4 ">

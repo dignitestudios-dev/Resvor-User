@@ -3,8 +3,9 @@ import { ErrorToast } from "./components/global/Toaster"; // Import your toaster
 import Cookies from "js-cookie";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
-export const baseUrl = "https://necessi.erdumadnan.com/api";
-// export const baseUrl = "https://155e-45-199-187-86.ngrok-free.app";
+export const baseUrl = import.meta.env.DEV 
+  ? "/api" // Use Vite proxy in development
+  : "https://35ppzgmv-3050.inc1.devtunnels.ms"; // Use direct URL in production
 
 async function getDeviceFingerprint() {
   const fp = await FingerprintJS.load();
@@ -15,48 +16,65 @@ async function getDeviceFingerprint() {
 
 const instance = axios.create({
   baseURL: baseUrl,
+  withCredentials: true, // Enable automatic HTTP-only cookie handling
   headers: {
-    devicemodel: getDeviceFingerprint(),
-    deviceuniqueid: getDeviceFingerprint(),
+    "Content-Type": "application/json",
+    Accept: "application/json",
   },
   timeout: 10000, // 10 seconds timeout
 });
 
-instance.interceptors.request.use((request) => {
-  const token = Cookies.get("token");
+instance.interceptors.request.use(async (request) => {
   if (!navigator.onLine) {
-    // No internet connection
     ErrorToast(
       "No internet connection. Please check your network and try again."
     );
-    return;
-    // return Promise.reject(new Error("No internet connection"));
+    return Promise.reject(new Error("No internet connection"));
   }
 
-  // Merge existing headers with token
+  // Ensure credentials are sent with every request
+  request.withCredentials = true;
+
+  // Get device fingerprint and add to headers
+  const fingerprint = await getDeviceFingerprint();
+  
+  // Add device headers and Content-Type
   request.headers = {
-    ...request.headers, // Keep existing headers like devicemodel and deviceuniqueid
-    Accept: "application/json, text/plain, */*",
-    ...(token && { Authorization: `Bearer ${token}` }), // Add Authorization only if token exists
+    ...request.headers,
+    "Content-Type": "application/json",
+    "devicemodel": fingerprint,
+    "deviceuniqueid": fingerprint,
   };
+
+  console.log("📤 Request:", request.url, {
+    withCredentials: request.withCredentials,
+    headers: request.headers,
+  });
 
   return request;
 });
 
 instance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log("✅ Response received:", response.config.url, {
+      status: response.status,
+      headers: response.headers,
+      data: response.data,
+    });
+    return response;
+  },
   (error) => {
+    console.error("❌ Request error:", error.config?.url, {
+      status: error.response?.status,
+      message: error.message,
+    });
+
     if (error.code === "ECONNABORTED") {
-      // Slow internet or request timeout
       ErrorToast("Your internet connection is slow. Please try again.");
     }
 
     if (error.response && error.response.status === 401) {
-      // Unauthorized error
-      Cookies.remove("token");
-      Cookies.remove("user");
       ErrorToast("Session expired. Please relogin");
-      // window.location.href = "/";s
     }
 
     return Promise.reject(error);

@@ -6,6 +6,12 @@ export const personalDetailValues = {
   location: "",
 };
 
+// export const preferencesValues = {
+//   preferences: [], // will hold selected categories
+// };
+
 export const preferencesValues = {
-  preferences: [], // will hold selected categories
+  musicGenres: [],
+  loungeTypes: [],
+  preferredExperiences: [],
 };

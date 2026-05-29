@@ -5,9 +5,12 @@ import { forgotLogo } from "../../assets/export";
 import TextCountDown from "./TextCountDown";
 import AuthSuccessModal from "../auth/AuthSuccessModal";
 import { FaArrowLeftLong } from "react-icons/fa6";
+import { useVerifyPhone } from "../../hooks/mutations/OnboardingMutations";
 
 const VerifyPhone = ({ handleNext, handlePrevious }) => {
   const inputs = useRef([]);
+    const verifyPhoneMutation = useVerifyPhone();
+  
   const [otp, setOtp] = useState(Array(6).fill(""));
 
   const [isActive, setIsActive] = useState(true);
@@ -48,10 +51,21 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setRequestSendModal(true);
-  };
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const response = await verifyPhoneMutation.mutateAsync({otp:otp.join("")});
+        
+        if (response?.success) {
+          setRequestSendModal(true);
+        } else {
+          ErrorToast(response?.message || "Something went wrong. Please try again.");
+        }
+      } catch (err) {
+        console.error("Phone verification error:", err);
+        ErrorToast(err?.response?.data?.message || "Something went wrong. Please try again.");
+      }
+    };
 
   const handleResendOtp = async () => {
     try {
@@ -131,7 +145,8 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
             </div>
             <div className="w-full flex justify-center pl-4 mt-3 space-y-4 ">
               <div className="w-[360px] ">
-                <AuthButton text="Verify" />
+                                <AuthButton text="Verify" loading={verifyPhoneMutation.isPending} />
+
               </div>
             </div>
           </div>
