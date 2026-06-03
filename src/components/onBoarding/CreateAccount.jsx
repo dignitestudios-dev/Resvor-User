@@ -32,6 +32,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
           const data = {
             email: values.email,
             password: values.password,
+            role: "user",
           };
 
           const response = await signupMutation.mutateAsync(data);

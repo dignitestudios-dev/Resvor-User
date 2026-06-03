@@ -4,6 +4,8 @@ import { forgotLogo } from "../../assets/export";
 import { useRef, useState } from "react";
 import CountDown from "../../components/auth/CountDown";
 import { FaArrowLeftLong } from "react-icons/fa6";
+import { ErrorToast } from "../../components/global/Toaster";
+import { useVerifyForgotOtp } from "../../hooks/mutations/OnboardingMutations";
 
 const VerifyForgotOtp = () => {
   const location = useLocation();
@@ -12,6 +14,11 @@ const VerifyForgotOtp = () => {
   const navigate = useNavigate();
   const [otp, setOtp] = useState(Array(5).fill(""));
   const inputs = useRef([]);
+
+  const isOtpComplete = otp.every((digit) => digit !== "");
+const isValidOtp = otp.join("").length === 6;
+
+  const verifyForgotOtpMutation = useVerifyForgotOtp();
 
   const [isActive, setIsActive] = useState(true);
   const [seconds, setSeconds] = useState(30);
@@ -49,7 +56,38 @@ const VerifyForgotOtp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/auth/update-password");
+if (!isOtpComplete) {
+  ErrorToast("Please enter complete OTP");
+  return;
+}
+    try {
+      const response = await verifyForgotOtpMutation.mutateAsync({
+        otp: otp.join(""),
+        email,
+      });
+
+      if (response?.success) {
+        const resetToken =
+          response?.data?.resetToken || response?.resetToken;
+
+        if (resetToken) {
+          sessionStorage.setItem("resetToken", resetToken);
+        }
+
+        navigate("/auth/update-password");
+      } else {
+        ErrorToast(
+          response?.message || "Something went wrong. Please try again."
+        );
+      }
+    } catch (err) {
+      console.error("OTP verification error:", err);
+
+      ErrorToast(
+        err?.response?.data?.message ||
+          "Something went wrong. Please try again."
+      );
+    }
   };
 
   return (
@@ -59,6 +97,7 @@ const VerifyForgotOtp = () => {
           <FaArrowLeftLong color="white" size={24} />
         </button>
       </div>
+
       {/* Logo */}
       <img
         src={forgotLogo}
@@ -83,7 +122,7 @@ const VerifyForgotOtp = () => {
         className="w-full flex flex-col items-center"
       >
         {/* OTP Boxes */}
-        <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-6 lg:gap-6 flex-wrap mb-5 w-full ">
+        <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-6 lg:gap-6 flex-wrap mb-5 w-full">
           {otp.map((digit, index) => (
             <input
               key={index}
@@ -96,22 +135,22 @@ const VerifyForgotOtp = () => {
               onKeyDown={(e) => handleKeyDown(e, index)}
               ref={(el) => (inputs.current[index] = el)}
               className="
-            h-[40px] w-[40px]    
-            sm:h-[50px] sm:w-[50px]
-            md:h-[55px] md:w-[55px]
-            lg:h-[70px] lg:w-[70px]
-            text-center text-[16px] sm:text-[18px] lg:text-[20px]
-            rounded-[10px] bg-transparent border border-[#D9D9D9]
-            placeholder:text-white
-            outline-none text-white focus:border-[#8A8A8A]
-          "
+                h-[40px] w-[40px]
+                sm:h-[50px] sm:w-[50px]
+                md:h-[55px] md:w-[55px]
+                lg:h-[70px] lg:w-[70px]
+                text-center text-[16px] sm:text-[18px] lg:text-[20px]
+                rounded-[10px] bg-transparent border border-[#D9D9D9]
+                placeholder:text-white
+                outline-none text-white focus:border-[#8A8A8A]
+              "
             />
           ))}
         </div>
 
         {/* Button & Countdown */}
         <div
-          className=" w-full 
+          className="w-full
           max-w-[300px]
           sm:max-w-[350px]
           md:max-w-[400px]
@@ -119,20 +158,26 @@ const VerifyForgotOtp = () => {
           xl:max-w-[450px]
           flex flex-col gap-4"
         >
-          <AuthButton text="Verify" />
+          <AuthButton
+  text="Verify"
+  loading={verifyForgotOtpMutation.isPending}
+  disabled={!isOtpComplete || !isValidOtp || verifyForgotOtpMutation.isPending}
+/>
+
           <CountDown
             isActive={isActive}
             setIsActive={setIsActive}
             seconds={seconds}
             setSeconds={setSeconds}
           />
+
           <button
             onClick={() => navigate("/auth/forget-password")}
             type="button"
-            className=" px-4 py-2 text-sm font-semibold text-red-500 
-             border border-red-400 rounded-lg 
-             hover:bg-red-50 hover:text-red-600 
-             transition-colors duration-200 ease-in-out"
+            className="px-4 py-2 text-sm font-semibold text-red-500
+              border border-red-400 rounded-lg
+              hover:bg-red-50 hover:text-red-600
+              transition-colors duration-200 ease-in-out"
           >
             Wrong email? Change it
           </button>

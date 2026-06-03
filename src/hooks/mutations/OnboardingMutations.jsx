@@ -1,4 +1,4 @@
-import { submitLogin, submitSignUp, submitVerifyEmail, submitPersonalDetails, submitVerifyPhone, submitPreferences } from "../api/Post";
+import { submitLogin, submitSignUp, submitVerifyEmail, submitPersonalDetails, submitVerifyPhone, submitPreferences,submitForgotPassword,submitVerifyForgotOtp,submitResetPassword, getLounges } from "../api/Post";
 import { useMutation } from "@tanstack/react-query";
 
 
@@ -14,11 +14,33 @@ export const useLogin = () => {
   });
 };
 
+//forgotpassword 
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: submitForgotPassword,
+  });
+};
+
+export const useVerifyForgotOtp = () => {
+  return useMutation({
+    mutationFn: submitVerifyForgotOtp,
+  });
+};
+
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: submitResetPassword,
+  });
+};
+
+
 export const useVerifyEmail = () => {
   return useMutation({
     mutationFn: submitVerifyEmail,
   });
 };
+
 
 export const useVerifyPhone = () => {
   return useMutation({
@@ -39,3 +61,8 @@ export const usePreferences = () => {
   });
 };
 
+export const useGetLounges = () => {
+  return useMutation({
+    mutationFn: getLounges,
+  });
+};

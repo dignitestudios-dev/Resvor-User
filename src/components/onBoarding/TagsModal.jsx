@@ -91,16 +91,6 @@ const TagsModal = ({ isOpen, onClose, setFieldValue, setFieldError }) => {
           </label>
           <div className="flex justify-between items-center gap-2 p-1">
             <DateInput
-              text="month"
-              placeholder="Month"
-              type="text"
-              id={`month`}
-              name={`month`}
-              maxLength={2}
-              value={dobDate.month}
-              onChange={(e) => handleDobChange("month", e.target.value)}
-            />
-            <DateInput
               text="day"
               placeholder="Date"
               type="text"
@@ -109,6 +99,16 @@ const TagsModal = ({ isOpen, onClose, setFieldValue, setFieldError }) => {
               maxLength={2}
               value={dobDate.day}
               onChange={(e) => handleDobChange("day", e.target.value)}
+            />
+            <DateInput
+              text="month"
+              placeholder="Month"
+              type="text"
+              id={`month`}
+              name={`month`}
+              maxLength={2}
+              value={dobDate.month}
+              onChange={(e) => handleDobChange("month", e.target.value)}
             />
             <DateInput
               text="year"

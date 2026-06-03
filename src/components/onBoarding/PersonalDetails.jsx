@@ -18,7 +18,7 @@ import { phoneFormatter, phoneToE164 } from "../../lib/helpers";
 const PersonalDetails = ({ handleNext, handlePrevious }) => {
   // const [dateModalData, setDateModalData] = useState("");
   const [fieldError, setFieldError] = useState("");
-  console.log("🚀 ~ PersonalDetails ~ fieldError:", fieldError);
+  
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [imageError, setImageError] = useState("");
   const closeModal = () => setModalIsOpen(false);
@@ -39,30 +39,43 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
     validateOnChange: true,
     validateOnBlur: true,
     onSubmit: async (values, action) => {
-      console.log("🚀 ~ CreateAccount ~ action:", action);
-      console.log("🚀 ~ CreateAccount ~ values:", values);
+      console.log("values----------> 42424242424 ", values)
 
-      if (
-        !values?.specialDatesData?.dobDate?.day ||
-        !values?.specialDatesData?.dobDate?.month
-      ) {
+      if (!values?.specialDatesData || values.specialDatesData.length === 0) {
         setFieldError("specialDatesData", "Birthday is required");
         return;
       }
 
       try {
-        const payload = {
-          fullName: values.fullName,
-          phoneNumber: phoneToE164(values.number) || "",
-          specialDates: [
-            {
-              occasion: "DOB",
-              date: `${values.specialDatesData.dobDate.month}-${values.specialDatesData.dobDate.day}-${values.specialDatesData.dobDate.year}`
-            }
-          ]
-        };
+        const formData = new FormData();
 
-        const response = await personalDetailsMutation.mutateAsync(payload);
+// Basic fields
+formData.append("fullName", values.fullName);
+formData.append("phoneNumber", phoneToE164(values.number) || "");
+
+// specialDates — DOB always at index[0], then loop specialDates
+if (values.specialDatesData?.dobDate) {
+  const dob = values.specialDatesData.dobDate;
+  formData.append(`specialDates[0][occasion]`, "DOB");
+  formData.append(`specialDates[0][date]`, `${dob.month}-${dob.day}-${dob.year}`);
+}
+
+if (Array.isArray(values.specialDatesData?.specialDates) && values.specialDatesData.specialDates.length > 0) {
+  values.specialDatesData.specialDates.forEach((date, index) => {
+    const i = index + 1; // 👈 offset by 1 since DOB occupies index[0]
+    formData.append(`specialDates[${i}][occasion]`, date.title);
+    formData.append(`specialDates[${i}][date]`, `${date.month}-${date.day}-${date.year}`);
+  });
+}
+
+// Profile picture — values.profile is a File object set via setFieldValue("profile", file)
+if (values.profile instanceof File) { // 👈 instanceof File ensures it's an actual file not a string/null
+  formData.append("profilePicture", values.profile);
+}
+
+
+
+        const response = await personalDetailsMutation.mutateAsync(formData);
 
         if (response?.success) {
           handleNext();
@@ -75,7 +88,8 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
       }
     },
   });
-  console.log("🚀 ~ PersonalDetails ~ errors:", errors);
+
+
 
   const validateImageResolution = (file) => {
     return new Promise((resolve) => {
@@ -154,7 +168,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
       <form onSubmit={handleSubmit}>
         <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-10">
           <div className="flex items-center xl:w-[500px] lg:w-[400px] md:w-[500px] w-[320px]">
-            {/* <div className="md:w-[80px] w-[60px] md:h-[80px] h-[60px] rounded-full overflow-hidden">
+            <div className="md:w-[80px] w-[60px] md:h-[80px] h-[60px] rounded-full overflow-hidden">
               <img
                 className="object-cover md:w-[80px] w-[60px] md:h-[80px] h-[60px]"
                 src={values.userImage ? values.userImage : uploadIcon}
@@ -179,7 +193,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
               {touched.profile && errors.profile && !imageError && (
                 <p className="text-red-600 text-xs mt-1">{errors.profile}</p>
               )}
-            </div> */}
+            </div> 
           </div>
           <div className=" w-full">
             <AuthInput
@@ -210,37 +224,56 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
             />
           <div>
             <label className="block text-[14px] font-[500] text-white mb-2">
-              Add Birthday and Special Dates
-            </label>
+  Add Birthday and Special Dates
+</label>
 
-            <TagsInputField setModalIsOpen={setModalIsOpen} />
-            {values?.specialDatesData && (
-              <div className="flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5">
-                <div className="flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5 w-full">
-                  <div className="flex flex-wrap py-1 pl-4 w-[80%] text-[#FFFFFF] font-thin text-[14px]">
-                    Date of Birth: {values?.specialDatesData?.dobDate?.day}{" "}
-                    {values?.specialDatesData?.dobDate?.month}{" "}
-                    {values?.specialDatesData?.dobDate?.year}
-                  </div>
+<TagsInputField setModalIsOpen={setModalIsOpen} />
 
-                  <div className="flex items-start h-full justify-end w-[20%]">
-                    <button
-                      type="button"
-                      onClick={() => setFieldValue("specialDatesData", null)}
-                      className="py-1.5 rounded-xl"
-                    >
-                      <img src={binIcon} alt="bin" className="pr-2 w-7" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+{values?.specialDatesData && (
+  <div className="border border-gray-400 rounded-[13px] overflow-hidden mt-2 divide-y divide-gray-700">
 
-            {errors.specialDatesData && (
-              <p className="text-red-600 text-[12px] mt-1">
-                {errors.specialDatesData}
-              </p>
-            )}
+    {/* DOB Row */}
+    {values.specialDatesData?.dobDate && (
+      <div className="flex items-center justify-between px-4 py-2.5">
+        <div className="text-[#FFFFFF] text-[14px] font-thin">
+          <span className=" mr-2"> Birthday</span>
+          {values.specialDatesData.dobDate.day}{" "}
+          {values.specialDatesData.dobDate.month}{" "}
+          {values.specialDatesData.dobDate.year}
+        </div>
+        {/* DOB is required so no delete button, or add one if needed */}
+      </div>
+    )}
+
+    {/* Special Dates Rows */}
+    {Array.isArray(values.specialDatesData?.specialDates) &&
+      values.specialDatesData.specialDates.map((date, index) => (
+        <div key={index} className="flex items-center justify-between px-4 py-2.5">
+          <div className="text-[#FFFFFF] text-[14px] font-thin">
+            <span className=" mr-2">{date.title}</span>
+            {date.day} {date.month} {date.year}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              const updated = values.specialDatesData.specialDates.filter((_, i) => i !== index);
+              setFieldValue("specialDatesData", {
+                ...values.specialDatesData,
+                specialDates: updated,
+              });
+            }}
+          >
+            <img src={binIcon} alt="bin" className="w-5" />
+          </button>
+        </div>
+      ))}
+  </div>
+)}
+
+{errors.specialDatesData && (
+  <p className="text-red-600 text-[12px] mt-1">{errors.specialDatesData}</p>
+)}
             {/* {dateModalData && (
               <div
                 className={`flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5`}
@@ -266,7 +299,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
               </div>
             )} */}
           </div>
-          <div className=" w-full">
+          {/* <div className=" w-full">
             <AuthInput
               label={"Location"}
               text={"location"}
@@ -284,7 +317,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
           </div>
           <div>
             <img src={mapImg} alt="map" className="mt-1 rounded-xl" />
-          </div>
+          </div> */}
         </div>
         <div className="mt-6 ">
           <div className="xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-1 mb-4">

@@ -6,29 +6,36 @@ import { loginSideImg } from "../../assets/export";
 import { logInSchema } from "../../schema/authentication/authSchema";
 import { useState } from "react";
 import { loginValues } from "../../init/authentication/authValues";
+import { useLogin } from "../../hooks/mutations/OnboardingMutations";
 
 const Login = () => {
   const navigate = useNavigate();
   const [state, setState] = useState("idle");
 
+  const loginMutation = useLogin();
+
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
       initialValues: loginValues,
       validationSchema: logInSchema,
-      validateOnChange: true,
-      validateOnBlur: true,
       onSubmit: async (values) => {
         setState("loading");
-        const data = {
-          email: values?.email,
-          password: values?.password,
-        };
-        console.log("🚀 ~ Login ~ data:", data);
-        navigate("/app/home");
 
-        // Use the loading state to show loading spinner
-        // Use the response if you want to perform any specific functionality
-        // Otherwise you can just pass a callback that will process everything
+        try {
+          const response = await loginMutation.mutateAsync({
+            email: values.email,
+            password: values.password,
+            role: "user",
+          });
+
+          console.log("Login Response:", response);
+
+          navigate("/app/home");
+        } catch (error) {
+          console.error("Login Error:", error);
+        } finally {
+          setState("idle");
+        }
       },
     });
 

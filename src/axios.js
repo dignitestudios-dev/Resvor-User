@@ -5,7 +5,7 @@ import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 export const baseUrl = import.meta.env.DEV 
   ? "/api" // Use Vite proxy in development
-  : "https://35ppzgmv-3050.inc1.devtunnels.ms"; // Use direct URL in production
+  : "http://54.81.22.252:3001"; // Use direct URL in production
 
 async function getDeviceFingerprint() {
   const fp = await FingerprintJS.load();
@@ -38,13 +38,20 @@ instance.interceptors.request.use(async (request) => {
   // Get device fingerprint and add to headers
   const fingerprint = await getDeviceFingerprint();
   
-  // Add device headers and Content-Type
-  request.headers = {
+  // Only set Content-Type if not FormData (FormData should be handled by browser)
+  const isFormData = request.data instanceof FormData;
+  const headers = {
     ...request.headers,
-    "Content-Type": "application/json",
     "devicemodel": fingerprint,
     "deviceuniqueid": fingerprint,
   };
+  
+  // Add Content-Type only for non-FormData requests
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  request.headers = headers;
 
   console.log("📤 Request:", request.url, {
     withCredentials: request.withCredentials,

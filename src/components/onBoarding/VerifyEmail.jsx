@@ -11,7 +11,7 @@ import { useVerifyEmail } from './../../hooks/mutations/OnboardingMutations';
 const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
   const inputs = useRef([]);
   const verifyEmailMutation = useVerifyEmail();
-  const [otp, setOtp] = useState(Array(6).fill(""));
+  const [otp, setOtp] = useState(Array(5).fill(""));
 
   const [isActive, setIsActive] = useState(true);
   const [seconds, setSeconds] = useState(30);
@@ -69,7 +69,7 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
 
   const handleResendOtp = async () => {
     try {
-      setOtp(Array(6).fill("")); // Reset OTP fields
+      setOtp(Array(5).fill("")); // Reset OTP fields
       handleRestart();
     } catch (err) {
       console.log("🚀 ~ handleResendOtp ~ err:", err);
@@ -149,7 +149,7 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
                 <AuthButton text="Verify" loading={verifyEmailMutation.isPending} />
               </div>
             </div>
-            <div className="w-full flex justify-center pl-4 mt-4 space-y-4 ">
+            {/* <div className="w-full flex justify-center pl-4 mt-4 space-y-4 ">
               <button
                 onClick={() => handlePrevious()}
                 type="button"
@@ -160,7 +160,7 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
               >
                 Wrong email? Change it
               </button>
-            </div>
+            </div> */}
           </div>
         </form>
       </div>

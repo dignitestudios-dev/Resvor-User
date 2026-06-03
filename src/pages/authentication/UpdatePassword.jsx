@@ -1,17 +1,25 @@
 import { useFormik } from "formik";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import AuthInput from "../../components/auth/AuthInput";
 import AuthButton from "../../components/auth/AuthButton";
 import { forgotLogo } from "../../assets/export";
 import { useState } from "react";
-import AuthSuccessModal from "./../../components/auth/AuthSuccessModal";
+import AuthSuccessModal from "../../components/auth/AuthSuccessModal";
 import { updatePasswordSchema } from "../../schema/authentication/authSchema";
 import { updatePasswordValues } from "../../init/authentication/authValues";
+import { ErrorToast } from "../../components/global/Toaster";
+import { useResetPassword } from "../../hooks/mutations/OnboardingMutations";
 
 const UpdatePassword = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // ✅ now getting token from sessionStorage (NOT location state)
+  const resetToken = sessionStorage.getItem("resetToken");
+
   const [requestSendModal, setRequestSendModal] = useState(false);
-  const [state, setState] = useState("idle");
+
+  const resetPasswordMutation = useResetPassword();
 
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
@@ -20,29 +28,42 @@ const UpdatePassword = () => {
       validateOnChange: true,
       validateOnBlur: true,
       onSubmit: async (values) => {
-        setState("loading");
-        console.log("🚀 ~ UpdatePassword ~ values:", values);
+        try {
+          const response = await resetPasswordMutation.mutateAsync({
+            resetToken, // ✅ from sessionStorage
+            password: values.password,
+          });
 
-        setRequestSendModal(true);
-        // const data = {
-        //   email: values?.email,
-        //   password: values?.password,
-        // };
-        // postData("/auth/login", false, null, data, processLogin);
+          if (response?.success) {
+            // ✅ cleanup after success
+            sessionStorage.removeItem("resetToken");
 
-        // Use the loading state to show loading spinner
-        // Use the response if you want to perform any specific functionality
-        // Otherwise you can just pass a callback that will process everything
+            setRequestSendModal(true);
+          } else {
+            ErrorToast(
+              response?.message || "Something went wrong. Please try again."
+            );
+          }
+        } catch (err) {
+          console.error("Reset password error:", err);
+
+          ErrorToast(
+            err?.response?.data?.message ||
+              "Something went wrong. Please try again."
+          );
+        }
       },
     });
+
   return (
     <div className="grid lg:grid-cols-1 grid-cols-1 w-full text-white">
       <div className="flex flex-col justify-center items-center h-auto ">
         <div>
           <img src={forgotLogo} alt="logo" className="w-[220px]" />
         </div>
+
         <div className="mt-4 py-4 space-y-3 xxl:w-[400px] xxl:ml-12 text-center">
-          <p className=" xxl:text-[48px] text-[32px] font-[600]">
+          <p className="xxl:text-[48px] text-[32px] font-[600]">
             Create a New Password
           </p>
           <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] font-[400] ">
@@ -52,7 +73,7 @@ const UpdatePassword = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-4">
-            <div className=" w-full">
+            <div className="w-full">
               <AuthInput
                 label={"Password"}
                 text={"Password"}
@@ -69,7 +90,8 @@ const UpdatePassword = () => {
                 touched={touched?.password}
               />
             </div>
-            <div className=" w-full">
+
+            <div className="w-full">
               <AuthInput
                 label={"Confirm Password"}
                 text={"Password"}
@@ -87,15 +109,17 @@ const UpdatePassword = () => {
               />
             </div>
           </div>
+
           <div className="xxl:w-[650px] lg:w-[350px] mt-6 mb-4">
             <AuthButton
               text={"Update"}
-              loading={state === "loading"}
-              disabled={state === "loading"}
+              loading={resetPasswordMutation.isPending}
+              disabled={resetPasswordMutation.isPending}
             />
           </div>
         </form>
       </div>
+
       {requestSendModal && (
         <AuthSuccessModal
           isOpen={requestSendModal}

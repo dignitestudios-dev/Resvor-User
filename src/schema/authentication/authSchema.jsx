@@ -134,3 +134,11 @@ export const signUpSchema = Yup.object({
     .required("You must accept the Terms & Conditions and Privacy Policy")
     .oneOf([true], "You must accept the Terms & Conditions and Privacy Policy"),
 });
+
+
+export const forgotOtpSchema = Yup.object({
+  otp: Yup.string()
+    .required("OTP is required")
+    .length(6, "OTP must be 6 digits")
+    .matches(/^\d{6}$/, "OTP must contain only numbers"),
+});

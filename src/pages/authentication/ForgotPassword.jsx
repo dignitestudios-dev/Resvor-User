@@ -5,60 +5,83 @@ import AuthButton from "../../components/auth/AuthButton";
 import { forgotLogo } from "../../assets/export";
 import { MdOutlineChevronLeft } from "react-icons/md";
 import { forgotPasswordSchema } from "../../schema/authentication/authSchema";
-import { useState } from "react";
 import { forgotPasswordValues } from "../../init/authentication/authValues";
+import { useForgotPassword } from "../../hooks/mutations/OnboardingMutations"; // Update path as needed
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
-  const [state, setState] = useState("idle");
 
-  const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
-    useFormik({
-      initialValues: forgotPasswordValues,
-      validationSchema: forgotPasswordSchema,
-      validateOnChange: true,
-      validateOnBlur: true,
-      onSubmit: async (values) => {
-        setState("loading");
-        const data = {
-          email: values?.email,
-        };
-        console.log("🚀 ~ ForgotPassword ~ data:", data);
-        navigate("/auth/verify-forget-otp", {
-          state: { email: values?.email },
+  const forgotPasswordMutation = useForgotPassword();
+
+  const {
+    values,
+    handleBlur,
+    handleChange,
+    handleSubmit,
+    errors,
+    touched,
+  } = useFormik({
+    initialValues: forgotPasswordValues,
+    validationSchema: forgotPasswordSchema,
+    validateOnChange: true,
+    validateOnBlur: true,
+
+    onSubmit: async (values) => {
+      try {
+        const response = await forgotPasswordMutation.mutateAsync({
+          email: values.email,
         });
 
-        // Use the loading state to show loading spinner
-        // Use the response if you want to perform any specific functionality
-        // Otherwise you can just pass a callback that will process everything
-      },
-    });
+        console.log(
+          "🚀 ~ ForgotPassword Response:",
+          response
+        );
+
+        navigate("/auth/verify-forget-otp", {
+          state: {
+            email: values.email,
+          },
+        });
+      } catch (error) {
+        console.error(
+          "🚀 ~ ForgotPassword Error:",
+          error?.response?.data || error
+        );
+      }
+    },
+  });
 
   return (
     <div className="grid lg:grid-cols-1 grid-cols-1 w-full text-white">
-      <div className="flex flex-col justify-center items-center h-auto ">
+      <div className="flex flex-col justify-center items-center h-auto">
         <div>
-          <img src={forgotLogo} alt="logo" className="w-[220px]" />
+          <img
+            src={forgotLogo}
+            alt="logo"
+            className="w-[220px]"
+          />
         </div>
+
         <div className="mt-4 py-4 space-y-3 xxl:w-[400px] xxl:ml-12 text-center">
-          <p className=" xxl:text-[48px] text-[32px] font-[600] capitalize">
-            forgot password
+          <p className="xxl:text-[48px] text-[32px] font-[600] capitalize">
+            Forgot Password
           </p>
-          <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] capitalize ">
+
+          <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] capitalize">
             Please enter your registered email address.
           </p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[360px] md:w-[550px] w-[320px] mt-4">
-            <div className=" w-full">
+            <div className="w-full">
               <AuthInput
-                label={"Email Address"}
-                text={"Email address"}
-                placeholder={"Enter email address"}
-                type={"email"}
-                id={"email"}
-                name={"email"}
+                label="Email Address"
+                text="Email address"
+                placeholder="Enter email address"
+                type="email"
+                id="email"
+                name="email"
                 maxLength={30}
                 value={values.email}
                 onChange={handleChange}
@@ -68,28 +91,28 @@ const ForgotPassword = () => {
               />
             </div>
           </div>
-          <div className="xxl:w-[650px]  lg:w-[350px] w-full mt-6 mb-4">
+
+          <div className="xxl:w-[650px] lg:w-[350px] w-full mt-6 mb-4">
             <AuthButton
-              text={"Send OTP"}
-              loading={state === "loading"}
-              disabled={state === "loading"}
+              text="Send OTP"
+              loading={forgotPasswordMutation.isPending}
+              disabled={forgotPasswordMutation.isPending}
             />
           </div>
         </form>
+
         <button
           type="button"
           className="w-full flex justify-center items-center cursor-pointer mt-4"
           onClick={() => navigate("/auth/login")}
         >
           <MdOutlineChevronLeft className="xxl:text-[26px] text-[22px] text-white" />
+
           <p className="text-[12px] xxl:text-[22px] uppercase font-bold leading-none tracking-wider text-white">
             Back
           </p>
         </button>
       </div>
-      {/* {requestModal && (
-        <RequestModal setIsOpen={setRequestModal} isLogin={true} />
-      )} */}
     </div>
   );
 };

@@ -28,7 +28,14 @@ export const submitVerifyPhone = async (payload) => {
 };
 
 export const submitPersonalDetails = async (payload) => {
-  const { data } = await axios.post("/auth/onboarding/profile", payload);
+  for (let [key, value] of payload.entries()) {
+  console.log("32 Resvor -User5 ====> ~ ~ ~ ", key, value);
+}
+  const { data } = await axios.post("/auth/onboarding/profile", payload, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return data;
 };
 
@@ -38,5 +45,26 @@ export const submitPreferences = async (payload) => {
   return data;
 };
 
-// Example: Sign Up Mutation
+// forgotpassword
+export const submitForgotPassword = async (payload) => {
+  const { data } = await axios.post("/auth/forgot", payload);
+  return data;
+};
 
+
+// verify forgot password otp
+export const submitVerifyForgotOtp = async (payload) => {
+  const { data } = await axios.post("/auth/verify-otp", payload);
+  return data;
+};
+
+//reset password 
+export const submitResetPassword = async (payload) => {
+  const { data } = await axios.post("/auth/update-password", payload);
+  return data;
+};
+
+export const getLounges = async (payload = {}) => {
+  const { data } = await axios.post("/lounges/list", payload);
+  return data;
+};
