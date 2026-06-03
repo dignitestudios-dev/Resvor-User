@@ -166,10 +166,27 @@ const Home = () => {
     try {
       const response = await getLoungesMutation.mutateAsync({});
 
-      if (response?.success) {
-        setLounges(response?.data || []);
+      console.log("Lounges API Response:", response);
+
+      const isSuccess =
+        response?.success ??
+        response?.data?.success ??
+        false;
+
+      const loungesData =
+        response?.data?.data ??
+        response?.data ??
+        response?.data?.data ??
+        [];
+
+      if (isSuccess) {
+        setLounges(loungesData);
       } else {
-        ErrorToast(response?.message || "Failed to fetch lounges");
+        ErrorToast(
+          response?.message ||
+            response?.data?.message ||
+            "Failed to fetch lounges"
+        );
       }
     } catch (err) {
       console.error("Fetch lounges error:", err);
@@ -219,18 +236,14 @@ const Home = () => {
             </p>
 
             <p className="xxl:text-[26px] text-[18px] text-[#E6E6E6] md:text-center md:mx-8 mx-0 mt-2">
-              Discover Premium Lounges, Exclusive Packages, and Unforgettable
-              Vibes.
+              Discover Premium Lounges, Exclusive Packages, and Unforgettable Vibes.
             </p>
           </div>
         </div>
       </div>
 
       {/* Search Box */}
-      <div
-        className="absolute top-[300px] lg:top-1/3 lg:mt-8 mt-0 md:top-1/4 left-1/2 -translate-x-1/2 
-             w-full max-w-md md:max-w-xl bg-white rounded-[16px] 
-             md:p-4 p-2 px-4 z-50"
+      <div className="absolute top-[300px] lg:top-[320px] md:top-[280px] left-1/2 -translate-x-1/2 w-full max-w-md md:max-w-xl bg-white rounded-[16px] md:p-4 p-2 px-4 z-50"
         style={{ boxShadow: "0px 4px 30px rgba(0,0,0,0.25)" }}
       >
         <div className="flex items-end border border-gray-400 text-sm rounded-[12px] overflow-hidden p-[3px]">
@@ -267,8 +280,7 @@ const Home = () => {
             </p>
 
             <p className="xxl:text-[26px] text-[16px] text-[#181818]">
-              Discover Premium Lounges, Exclusive Packages, and Unforgettable
-              Vibes.
+              Discover Premium Lounges, Exclusive Packages, and Unforgettable Vibes.
             </p>
           </div>
 
@@ -296,10 +308,29 @@ const Home = () => {
 
         <div className="grid md:grid-cols-3 grid-cols-1 gap-6 md:px-10 px-4 mt-6">
           {getLoungesMutation.isPending ? (
-            <div className="col-span-full flex justify-center items-center py-10">
-              <p className="text-lg text-gray-600">Loading lounges...</p>
-            </div>
-          ) : lounges.length > 0 ? (
+            <div className="col-span-full">
+  <div className="grid md:grid-cols-3 grid-cols-1 gap-6">
+    {[...Array(6)].map((_, index) => (
+      <div
+        key={index}
+        className="rounded-[24px] p-4 bg-white animate-pulse"
+        style={{ boxShadow: "0px 0px 4px 0px rgba(0, 0, 0, 0.1)" }}
+      >
+        <div className="w-full h-[200px] bg-gray-200 rounded-[12px]" />
+
+        <div className="mt-6 space-y-3">
+          <div className="h-6 w-2/3 bg-gray-200 rounded" />
+
+          <div className="h-4 w-full bg-gray-200 rounded" />
+          <div className="h-4 w-5/6 bg-gray-200 rounded" />
+          <div className="h-4 w-4/6 bg-gray-200 rounded" />
+          <div className="h-4 w-3/6 bg-gray-200 rounded" />
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+          ) : lounges?.length > 0 ? (
             lounges.map((item) => (
               <LoungeCard key={item._id} item={item} />
             ))

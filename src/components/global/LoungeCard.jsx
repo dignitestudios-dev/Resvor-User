@@ -7,22 +7,22 @@ import { BiSolidBadgeDollar } from "react-icons/bi";
 import { useNavigate } from "react-router";
 import { useState } from "react";
 
-const LoungeCard = ({ position = null, item, key }) => {
+const LoungeCard = ({ position = null, item }) => {
   const [liked, setLiked] = useState(false);
   const navigate = useNavigate();
   return (
     <div
-      key={key}
+      // key={key}
       onClick={() => navigate("/app/lounge-detail")}
       className="rounded-[24px] p-4 bg-white relative cursor-pointer"
       style={{ boxShadow: "0px 0px 4px 0px rgba(0, 0, 0, 0.1)" }}
     >
       <div>
         <img
-          src={item.image}
-          className="rounded-[12px] w-full h-[200px] object-cover"
-          alt="Venue Logo"
-        />
+  src={item?.images?.[0]?.location}
+  className="rounded-[12px] w-full h-[200px] object-cover"
+  alt="Venue"
+/>
       </div>
       <div
         onClick={(e) => {
@@ -45,12 +45,10 @@ const LoungeCard = ({ position = null, item, key }) => {
         <ul className="space-y-2 list-none">
           <li className="flex items-center gap-2 text-[#6E6E6E]">
             <GoClockFill className="text-lg" />
-            <span>Time: {item?.location}</span>
-          </li>
+<span>Time: {item?.operatingHours?.open || "-"}</span>          </li>
           <li className="flex items-center gap-2 text-[#6E6E6E]">
             <IoLocation className="text-xl" />
-            <span>Location: {item?.location}</span>
-          </li>
+<span>Location: {item?.location?.address || "-"}</span>          </li>
 
           <li className="flex items-center gap-2 text-[#6E6E6E]">
             <BiSolidBadgeDollar className="text-xl" />

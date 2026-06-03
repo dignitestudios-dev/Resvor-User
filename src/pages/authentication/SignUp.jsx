@@ -22,7 +22,7 @@ export default function SignUp() {
   // 👇 once API responds, set the correct step
   useEffect(() => {
     if (authData?.success) {
-      const stepIndex = mapOnboardingStepToIndex(authData.data.onboardingStep);
+      const stepIndex = mapOnboardingStepToIndex(authData?.data?.onboardingStep);
       setCurrentStep(stepIndex);
     } else if (!isLoading) {
       setCurrentStep(0); // fallback if API fails

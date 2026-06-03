@@ -65,6 +65,6 @@ export const submitResetPassword = async (payload) => {
 };
 
 export const getLounges = async (payload = {}) => {
-  const { data } = await axios.post("/lounges/list", payload);
+  const { data } = await axios.get("/lounges/list", payload);
   return data;
 };
