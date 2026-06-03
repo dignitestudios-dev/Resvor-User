@@ -151,11 +151,11 @@ if (values.profile instanceof File) { // 👈 instanceof File ensures it's an ac
   };
   return (
     <div className="flex flex-col justify-center items-center h-auto ">
-      <div className="flex justify-start items-center absolute top-12 left-0">
+      {/* <div className="flex justify-start items-center absolute top-12 left-0">
         <button type="button" onClick={() => handlePrevious()}>
           <FaArrowLeftLong color="white" size={24} />
         </button>
-      </div>
+      </div> */}
       <div className="mt-4 xxl:w-[400px] xxl:ml-12 text-center space-y-4">
         <p className="xxl:text-[48px] text-[32px] text-[#E6E6E6] font-[600] capitalize">
           Personal Details
