@@ -14,14 +14,21 @@ import { FaClipboardList } from "react-icons/fa";
 import Subscription from "../../components/onBoarding/Subscription";
 import { mapOnboardingStepToIndex } from "../../static/onboardingStepMapper";
 import { useAuthMe } from "../../hooks/queries/useQueries";
+import { useNavigate } from "react-router";
+
 export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0);
 
   const { data: authData, isLoading } = useAuthMe(); // 👈 fetch current step
 
+const navigate = useNavigate();
   // 👇 once API responds, set the correct step
   useEffect(() => {
     if (authData?.success) {
+      if(authData?.data?.sessionType === "access_token"){
+navigate("/app/home");
+        return;
+      }
       const stepIndex = mapOnboardingStepToIndex(authData?.data?.onboardingStep);
       setCurrentStep(stepIndex);
     } else if (!isLoading) {
