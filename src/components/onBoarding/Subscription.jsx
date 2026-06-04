@@ -14,11 +14,11 @@ const Subscription = ({ handlePrevious }) => {
   return (
     <div className="flex flex-col justify-center items-center min-h-screen w-full text-white relative px-4 py-6">
       {/* Back Button */}
-      <div className="absolute top-4 left-4">
+      {/* <div className="absolute top-4 left-4">
         <button type="button" onClick={handlePrevious}>
           <FaArrowLeftLong color="white" size={24} />
         </button>
-      </div>
+      </div> */}
 
       {completed ? (
         <div className="mt-8 text-center space-y-4 max-w-sm w-full">

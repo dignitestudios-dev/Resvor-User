@@ -5,7 +5,7 @@ import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
 export const baseUrl = import.meta.env.DEV 
   ? "/api" // Use Vite proxy in development
-  : "http://54.81.22.252:3001"; // Use direct URL in production
+  : "https://api-dev.resvor.com"; // Use direct URL in production
 
 async function getDeviceFingerprint() {
   const fp = await FingerprintJS.load();

@@ -10,20 +10,25 @@ import { useState } from "react";
 const LoungeCard = ({ position = null, item }) => {
   const [liked, setLiked] = useState(false);
   const navigate = useNavigate();
+
+  const handleNavigate = () => {
+    navigate(`/app/lounge-detail/${item?._id}`);
+  };
+
   return (
     <div
-      // key={key}
-      onClick={() => navigate("/app/lounge-detail")}
+      onClick={handleNavigate}
       className="rounded-[24px] p-4 bg-white relative cursor-pointer"
       style={{ boxShadow: "0px 0px 4px 0px rgba(0, 0, 0, 0.1)" }}
     >
       <div>
         <img
-  src={item?.images?.[0]?.location}
-  className="rounded-[12px] w-full h-[200px] object-cover"
-  alt="Venue"
-/>
+          src={item?.images?.[0]?.location}
+          className="rounded-[12px] w-full h-[200px] object-cover"
+          alt="Venue"
+        />
       </div>
+
       <div
         onClick={(e) => {
           e.stopPropagation();
@@ -31,7 +36,7 @@ const LoungeCard = ({ position = null, item }) => {
         }}
         className={`p-2 cursor-pointer rounded-full bg-white absolute ${
           position ? position : "bottom-48 right-8"
-        } `}
+        }`}
         style={{ boxShadow: "0px 8px 25px 0px #00000012" }}
       >
         <img
@@ -40,23 +45,32 @@ const LoungeCard = ({ position = null, item }) => {
           className="w-6 transition duration-300 ease-in-out"
         />
       </div>
-      <div className="mt-6 ">
+
+      <div className="mt-6">
         <p className="text-[22px] font-[600] py-2">{item?.name}</p>
+
         <ul className="space-y-2 list-none">
           <li className="flex items-center gap-2 text-[#6E6E6E]">
             <GoClockFill className="text-lg" />
-<span>Time: {item?.operatingHours?.open || "-"}</span>          </li>
+            <span>
+              Time: {item?.operatingHours?.open || "-"} -{" "}
+              {item?.operatingHours?.close || "-"}
+            </span>
+          </li>
+
           <li className="flex items-center gap-2 text-[#6E6E6E]">
             <IoLocation className="text-xl" />
-<span>Location: {item?.location?.address || "-"}</span>          </li>
+            <span>Location: {item?.location?.address || "-"}</span>
+          </li>
 
           <li className="flex items-center gap-2 text-[#6E6E6E]">
             <BiSolidBadgeDollar className="text-xl" />
             <span>{item?.description}</span>
           </li>
+
           <li className="flex items-center gap-2 text-[#6E6E6E]">
             <HiPercentBadge className="text-xl" />
-            <span>{item?.extras}</span>
+            <span>{item?.extras || "-"}</span>
           </li>
         </ul>
       </div>

@@ -15,3 +15,31 @@ export const useAuthMe = () => {
     retry: false,
   });
 };
+
+
+const fetchLounges = async () => {
+  const { data } = await axios.get("/lounges/list");
+  return data;
+};
+
+export const useLounges = () => {
+  return useQuery({
+    queryKey: ["lounges"],
+    queryFn: fetchLounges,
+    retry: false,
+  });
+};
+
+const fetchLoungeDetails = async (loungeId) => {
+  const { data } = await axios.get(`/lounges/${loungeId}`);
+  return data;
+};
+
+export const useLoungeDetails = (loungeId) => {
+  return useQuery({
+    queryKey: ["lounge-details", loungeId],
+    queryFn: () => fetchLoungeDetails(loungeId),
+    enabled: !!loungeId,
+    retry: false,
+  });
+};

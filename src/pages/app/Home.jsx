@@ -135,18 +135,18 @@
 
 import { filterIcon } from "../../assets/export";
 import { FaSearch } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import LoungeCard from "../../components/global/LoungeCard";
 import FilterDropdown from "../../components/global/FilterDropdown";
-import { ErrorToast } from "../../components/global/Toaster";
-import { useGetLounges } from "../../hooks/mutations/OnboardingMutations";
+import { useLounges } from "../../hooks/queries/useQueries";
 
 const Home = () => {
   const [open, setOpen] = useState(false);
   const [services, setServices] = useState([]);
-  const [lounges, setLounges] = useState([]);
 
-  const getLoungesMutation = useGetLounges();
+  const { data: loungesResponse, isLoading } = useLounges();
+
+  const lounges = loungesResponse?.data || [];
 
   const [selectedFilters, setSelectedFilters] = useState({
     location: "",
@@ -158,48 +158,10 @@ const Home = () => {
     guestCapacity: 1,
   });
 
-  useEffect(() => {
-    fetchLounges();
-  }, []);
-
-  const fetchLounges = async () => {
-    try {
-      const response = await getLoungesMutation.mutateAsync({});
-
-      console.log("Lounges API Response:", response);
-
-      const isSuccess =
-        response?.success ??
-        response?.data?.success ??
-        false;
-
-      const loungesData =
-        response?.data?.data ??
-        response?.data ??
-        response?.data?.data ??
-        [];
-
-      if (isSuccess) {
-        setLounges(loungesData);
-      } else {
-        ErrorToast(
-          response?.message ||
-            response?.data?.message ||
-            "Failed to fetch lounges"
-        );
-      }
-    } catch (err) {
-      console.error("Fetch lounges error:", err);
-
-      ErrorToast(
-        err?.response?.data?.message || "Failed to fetch lounges"
-      );
-    }
-  };
-
   const toggleSelection = (category, value) => {
     setSelectedFilters((prev) => {
       const current = prev[category];
+
       const updated = current.includes(value)
         ? current.filter((v) => v !== value)
         : [...current, value];
@@ -236,14 +198,16 @@ const Home = () => {
             </p>
 
             <p className="xxl:text-[26px] text-[18px] text-[#E6E6E6] md:text-center md:mx-8 mx-0 mt-2">
-              Discover Premium Lounges, Exclusive Packages, and Unforgettable Vibes.
+              Discover Premium Lounges, Exclusive Packages, and Unforgettable
+              Vibes.
             </p>
           </div>
         </div>
       </div>
 
       {/* Search Box */}
-      <div className="absolute top-[300px] lg:top-[320px] md:top-[280px] left-1/2 -translate-x-1/2 w-full max-w-md md:max-w-xl bg-white rounded-[16px] md:p-4 p-2 px-4 z-50"
+      <div
+        className="absolute top-[300px] lg:top-[320px] md:top-[280px] left-1/2 -translate-x-1/2 w-full max-w-md md:max-w-xl bg-white rounded-[16px] md:p-4 p-2 px-4 z-50"
         style={{ boxShadow: "0px 4px 30px rgba(0,0,0,0.25)" }}
       >
         <div className="flex items-end border border-gray-400 text-sm rounded-[12px] overflow-hidden p-[3px]">
@@ -259,9 +223,7 @@ const Home = () => {
 
           <button
             type="button"
-            className="bg-gradient-to-l from-[#010067] to-[#000000] 
-                 text-white text-[12px] md:text-[14px] 
-                 py-3.5 px-4 md:px-6 rounded-[12px]"
+            className="bg-gradient-to-l from-[#010067] to-[#000000] text-white text-[12px] md:text-[14px] py-3.5 px-4 md:px-6 rounded-[12px]"
           >
             Find lounge
           </button>
@@ -280,7 +242,8 @@ const Home = () => {
             </p>
 
             <p className="xxl:text-[26px] text-[16px] text-[#181818]">
-              Discover Premium Lounges, Exclusive Packages, and Unforgettable Vibes.
+              Discover Premium Lounges, Exclusive Packages, and Unforgettable
+              Vibes.
             </p>
           </div>
 
@@ -307,32 +270,37 @@ const Home = () => {
         </div>
 
         <div className="grid md:grid-cols-3 grid-cols-1 gap-6 md:px-10 px-4 mt-6">
-          {getLoungesMutation.isPending ? (
+          {isLoading ? (
             <div className="col-span-full">
-  <div className="grid md:grid-cols-3 grid-cols-1 gap-6">
-    {[...Array(6)].map((_, index) => (
-      <div
-        key={index}
-        className="rounded-[24px] p-4 bg-white animate-pulse"
-        style={{ boxShadow: "0px 0px 4px 0px rgba(0, 0, 0, 0.1)" }}
-      >
-        <div className="w-full h-[200px] bg-gray-200 rounded-[12px]" />
+              <div className="grid md:grid-cols-3 grid-cols-1 gap-6">
+                {[...Array(6)].map((_, index) => (
+                  <div
+                    key={index}
+                    className="rounded-[24px] p-4 bg-white animate-pulse"
+                    style={{
+                      boxShadow: "0px 0px 4px 0px rgba(0, 0, 0, 0.1)",
+                    }}
+                  >
+                    <div className="w-full h-[200px] bg-gray-200 rounded-[12px]" />
 
-        <div className="mt-6 space-y-3">
-          <div className="h-6 w-2/3 bg-gray-200 rounded" />
+                    <div className="mt-6 space-y-3">
+                      <div className="h-6 w-2/3 bg-gray-200 rounded" />
 
-          <div className="h-4 w-full bg-gray-200 rounded" />
-          <div className="h-4 w-5/6 bg-gray-200 rounded" />
-          <div className="h-4 w-4/6 bg-gray-200 rounded" />
-          <div className="h-4 w-3/6 bg-gray-200 rounded" />
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
-          ) : lounges?.length > 0 ? (
+                      <div className="h-4 w-full bg-gray-200 rounded" />
+                      <div className="h-4 w-5/6 bg-gray-200 rounded" />
+                      <div className="h-4 w-4/6 bg-gray-200 rounded" />
+                      <div className="h-4 w-3/6 bg-gray-200 rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : lounges.length > 0 ? (
             lounges.map((item) => (
-              <LoungeCard key={item._id} item={item} />
+              <LoungeCard
+                key={item._id}
+                item={item}
+              />
             ))
           ) : (
             <div className="col-span-full flex justify-center items-center py-10">

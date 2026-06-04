@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://54.81.22.252:3001',
+        target: 'https://api-dev.resvor.com',
         changeOrigin: true,
         credentials: true,
         rewrite: (path) => path.replace(/^\/api/, ''),

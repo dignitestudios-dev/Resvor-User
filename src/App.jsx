@@ -30,7 +30,7 @@ function App() {
       <Route path="/" element={<Navigate to="/auth/login" />} />
       <Route path="app" element={<DashboardLayout />}>
         <Route path="home" element={<Home />} />
-        <Route path="lounge-detail" element={<LoungeDetail />} />
+        <Route path="lounge-detail/:id" element={<LoungeDetail />} />
         <Route path="guestbook" element={<GuestBook />} />
         <Route path="bookings" element={<MyBooking />} />
         <Route path="bookingDetails/:id" element={<BookingDetails />} />
