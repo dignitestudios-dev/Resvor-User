@@ -27,28 +27,27 @@ const ForgotPassword = () => {
     validateOnBlur: true,
 
     onSubmit: async (values) => {
-      try {
-        const response = await forgotPasswordMutation.mutateAsync({
-          email: values.email,
-        });
+  try {
+    const response = await forgotPasswordMutation.mutateAsync({
+      email: values.email,
+      role: "user", // fixed role
+    });
 
-        console.log(
-          "🚀 ~ ForgotPassword Response:",
-          response
-        );
+    console.log("🚀 ~ ForgotPassword Response:", response);
 
-        navigate("/auth/verify-forget-otp", {
-          state: {
-            email: values.email,
-          },
-        });
-      } catch (error) {
-        console.error(
-          "🚀 ~ ForgotPassword Error:",
-          error?.response?.data || error
-        );
-      }
-    },
+    navigate("/auth/verify-forget-otp", {
+      state: {
+        email: values.email,
+        role: "user",
+      },
+    });
+  } catch (error) {
+    console.error(
+      "🚀 ~ ForgotPassword Error:",
+      error?.response?.data || error
+    );
+  }
+},
   });
 
   return (
