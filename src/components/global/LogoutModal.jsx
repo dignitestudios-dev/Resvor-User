@@ -3,9 +3,39 @@ import Modal from "react-modal";
 import { HiOutlineXMark } from "react-icons/hi2";
 import { useNavigate } from "react-router"; // ✅ fix
 import { logout } from "../../assets/export";
+import { ErrorToast } from "./Toaster";
+import { useLogout } from "../../hooks/mutations/OnboardingMutations";
+import { useQueryClient } from "@tanstack/react-query";
 
 const LogOutModal = ({ isOpen, setIsOpen, onConfirm, loading = false }) => {
   const navigate = useNavigate(); // (not used now, kept if you need close+navigate on "No")
+  const logoutMutation = useLogout();
+  const queryClient = useQueryClient();
+
+const handleConfirmLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+      queryClient.setQueryData(["auth-me"], null);
+      // Explicitly clear cookies
+      // Cookies.remove("authorization");
+      // Cookies.remove("tokenType");
+      localStorage.removeItem("resvor_auth_token_type");
+      onConfirm(); // Call the onConfirm callback to clear client-side auth state
+      // setIsLogoutModalOpen(false);
+      router.push("/auth/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      if (error.code === "NO_INTERNET") {
+        ErrorToast(error.message);
+      } else {
+        ErrorToast(
+          error.response?.data?.message ||
+            "An error occurred during logout. Please try again.",
+        );
+      }
+      // setIsLogoutModalOpen(false);
+    }
+  };
 
   return (
     <Modal
@@ -47,7 +77,7 @@ const LogOutModal = ({ isOpen, setIsOpen, onConfirm, loading = false }) => {
 
             <button
               className="bg-[#EE3131] text-white rounded-[8px] px-10 p-2 disabled:opacity-60"
-              onClick={() => onConfirm && onConfirm()}
+              onClick={handleConfirmLogout}
               disabled={loading}
             >
               {loading ? "Logging out..." : "Yes"}

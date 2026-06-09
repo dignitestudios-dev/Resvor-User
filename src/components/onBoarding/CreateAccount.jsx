@@ -17,6 +17,8 @@ import { useSignUp } from "../../hooks/mutations/OnboardingMutations";
 
 const CreateAccount = ({ handleNext, setEmail }) => {
   const navigate = useNavigate();
+  // const logoutMutation = useLogout();
+
 
   // eslint-disable-next-line no-unused-vars
   const signupMutation = useSignUp();

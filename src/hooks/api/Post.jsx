@@ -21,6 +21,15 @@ export const submitVerifyEmail = async (payload) => {
   return data;
 };
 
+export const resendEmailVerificationOtp = async (payload) => {
+  const { data } = await axios.post(
+    "/auth/email-verification-otp",
+    payload
+  );
+
+  return data;
+};
+
 export const submitVerifyPhone = async (payload) => {
   
   const { data } = await axios.post("/auth/onboarding/verify-mobile-number", payload);
@@ -66,5 +75,11 @@ export const submitResetPassword = async (payload) => {
 
 export const getLounges = async (payload = {}) => {
   const { data } = await axios.get("/lounges/list", payload);
+  return data;
+};
+
+//logout 
+export const submitLogout = async () => {
+  const { data } = await axios.post("/auth/logout");
   return data;
 };

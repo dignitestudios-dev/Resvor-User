@@ -11,9 +11,9 @@ export const logInSchema = Yup.object({
       "Email cannot contain spaces.",
       (value) => (value ? value.trim() === value && !/\s/.test(value) : false)
     )
-    .matches(
-      /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
-      "Invalid email format."
+     .matches(
+      /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
+      "Invalid email format.",
     )
     .test("no-dot-before-at", "Email cannot have a dot before @.", (value) =>
       value ? !/\.@/.test(value) : false
@@ -28,6 +28,7 @@ export const logInSchema = Yup.object({
     ),
   password: Yup.string()
     .min(8, "Password must contain at least 8 alphanumeric characters.")
+    .max(64, "Password must not exceed 64 characters.")
     .required("Please enter your password"),
 });
 
@@ -43,8 +44,8 @@ export const forgotPasswordSchema = Yup.object({
       (value) => (value ? value.trim() === value && !/\s/.test(value) : false)
     )
     .matches(
-      /^[a-zA-Z0-9](\.?[a-zA-Z0-9_-])*@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
-      "Invalid email format."
+      /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
+      "Invalid email format.",
     )
     .test("no-dot-before-at", "Email cannot have a dot before @.", (value) =>
       value ? !/\.@/.test(value) : false
@@ -60,17 +61,18 @@ export const forgotPasswordSchema = Yup.object({
 });
 
 export const updatePasswordSchema = Yup.object({
-  password: Yup.string()
-    .required("Please enter your password")
-    .matches(/^(?!\s)(?!.*\s$)/, "Password must not begin or end with spaces")
-    .min(8, "Password must contain at least 8 characters")
-    .matches(/[A-Z]/, "Password must include at least one uppercase letter")
-    .matches(/[a-z]/, "Password must include at least one lowercase letter")
-    .matches(/\d/, "Password must include at least one number")
+    password: Yup.string()
+    .min(8, "Password must be at least 8 characters long.")
+    .max(50, "Password must not exceed 50 characters.")
+    .matches(/[A-Z]/, "Password must contain at least one uppercase letter.")
+    .matches(/\d/, "Password must contain at least one number.")
     .matches(
-      /[^A-Za-z0-9]/,
-      "Password must include at least one special character"
-    ),
+      /[!@#$%^&*(),.?":{}|<>]/,
+      "Password must contain at least one special character.",
+    )
+    .matches(/^[^\s]*$/, "Password should not contain spaces.")
+    .trim()
+    .required("Please enter your password"),
 
   confPassword: Yup.string()
     .required("Please confirm your password")
@@ -88,9 +90,9 @@ export const signUpSchema = Yup.object({
       "Email cannot contain spaces.",
       (value) => (value ? value.trim() === value && !/\s/.test(value) : false)
     )
-    .matches(
-      /^[a-zA-Z0-9._%+-]+(?<!\.)@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
-      "Invalid email format."
+     .matches(
+      /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
+      "Invalid email format.",
     )
     .test("no-dot-before-at", "Email cannot have a dot before @.", (value) =>
       value ? !/\.@/.test(value) : false

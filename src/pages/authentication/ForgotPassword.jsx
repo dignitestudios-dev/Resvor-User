@@ -7,9 +7,13 @@ import { MdOutlineChevronLeft } from "react-icons/md";
 import { forgotPasswordSchema } from "../../schema/authentication/authSchema";
 import { forgotPasswordValues } from "../../init/authentication/authValues";
 import { useForgotPassword } from "../../hooks/mutations/OnboardingMutations"; // Update path as needed
+import { useState } from "react";
+import { ErrorToast } from "../../components/global/Toaster";
+
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+    const [apiError, setApiError] = useState("");
 
   const forgotPasswordMutation = useForgotPassword();
 
@@ -26,14 +30,14 @@ const ForgotPassword = () => {
     validateOnChange: true,
     validateOnBlur: true,
 
-    onSubmit: async (values) => {
+  onSubmit: async (values) => {
   try {
+    setApiError(""); // clear old error
+
     const response = await forgotPasswordMutation.mutateAsync({
       email: values.email,
-      role: "user", // fixed role
+      role: "user",
     });
-
-    console.log("🚀 ~ ForgotPassword Response:", response);
 
     navigate("/auth/verify-forget-otp", {
       state: {
@@ -42,10 +46,12 @@ const ForgotPassword = () => {
       },
     });
   } catch (error) {
-    console.error(
-      "🚀 ~ ForgotPassword Error:",
-      error?.response?.data || error
-    );
+    const message =
+      error?.response?.data?.message || "Something went wrong";
+      ErrorToast(message);
+
+    setApiError(message); // 👈 store console.error();
+    
   }
 },
   });
@@ -70,6 +76,12 @@ const ForgotPassword = () => {
             Please enter your registered email address.
           </p>
         </div>
+
+        {apiError && (
+  <p className="text-red-500 text-sm mt-2 text-center">
+    {apiError}
+  </p>
+)}
 
         <form onSubmit={handleSubmit}>
           <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[360px] md:w-[550px] w-[320px] mt-4">

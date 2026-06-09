@@ -1,8 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect } from "react";
 
-const CountDown = ({ isActive, setIsActive, seconds, setSeconds }) => {
-  // Start the countdown when `isActive` is true
+const CountDown = ({ isActive, setIsActive, seconds, setSeconds, onResend, isLoading }) => {  // Start the countdown when `isActive` is true
   useEffect(() => {
     let timer;
     if (isActive && seconds > 0) {
@@ -16,10 +15,18 @@ const CountDown = ({ isActive, setIsActive, seconds, setSeconds }) => {
     return () => clearInterval(timer); // clear timer on cleanup
   }, [isActive, seconds]);
 
-  const handleRestart = () => {
-    setSeconds(30);
-    setIsActive(true);
-  };
+ const handleRestart = async () => {
+  if (seconds > 0) return;
+
+  if (onResend) {
+    await onResend(); // 👈 call forgot password API
+  }else{
+setSeconds(30);
+  setIsActive(true);
+  }
+
+  
+};
 
   return (
     <button
@@ -38,6 +45,8 @@ const CountDown = ({ isActive, setIsActive, seconds, setSeconds }) => {
         <span className="mr-1">
           {seconds > 0
             ? `Resend in 00:${seconds}s`
+            : isLoading
+            ? "Resending..."
             : "Didn’t receive the OTP? Resend"}
         </span>
       </div>

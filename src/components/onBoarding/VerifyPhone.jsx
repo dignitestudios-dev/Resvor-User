@@ -108,7 +108,7 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
                 <input
                   inputMode="numeric"
                   key={index}
-                  type="password"
+                  // type="password"
                   placeholder=""
                   maxLength="1"
                   value={digit}

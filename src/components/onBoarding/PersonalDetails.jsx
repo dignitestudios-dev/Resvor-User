@@ -160,7 +160,7 @@ if (values.profile instanceof File) { // 👈 instanceof File ensures it's an ac
         <p className="xxl:text-[48px] text-[32px] text-[#E6E6E6] font-[600] capitalize">
           Personal Details
         </p>
-        <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] capitalize ">
+        <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6]  ">
           Please enter your details to create an account.
         </p>
       </div>
@@ -222,7 +222,7 @@ if (values.profile instanceof File) { // 👈 instanceof File ensures it's an ac
               touched={touched.number}
               autoComplete="off"
             />
-          <div>
+          <div>``
             <label className="block text-[14px] font-[500] text-white mb-2">
   Add Birthday and Special Dates
 </label>
@@ -237,9 +237,9 @@ if (values.profile instanceof File) { // 👈 instanceof File ensures it's an ac
       <div className="flex items-center justify-between px-4 py-2.5">
         <div className="text-[#FFFFFF] text-[14px] font-thin">
           <span className=" mr-2"> Birthday</span>
-          {values.specialDatesData.dobDate.day}{" "}
-          {values.specialDatesData.dobDate.month}{" "}
-          {values.specialDatesData.dobDate.year}
+         {values.specialDatesData.dobDate.day}-
+{values.specialDatesData.dobDate.month}-
+{values.specialDatesData.dobDate.year}
         </div>
         {/* DOB is required so no delete button, or add one if needed */}
       </div>
@@ -251,7 +251,7 @@ if (values.profile instanceof File) { // 👈 instanceof File ensures it's an ac
         <div key={index} className="flex items-center justify-between px-4 py-2.5">
           <div className="text-[#FFFFFF] text-[14px] font-thin">
             <span className=" mr-2">{date.title}</span>
-            {date.day} {date.month} {date.year}
+            {date.day} - {date.month} -{date.year}
           </div>
 
           <button
@@ -330,11 +330,12 @@ if (values.profile instanceof File) { // 👈 instanceof File ensures it's an ac
       </form>
       {modalIsOpen && (
         <TagsModal
-          isOpen={modalIsOpen}
-          onClose={closeModal}
-          setFieldValue={setFieldValue}
-          setFieldError={setFieldError}
-        />
+  isOpen={modalIsOpen}
+  onClose={closeModal}
+  setFieldValue={setFieldValue}
+  setFieldError={setFieldError}
+  initialData={values.specialDatesData}
+/>
       )}
     </div>
   );

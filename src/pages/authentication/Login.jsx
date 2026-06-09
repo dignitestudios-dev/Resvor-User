@@ -9,6 +9,7 @@ import { logInSchema } from "../../schema/authentication/authSchema";
 import { loginValues } from "../../init/authentication/authValues";
 import { useLogin } from "../../hooks/mutations/OnboardingMutations";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
+import { setStoredTokenType } from "../../lib/authSession";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -44,8 +45,17 @@ const Login = () => {
       return;
     }
 
-    SuccessToast("Login successful");
-    navigate("/app/home");
+    const tokenType = response?.data?.tokenType || response?.tokenType || "session_token";
+
+    setStoredTokenType(tokenType);
+
+    if (tokenType === "access_token") {
+      SuccessToast("Login successful");
+      navigate("/app/home", { replace: true });
+    } else {
+      SuccessToast("Session token received. Continue on auth pages.");
+      navigate("/auth/login", { replace: true });
+    }
   } catch (error) {
     console.error("Login Error:", error);
 
@@ -155,7 +165,7 @@ const Login = () => {
           <p className="text-center xxl:text-[26px] text-[15px] leading-[21.6px] text-white">
             Don’t have an account?
             <span
-              className="bg-gradient-to-l to-[#63CFAC] from-[#29ABE2] bg-clip-text text-transparent xxl:text-[26px] text-[16px] font-[500] pl-1 cursor-pointer"
+              className="bg-white font-semibold bg-clip-text text-transparent xxl:text-[26px] text-[16px] font-[500] pl-1 cursor-pointer"
               onClick={() => navigate("/auth/signup")}
             >
               Sign Up

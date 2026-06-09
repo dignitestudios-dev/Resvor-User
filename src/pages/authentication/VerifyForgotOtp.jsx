@@ -4,19 +4,23 @@ import { forgotLogo } from "../../assets/export";
 import { useRef, useState } from "react";
 import CountDown from "../../components/auth/CountDown";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { ErrorToast } from "../../components/global/Toaster";
+import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import { useVerifyForgotOtp } from "../../hooks/mutations/OnboardingMutations";
+import { useForgotPassword } from "../../hooks/mutations/OnboardingMutations"; // Update path as needed
+
 
 const VerifyForgotOtp = () => {
   const location = useLocation();
   const email = location?.state?.email;
+
+  const forgotPasswordMutation = useForgotPassword();
 
   const navigate = useNavigate();
   const [otp, setOtp] = useState(Array(5).fill(""));
   const inputs = useRef([]);
 
   const isOtpComplete = otp.every((digit) => digit !== "");
-const isValidOtp = otp.join("").length === 6;
+const isValidOtp = otp.join("").length === 5;
 
   const verifyForgotOtpMutation = useVerifyForgotOtp();
 
@@ -90,13 +94,39 @@ if (!isOtpComplete) {
     }
   };
 
+
+const handleResendOtp = async () => {
+  try {
+    if (!email) {
+      ErrorToast("Email not found");
+      return;
+    }
+
+    const response = await forgotPasswordMutation.mutateAsync({
+      email,
+      role: "user",
+    });
+
+    if (response?.success) {
+      SuccessToast("OTP resent successfully");
+      setOtp(Array(5).fill(""));
+      inputs.current[0]?.focus();
+    } else {
+      ErrorToast(response?.message || "Failed to resend OTP");
+    }
+  } catch (err) {
+    ErrorToast(err?.response?.data?.message || "Something went wrong");
+    console.log(err,"error forgot otp");
+  }
+};
+
   return (
     <div className="w-full flex flex-col items-center text-white px-4 py-6 relative">
-      <div className="flex justify-start items-center absolute top-4 left-28">
+      {/* <div className="flex justify-start items-center absolute top-4 left-28">
         <button type="button" onClick={() => navigate(-1)}>
           <FaArrowLeftLong color="white" size={24} />
         </button>
-      </div>
+      </div> */}
 
       {/* Logo */}
       <img
@@ -126,7 +156,7 @@ if (!isOtpComplete) {
           {otp.map((digit, index) => (
             <input
               key={index}
-              type="password"
+              // type="password"
               maxLength="1"
               value={digit}
               placeholder=""
@@ -165,11 +195,13 @@ if (!isOtpComplete) {
 />
 
           <CountDown
-            isActive={isActive}
-            setIsActive={setIsActive}
-            seconds={seconds}
-            setSeconds={setSeconds}
-          />
+  isActive={isActive}
+  setIsActive={setIsActive}
+  seconds={seconds}
+  setSeconds={setSeconds}
+  onResend={handleResendOtp}
+  isLoading={forgotPasswordMutation.isPending}
+/>
 
           <button
             onClick={() => navigate("/auth/forget-password")}

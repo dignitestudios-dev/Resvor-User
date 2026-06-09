@@ -1,4 +1,4 @@
-import { submitLogin, submitSignUp, submitVerifyEmail, submitPersonalDetails, submitVerifyPhone, submitPreferences,submitForgotPassword,submitVerifyForgotOtp,submitResetPassword, getLounges } from "../api/Post";
+import { submitLogin, submitSignUp, submitVerifyEmail, submitPersonalDetails, submitVerifyPhone, submitPreferences,submitForgotPassword,submitVerifyForgotOtp,submitResetPassword, getLounges,resendEmailVerificationOtp, submitLogout } from "../api/Post";
 import { useMutation } from "@tanstack/react-query";
 
 
@@ -41,6 +41,12 @@ export const useVerifyEmail = () => {
   });
 };
 
+export const useResendEmailOtp = () => {
+  return useMutation({
+    mutationFn: resendEmailVerificationOtp,
+  });
+};
+
 
 export const useVerifyPhone = () => {
   return useMutation({
@@ -66,3 +72,11 @@ export const useGetLounges = () => {
     mutationFn: getLounges,
   });
 };
+
+
+export const useLogout = () => {
+  return useMutation({
+    mutationFn: submitLogout,
+  });
+};
+ 

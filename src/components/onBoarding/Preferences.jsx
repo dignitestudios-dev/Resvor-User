@@ -60,7 +60,9 @@ const Preferences = ({ handleNext, handlePrevious }) => {
 
   return (
     <div className="flex flex-col justify-center items-center h-auto">
-      ...
+              <p className="font-bold text-white justify-center text-2xl">Tell Us What You’re Into</p>
+              <p className="text-white text-center">We’ll personalize your lounge suggestions, event invites, and offers based on your vibe.</p>
+
       <form onSubmit={handleSubmit}>
 
         {/* Music Genres */}

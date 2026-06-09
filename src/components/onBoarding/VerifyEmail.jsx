@@ -5,17 +5,22 @@ import { forgotLogo } from "../../assets/export";
 import TextCountDown from "./TextCountDown";
 import AuthSuccessModal from "../auth/AuthSuccessModal";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { ErrorToast } from "../global/Toaster";
-import { useVerifyEmail } from './../../hooks/mutations/OnboardingMutations';
+import { ErrorToast, SuccessToast } from "../global/Toaster";
+import { useVerifyEmail,useResendEmailOtp } from './../../hooks/mutations/OnboardingMutations';
 
 const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
   const inputs = useRef([]);
   const verifyEmailMutation = useVerifyEmail();
+  const resendOtpMutation = useResendEmailOtp();
   const [otp, setOtp] = useState(Array(5).fill(""));
+  const isOtpComplete = otp.every((digit) => digit !== "");
+const isValidOtp = otp.join("").length === 5;
 
   const [isActive, setIsActive] = useState(true);
   const [seconds, setSeconds] = useState(30);
   const [requestSendModal, setRequestSendModal] = useState(false);
+
+
 
   const handleChange = (e, index) => {
     const { value } = e.target;
@@ -67,38 +72,63 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
     }
   };
 
-  const handleResendOtp = async () => {
-    try {
-      setOtp(Array(5).fill("")); // Reset OTP fields
-      handleRestart();
-    } catch (err) {
-      console.log("🚀 ~ handleResendOtp ~ err:", err);
-    }
-  };
-
   const handleRestart = () => {
-    setSeconds(30);
-    setIsActive(true);
-  };
+  // Reset countdown
+  setSeconds(30);
+  setIsActive(true);
+
+  // Clear OTP fields
+  setOtp(Array(5).fill(""));
+
+  // Focus first input
+  setTimeout(() => {
+    inputs.current[0]?.focus();
+  }, 0);
+};
+
+  const handleResendOtp = async () => {
+  try {
+    const response = await resendOtpMutation.mutateAsync({
+      email,
+      role: "user",
+    });
+
+    if (response?.success) {
+      SuccessToast("OTP resent successfully");
+      setOtp(Array(5).fill(""));
+      handleRestart();
+      inputs.current[0]?.focus();
+    } else {
+      ErrorToast(response?.message || "Failed to resend OTP");
+    }
+  } catch (err) {
+    console.error("Resend OTP error:", err);
+
+    ErrorToast(
+      err?.response?.data?.message ||
+        "Something went wrong. Please try again."
+    );
+  }
+};
 
   return (
     <div className="grid lg:grid-cols-1 grid-cols-1 w-full text-white">
-      <div className="flex justify-start items-center">
+      {/* <div className="flex justify-start items-center">
         <button type="button" onClick={() => handlePrevious()}>
           <FaArrowLeftLong color="white" size={24} />
         </button>
-      </div>
+      </div> */}
       <div className="flex flex-col justify-center items-center h-auto ">
         <div>
           <img src={forgotLogo} alt="logo" className="w-[220px]" />
         </div>
-        <div className="mt-4 py-4 space-y-3 xxl:w-[400px] xxl:ml-12 text-center">
+        <div className="mt-4 py-4 space-y-3 xxl:w-[400px]  xxl:ml-12 text-center">
           <p className=" xxl:text-[48px] text-[32px] font-[600] capitalize">
-            Verify OTP
+            verification
           </p>
-          <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] w-[440px] ">
-            A One-Time Password (OTP) has been sent to your registered email (
-            {email}). Please enter it to proceed.
+          <p className="text-[14px] sm:text-[16px] lg:text-[18px] text-[#E6E6E6] w-[440px]">
+            A One-Time Password (OTP) has been sent to your registered email.
+            Please enter it to proceed.
           </p>
         </div>
 
@@ -109,7 +139,7 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
                 <input
                   inputMode="numeric"
                   key={index}
-                  type="password"
+                  // type="password"
                   placeholder=""
                   maxLength="1"
                   value={digit}
@@ -133,20 +163,25 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
                   />
                 ) : (
                   <span
-                    type="button"
-                    // disabled={resendLoading}
-                    onClick={handleResendOtp}
-                    className="font-[600] pl-1 cursor-pointer"
-                  >
-                    Resend
-                    {/* {resendLoading ? "Resending..." : "Resend"} */}
-                  </span>
+  onClick={!resendOtpMutation.isPending ? handleResendOtp : undefined}
+  className={`font-[600] pl-1 ${
+    resendOtpMutation.isPending
+      ? "opacity-50 cursor-not-allowed"
+      : "cursor-pointer"
+  }`}
+>
+  {resendOtpMutation.isPending ? "Resending..." : "Resend"}
+</span>
                 )}
               </p>
             </div>
             <div className="w-full flex justify-center pl-4 mt-4 space-y-4 ">
               <div className="w-[360px] ">
-                <AuthButton text="Verify" loading={verifyEmailMutation.isPending} />
+                <AuthButton text="Verify" loading={verifyEmailMutation.isPending}
+                  disabled={!isOtpComplete || !isValidOtp || verifyEmailMutation.isPending}
+
+                
+                />
               </div>
             </div>
             {/* <div className="w-full flex justify-center pl-4 mt-4 space-y-4 ">
