@@ -4,14 +4,10 @@ import { NavLink } from "react-router";
 export const ToasterContainer = () => {
   return (
     <Toaster
-      position="top-center"
-      reverseOrder={false}
-      toastOptions={{
-        style: {
-          background: "#333",
-          color: "#fff",
-        },
-      }}
+      position="bottom-right"
+                  toastOptions={{
+                    duration: 3000,
+                  }}
     />
   );
 };
@@ -23,14 +19,14 @@ export const SuccessToast = (message) => {
   if (toastId) toast.dismiss(toastId); // Dismiss previous toast
   toastId = toast.success(message, {
     duration: 3000,
-    style: {
-      background: "green",
-      color: "#fff",
-    },
-    iconTheme: {
-      primary: "white",
-      secondary: "green",
-    },
+    // style: {
+    //   background: "green",
+    //   color: "#fff",   
+    // },
+    // iconTheme: {
+    //   primary: "white",
+    //   secondary: "green",
+    // },
   });
 };
 
@@ -38,14 +34,14 @@ export const ErrorToast = (message) => {
   if (toastId) toast.dismiss(toastId); // Dismiss previous toast
   toastId = toast.error(message, {
     duration: 3000,
-    style: {
-      background: "#ff4d4d",
-      color: "#fff",
-    },
-    iconTheme: {
-      primary: "white",
-      secondary: "#ff4d4d",
-    },
+    // style: {
+    //   background: "#ff4d4d",
+    //   color: "#fff",
+    // },
+    // iconTheme: {
+    //   primary: "white",
+    //   secondary: "#ff4d4d",
+    // },
   });
 };
 
