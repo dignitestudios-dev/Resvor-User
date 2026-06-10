@@ -16,13 +16,10 @@ const handleConfirmLogout = async () => {
     try {
       await logoutMutation.mutateAsync();
       queryClient.setQueryData(["auth-me"], null);
-      // Explicitly clear cookies
-      // Cookies.remove("authorization");
-      // Cookies.remove("tokenType");
+      
       localStorage.removeItem("resvor_auth_token_type");
       onConfirm(); // Call the onConfirm callback to clear client-side auth state
-      // setIsLogoutModalOpen(false);
-      router.push("/auth/login");
+      
     } catch (error) {
       console.error("Logout error:", error);
       if (error.code === "NO_INTERNET") {
@@ -80,7 +77,7 @@ const handleConfirmLogout = async () => {
               onClick={handleConfirmLogout}
               disabled={loading}
             >
-              {loading ? "Logging out..." : "Yes"}
+              {logoutMutation?.isPending ? "Logging out..." : "Yes"}
             </button>
           </div>
         </div>

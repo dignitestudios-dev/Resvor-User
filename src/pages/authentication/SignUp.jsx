@@ -20,7 +20,7 @@ export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0);
 
   const { data: authData, isLoading } = useAuthMe(); // 👈 fetch current step
-
+console.log("🚀 ~ SignUp ~ authData:", authData);
 const navigate = useNavigate();
   // 👇 once API responds, set the correct step
   useEffect(() => {

@@ -60,7 +60,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
         <p className="xxl:text-[48px] text-[32px] text-[#E6E6E6] font-[600] capitalize">
           sign up
         </p>
-        <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] capitalize ">
+        <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] ">
           Please enter your details to create an account.
         </p>
       </div>
