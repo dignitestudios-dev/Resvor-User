@@ -53,8 +53,8 @@ const Login = () => {
       SuccessToast("Login successful");
       navigate("/app/home", { replace: true });
     } else {
-      SuccessToast("Session token received. Continue on auth pages.");
-      navigate("/auth/login", { replace: true });
+      // SuccessToast("Session token received. Continue on auth pages.");
+      navigate("/auth/signup", { replace: true });
     }
   } catch (error) {
     console.error("Login Error:", error);
