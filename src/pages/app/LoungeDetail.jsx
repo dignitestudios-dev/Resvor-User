@@ -339,6 +339,7 @@ const LoungeDetail = () => {
 
   const lounge = loungeResponse?.data;
   console.log("🚀 ~ LoungeDetail ~ lounge:", lounge);
+  console.log("🚀 ~ LoungeDetail ~ id, bookingData, isBookingServices:", { id, bookingData, isBookingServices });
 
   useEffect(() => {
     if (lounge?.isFavorite !== undefined) {
@@ -504,7 +505,7 @@ images={lounge?.images || []}
                 <div className="w-full">
                   <Button
                     type="button"
-                    text="Make Reservation"
+                    text="Book Now"
                     onClick={() => setIsBooking(true)}
                   />
                 </div>
@@ -523,6 +524,7 @@ images={lounge?.images || []}
 
         {isBooking && (
           <BookingModal
+            loungeId={id}
             onClose={() => setIsBooking(false)}
             onNext={handleBookingNext}
           />
@@ -530,6 +532,8 @@ images={lounge?.images || []}
 
         {isBookingServices && (
           <BookingServiceModal
+            loungeId={id}
+            bookingData={bookingData}
             onClose={() => setIsBookingServices(false)}
             onNext={handleBookingServiceNext}
           />
@@ -538,7 +542,7 @@ images={lounge?.images || []}
         {isBookingDetails && (
           <BookingDetailsModal
             onClose={handleBookingDetailsClose}
-            bookingData={bookingData}
+            bookingData={bookingData?.displayData}
             bookingServiceData={bookingServiceData}
             onNext={() => {
               setIsBookingDetails(false);
@@ -546,7 +550,7 @@ images={lounge?.images || []}
             }}
             onClickBack={() => {
               setIsBookingDetails(false);
-              setIsBooking(true);
+              setIsBookingServices(true);
             }}
           />
         )}
@@ -598,6 +602,11 @@ images={lounge?.images || []}
 
         {isEventSummary && (
           <EventSummaryModal
+            apiPayload={{
+              ...bookingData?.apiPayload,
+              tableIds: bookingServiceData?.tableIds,
+              specialRequest: bookingServiceData?.specialRequest,
+            }}
             onClick={handleEventSummary}
             onClose={() => setISEventSummary(false)}
           />

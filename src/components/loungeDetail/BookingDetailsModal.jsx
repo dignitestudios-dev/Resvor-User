@@ -22,9 +22,6 @@ const BookingDetailsModal = ({
     time = "06:00pm",
     guestCount = "6 Guests",
     children = "None",
-    table = "Table No 15",
-    // services = "Food and Drink Package, Bottle Package",
-    instructions = "The standard Lorem Ipsum passage, m ipsum dolor sit amet, cectetur adipiscing elit, sed do eiusmod. The standard.",
   } = bookingData || {};
 
   return (
@@ -91,7 +88,9 @@ const BookingDetailsModal = ({
               <p className="font-medium text-[14px] text-[#000000] mb-1">
                 Table
               </p>
-              <p className="text-[#000000]">{table}</p>
+              <p className="text-[#000000] whitespace-pre-wrap">
+                {bookingServiceData?.selectedSeating?.map(s => s.title || s.name).join(", ") || "-"}
+              </p>
             </div>
           </div>
 
@@ -111,20 +110,20 @@ const BookingDetailsModal = ({
               <div className="border-l-2 border-b-gray-300 pl-1 py-2">
                 {bookingServiceData?.selectedSeating?.map((item, index) => (
                   <p key={index} className="text-[#000000]">
-                    {item.name}
+                    {item.name || item.title}
                   </p>
                 ))}
               </div>
             </div>
           </div>
-          {bookingServiceData?.instructions && (
+          {bookingServiceData?.instruction && (
             <div className="mb-6">
               <p className="font-semibold text-[#181818] mb-2">
                 Any Instruction{" "}
                 <span className="text-[#727272] text-[11px]">(optional)</span>
               </p>
               <p className="text-[#6B6B6B] text-[12px] leading-5">
-                {instructions}
+                {bookingServiceData.instruction}
               </p>
             </div>
           )}

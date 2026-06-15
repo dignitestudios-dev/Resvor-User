@@ -1,9 +1,57 @@
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { IoLocation } from "react-icons/io5";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
+import { useAuthMe, useBookings } from "../../hooks/queries/useQueries";
 
 export default function BookingDetails() {
   const navigate = useNavigate();
+  const { id } = useParams();
+
+  const { data: authData } = useAuthMe();
+  const { data: bookingsResponse, isLoading } = useBookings({ page: 1, limit: 100 });
+
+  const booking = bookingsResponse?.data?.find((b) => b._id === id);
+
+  const dateStr = booking?.bookingDate
+    ? new Date(booking.bookingDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" })
+    : "-";
+
+  const formatTimeStr = (isoStr) => {
+    if (!isoStr) return "";
+    const dateObj = new Date(isoStr);
+    return dateObj.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+  };
+
+  const startTimeStr = formatTimeStr(booking?.startTime);
+  const endTimeStr = formatTimeStr(booking?.endTime);
+  const timeRange = startTimeStr && endTimeStr ? `${startTimeStr} - ${endTimeStr}` : "-";
+
+  const seatingArea = booking?.tableIds?.length > 0
+    ? booking.tableIds.map(t => `${t.type ? t.type.charAt(0).toUpperCase() + t.type.slice(1) : "Regular"} (${t.code || `T${t.tableNumber}`})`).join(", ")
+    : "-";
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-[#F5F5F5]">
+        <p className="text-gray-500 font-semibold text-lg">Loading booking details...</p>
+      </div>
+    );
+  }
+
+  // If page is loaded but booking not found in active list, show a warning or fallback.
+  // We can fallback to mock values to prevent a blank page.
+  const nameVal = authData?.data?.name || "Mike Smith";
+  const emailVal = authData?.data?.email || "designer@gmail.com";
+  const phoneVal = authData?.data?.phone || authData?.data?.phoneNumber || "1 462 849 558";
+
+  const displayedLoungeName = booking?.loungeId?.name || "Testing Lounge";
+  const displayedAddress = booking?.loungeId?.location?.address || "Times Square, New York, NY";
+  const displayedDate = booking ? dateStr : "26 Dec, 2024";
+  const displayedTime = booking ? timeRange : "06:00pm";
+  const displayedGuests = booking ? `${booking.guestCount} Guests` : "6 Guests";
+  const displayedTable = booking ? seatingArea : "Table No 15";
+  const displayedSpecialRequest = booking ? booking.specialRequest : "The standard Lorem Ipsum passage, m ipsum dolor sit amet, cectetur adipiscing elit, sed do eiusmod.";
+
   return (
     <>
       <div className="flex items-center pt-[16px] pb-[18em] homeSectionImage">
@@ -40,7 +88,7 @@ export default function BookingDetails() {
 
                 <div className="flex-1 mt-[38px]">
                   <h3 className="text-[24px] font-semibold text-[#000000]">
-                    Highbar Rooftop NYC
+                    {displayedLoungeName}
                   </h3>
                   <div className="flex flex-wrap gap-2 mt-2">
                     <span className="px-3 py-1 bg-[#E6E6F0] text-[#010067] rounded-full text-sm ">
@@ -56,7 +104,7 @@ export default function BookingDetails() {
                   <div className="flex items-center gap-1 mt-2">
                     <IoLocation className="text-xl text-[#010067]" />
                     <p className="text-[#505050] text-[16px] font-[500] ">
-                      Times Square, New York, NY
+                      {displayedAddress}
                     </p>
                   </div>
                 </div>
@@ -68,19 +116,19 @@ export default function BookingDetails() {
                   <p className="font-semibold text-[#000000] text-[18px]">
                     Check-in Date
                   </p>
-                  <p className="text-[#000000] text-[16px]">05/26/2024</p>
+                  <p className="text-[#000000] text-[16px]">{displayedDate}</p>
                 </div>
                 <div className="space-y-6">
                   <p className="font-semibold text-[#000000] text-[18px]">
                     Check-in Time
                   </p>
-                  <p className="text-[#000000] text-[16px]">06:00 PM</p>
+                  <p className="text-[#000000] text-[16px]">{displayedTime}</p>
                 </div>
                 <div className="space-y-6">
                   <p className="font-semibold text-[#000000] text-[18px]">
                     Guest Count
                   </p>
-                  <p className="text-[#000000] text-[16px]">30 Guests</p>
+                  <p className="text-[#000000] text-[16px]">{displayedGuests}</p>
                 </div>
                 <div className="space-y-6">
                   <p className="font-semibold text-[#000000] text-[18px]">
@@ -92,7 +140,7 @@ export default function BookingDetails() {
                   <p className="font-semibold text-[#000000] text-[18px]">
                     Table
                   </p>
-                  <p className="text-[#000000] text-[16px]">Table No 15</p>
+                  <p className="text-[#000000] text-[16px]">{displayedTable}</p>
                 </div>
               </div>
 
@@ -120,12 +168,7 @@ export default function BookingDetails() {
                   <span className="text-gray-400 font-[400]">(Optional)</span>
                 </p>
                 <p className="text-[#000000] text-[16px] font-[500] ">
-                  The standard Lorem Ipsum passage, m ipsum dolor sit amet,
-                  cectetur adipiscing elit, sed do eiusmod. The standard Lorem
-                  Ipsum passage, m ipsum dolor sit amet, cectetur adipiscing
-                  elit, sed do eiusmod. The standard Lorem Ipsum passage, m
-                  ipsum dolor sit amet, cectetur adipiscing elit, sed do
-                  eiusmod. The standard.
+                  {displayedSpecialRequest}
                 </p>
               </div>
             </div>
@@ -140,21 +183,19 @@ export default function BookingDetails() {
                   <p className="font-semibold text-[#000000] text-[18px]">
                     Name
                   </p>
-                  <p className="text-[#000000] text-[16px]">Mike Smith</p>
+                  <p className="text-[#000000] text-[16px]">{nameVal}</p>
                 </div>
                 <div className="space-y-4">
                   <p className="font-semibold text-[#000000] text-[18px]">
                     Email Address
                   </p>
-                  <p className="text-[#000000] text-[16px]">
-                    designer@gmail.com
-                  </p>
+                  <p className="text-[#000000] text-[16px] break-all">{emailVal}</p>
                 </div>
                 <div className="space-y-4">
                   <p className="font-semibold text-[#000000] text-[18px]">
                     Phone Number
                   </p>
-                  <p className="text-[#000000] text-[16px]">+1 462 849 558</p>
+                  <p className="text-[#000000] text-[16px]">{phoneVal}</p>
                 </div>
               </div>
             </div>

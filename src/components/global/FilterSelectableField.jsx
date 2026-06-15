@@ -52,10 +52,10 @@ const FilterSelectableField = ({
           ) : (
             <div
               className="text-[#727272] text-[14px] font-[500] px-3 py-1 rounded-[10px] whitespace-nowrap overflow-hidden text-ellipsis"
-              title={value.map((item) => item?.name || item).join(", ")} // tooltip for all
+              title={value.map((item) => item?.title || item?.name || item).join(", ")} // tooltip for all
             >
               {value
-                .map((item) => item?.name || item)
+                .map((item) => item?.title || item?.name || item)
                 .slice(0, 2)
                 .join(", ")}
               {value.length > 2 && " ..."}

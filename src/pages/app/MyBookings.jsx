@@ -4,6 +4,7 @@ import { useState } from "react";
 import BookingsTable from "../../components/bookings/BookingsTable";
 import EventBookingsTable from "../../components/bookings/EventBookingsTable";
 import StatusDropdown from "../../components/global/StatusDropdown";
+import { useBookings } from "../../hooks/queries/useQueries";
 
 const MyBooking = () => {
   const navigate = useNavigate();
@@ -15,78 +16,51 @@ const MyBooking = () => {
 
   const [statusFilter, setStatusFilter] = useState("");
 
-  const users = [
-    {
-      name: "John Doe",
-      date: "12-05-25",
-      time: "08:00AM 09:00PM",
-      guestLimit: "04",
-      seatingArea: "Rooftop",
-      location: "Dallas, TX – 802 PainEase Plaza",
-      status: "Completed",
-      eventType: "Birthday Party",
-    },
-    {
-      name: "Jane Smith",
-      date: "12-05-25",
-      time: "08:00AM 09:00PM",
-      guestLimit: "04",
-      seatingArea: "Rooftop",
-      location: "Chicago, IL – 1204 Windy Lane",
-      status: "Pending",
-      eventType: "Birthday Party",
-    },
-    {
-      name: "Jane Smith",
-      date: "12-05-25",
-      time: "08:00AM 09:00PM",
-      guestLimit: "04",
-      seatingArea: "Rooftop",
-      location: "Chicago, IL – 1204 Windy Lane",
-      status: "Pending",
-      eventType: "Birthday Party",
-    },
-    {
-      name: "Michael Johnson",
-      date: "12-05-25",
-      time: "08:00AM 09:00PM",
-      guestLimit: "04",
-      seatingArea: "Rooftop",
-      location: "San Francisco, CA – 55 Market Street",
-      status: "Completed",
-      eventType: "Birthday Party",
-    },
-    {
-      name: "Emily Davis",
-      date: "12-05-25",
-      time: "08:00AM 09:00PM",
-      guestLimit: "04",
-      seatingArea: "Rooftop",
-      location: "New York, NY – 9 Empire Blvd",
-      status: "Completed",
-      eventType: "Birthday Party",
-    },
-    {
-      name: "John Doe",
-      date: "12-05-25",
-      time: "08:00AM 09:00PM",
-      guestLimit: "04",
-      seatingArea: "Rooftop",
-      location: "Dallas, TX – 802 PainEase Plaza",
-      status: "Upcoming",
-      eventType: "Birthday Party",
-    },
-    {
-      name: "Jane Smith",
-      date: "12-05-25",
-      time: "08:00AM 09:00PM",
-      guestLimit: "04",
-      seatingArea: "Rooftop",
-      location: "Chicago, IL – 1204 Windy Lane",
-      status: "Approval",
-      eventType: "Birthday Party",
-    },
-  ];
+  const { data: bookingsResponse, isLoading } = useBookings({ page: 1, limit: 100 });
+  const bookingsData = bookingsResponse?.data || [];
+
+  const users = bookingsData.map((booking) => {
+    const seatingArea = booking.tableIds?.length > 0
+      ? booking.tableIds.map(t => `${t.type ? t.type.charAt(0).toUpperCase() + t.type.slice(1) : "Regular"} (${t.code || `T${t.tableNumber}`})`).join(", ")
+      : "Regular";
+
+    const location = booking.loungeId?.location?.address || "Address not available";
+
+    const dateStr = booking.bookingDate
+      ? new Date(booking.bookingDate).toLocaleDateString("en-US", { year: "2-digit", month: "2-digit", day: "2-digit" }).replace(/\//g, '-')
+      : "-";
+
+    const formatTimeStr = (isoStr) => {
+      if (!isoStr) return "";
+      const dateObj = new Date(isoStr);
+      return dateObj.toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit', hour12: true }).replace(" ", "");
+    };
+
+    const startTimeStr = formatTimeStr(booking.startTime);
+    const endTimeStr = formatTimeStr(booking.endTime);
+    const time = startTimeStr && endTimeStr ? `${startTimeStr} - ${endTimeStr}` : "-";
+
+    let status = "Pending";
+    if (booking.status === "completed") {
+      status = "Completed";
+    } else if (booking.status === "awaiting_payment" || booking.status === "pending") {
+      status = "Pending";
+    } else if (booking.status === "confirmed") {
+      status = "Upcoming";
+    }
+
+    return {
+      _id: booking._id,
+      name: booking.loungeId?.name || "Testing Lounge",
+      date: dateStr,
+      time: time,
+      guestLimit: String(booking.guestCount || 0).padStart(2, '0'),
+      seatingArea: seatingArea,
+      location: location,
+      status: status,
+      eventType: booking.specialRequest || "-",
+    };
+  });
 
   const filteredUsers = statusFilter
     ? users.filter((u) => u.status === statusFilter)
@@ -179,7 +153,11 @@ const MyBooking = () => {
           className=" mx-auto bg-white rounded-xl -mt-[16em] border-[1px] border-[#b9b9b95f] min-h-[200px]"
           // style={{ boxShadow: "0px 4px 30px 0px #00000026" }}
         >
-          {activeTab === "bookings" ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20 text-gray-500 font-medium">
+              Loading bookings...
+            </div>
+          ) : activeTab === "bookings" ? (
             <BookingsTable
               users={sortedUsers}
               onSort={requestSort}
