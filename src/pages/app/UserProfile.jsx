@@ -6,12 +6,12 @@ import ProfilePreferences from "../../components/userProfile/ProfilePreferences"
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { useNavigate } from "react-router";
 import LoungeCard from "../../components/global/LoungeCard";
-import { useState } from "react";
-import { loungeData } from "../../static/MockData";
+import { useFavorites } from "../../hooks/queries/useQueries";
 
 const UserProfile = () => {
   const navigate = useNavigate();
-  const [liked, setLiked] = useState(false);
+  const { data: favoritesResponse, isLoading } = useFavorites();
+  const favoriteLounges = favoritesResponse?.data || [];
 
   return (
     <>
@@ -39,7 +39,7 @@ const UserProfile = () => {
               <p className="text-[24px] text-[#252525] font-[600]">
                 Favorite Lounges
               </p>
-              <div className="flex items-center gap-4 ">
+              <div className="flex items-center gap-4">
                 <div className="p-2 rounded-full border-[1px] border-[#D1D1D1]">
                   <IoIosArrowBack className="text-[16px]" />
                 </div>
@@ -48,17 +48,39 @@ const UserProfile = () => {
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-6">
-              {loungeData.map((item, index) => (
-                <LoungeCard
-                  item={item}
-                  key={index}
-                  setLiked={setLiked}
-                  liked={liked}
-                  position="bottom-64 right-8"
-                />
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[...Array(3)].map((_, index) => (
+                  <div
+                    key={index}
+                    className="rounded-[24px] p-4 bg-white animate-pulse"
+                  >
+                    <div className="w-full h-[200px] bg-gray-200 rounded-[12px]" />
+                    <div className="mt-6 space-y-3">
+                      <div className="h-6 w-2/3 bg-gray-200 rounded" />
+                      <div className="h-4 w-full bg-gray-200 rounded" />
+                      <div className="h-4 w-5/6 bg-gray-200 rounded" />
+                      <div className="h-4 w-4/6 bg-gray-200 rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : favoriteLounges.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {favoriteLounges.map((item) => (
+                  <LoungeCard
+                    item={item}
+                    key={item._id}
+                    position="bottom-64 right-8"
+                    isFavorite
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[20px] bg-white p-6 text-center text-[#6E6E6E]">
+                No favorite lounges yet.
+              </div>
+            )}
           </div>
         </div>
       </div>

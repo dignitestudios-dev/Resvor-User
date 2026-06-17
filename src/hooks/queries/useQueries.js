@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "../../axios";
 
 // ... existing code ...
@@ -74,6 +74,49 @@ export const useCreateBooking = () => {
   });
 };
 
+const createEvent = async (payload) => {
+  const { data } = await axios.post("/events", payload);
+  return data;
+};
+
+export const useCreateEvent = () => {
+  return useMutation({
+    mutationFn: createEvent,
+  });
+};
+
+const fetchFavorites = async () => {
+  const { data } = await axios.get("/favorites");
+  return data;
+};
+
+export const useFavorites = (options = {}) => {
+  return useQuery({
+    queryKey: ["favorites"],
+    queryFn: fetchFavorites,
+    retry: false,
+    ...options,
+  });
+};
+
+const toggleFavorite = async (loungeId) => {
+  const { data } = await axios.post(`/favorites/${loungeId}`);
+  return data;
+};
+
+export const useToggleFavorite = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: toggleFavorite,
+    onSuccess: (_, loungeId) => {
+      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      queryClient.invalidateQueries({ queryKey: ["lounges"] });
+      queryClient.invalidateQueries({ queryKey: ["lounge-details", loungeId] });
+    },
+  });
+};
+
 const fetchBookings = async ({ page = 1, limit = 10 } = {}) => {
   const { data } = await axios.get("/bookings", {
     params: { page, limit },
@@ -81,11 +124,53 @@ const fetchBookings = async ({ page = 1, limit = 10 } = {}) => {
   return data;
 };
 
-export const useBookings = (params) => {
+export const useBookings = (params, options = {}) => {
   return useQuery({
     queryKey: ["bookings", params],
     queryFn: () => fetchBookings(params),
     retry: false,
+    ...options,
+  });
+};
+
+const fetchEvents = async ({ page = 1, limit = 10 } = {}) => {
+  const { data } = await axios.get("/events", {
+    params: { page, limit },
+  });
+  return data;
+};
+
+export const useEvents = (params, options = {}) => {
+  return useQuery({
+    queryKey: ["events", params],
+    queryFn: () => fetchEvents(params),
+    retry: false,
+    ...options,
+  });
+};
+
+const fetchEventDetails = async (eventId) => {
+  const { data } = await axios.get(`/events/${eventId}`);
+  return data;
+};
+
+export const useEventDetails = (eventId) => {
+  return useQuery({
+    queryKey: ["event-details", eventId],
+    queryFn: () => fetchEventDetails(eventId),
+    enabled: !!eventId,
+    retry: false,
+  });
+};
+
+const cancelEvent = async (eventId) => {
+  const { data } = await axios.patch(`/events/${eventId}/cancel`);
+  return data;
+};
+
+export const useCancelEvent = () => {
+  return useMutation({
+    mutationFn: cancelEvent,
   });
 };
 
@@ -100,5 +185,16 @@ export const useBookingDetails = (bookingId) => {
     queryFn: () => fetchBookingDetails(bookingId),
     enabled: !!bookingId,
     retry: false,
+  });
+};
+
+const cancelBooking = async (bookingId) => {
+  const { data } = await axios.patch(`/bookings/${bookingId}/cancel`);
+  return data;
+};
+
+export const useCancelBooking = () => {
+  return useMutation({
+    mutationFn: cancelBooking,
   });
 };

@@ -1,5 +1,7 @@
 /* eslint-disable react/prop-types */
+import { useCreateBooking } from "../../hooks/queries/useQueries";
 import { RxCross2 } from "react-icons/rx";
+import { ErrorToast, SuccessToast } from "../global/Toaster";
 import Button from "../global/Button";
 
 const BookingDetailsModal = ({
@@ -9,11 +11,9 @@ const BookingDetailsModal = ({
   onClickBack,
   bookingServiceData,
 }) => {
-  console.log(
-    "🚀 ~ BookingDetailsModal ~ bookingServiceData:",
-    bookingServiceData
-  );
+  const { mutate: createBooking, isPending } = useCreateBooking();
 
+  const bookingOverview = bookingData?.displayData || bookingData || {};
   const {
     name = "Mike Smith",
     email = "designer@gmail.com",
@@ -22,7 +22,58 @@ const BookingDetailsModal = ({
     time = "06:00pm",
     guestCount = "6 Guests",
     children = "None",
-  } = bookingData || {};
+  } = bookingOverview;
+
+  const bookingApiPayload = bookingData?.apiPayload || null;
+  const selectedTableIds =
+    bookingServiceData?.tableIds ||
+    bookingServiceData?.selectedSeating
+      ?.map((item) => item?._id)
+      .filter(Boolean) ||
+    [];
+
+  const handleConfirmBooking = () => {
+    if (!bookingApiPayload?.loungeId) {
+      ErrorToast("Missing booking data.");
+      return;
+    }
+
+    const finalPayload = {
+      ...bookingApiPayload,
+      guestCount: Number(bookingApiPayload.guestCount),
+      tableIds: selectedTableIds,
+      specialRequest:
+        bookingServiceData?.specialRequest ||
+        bookingServiceData?.instruction ||
+        bookingApiPayload?.specialRequest ||
+        undefined,
+    };
+
+    if (
+      !finalPayload.bookingDate ||
+      !finalPayload.startTime ||
+      !finalPayload.endTime ||
+      !finalPayload.guestCount
+    ) {
+      ErrorToast("Booking information is incomplete.");
+      return;
+    }
+
+    createBooking(finalPayload, {
+      onSuccess: (response) => {
+        SuccessToast(response?.message || "Booking created successfully.");
+        if (onNext) {
+          onNext(response);
+        }
+      },
+      onError: (requestError) => {
+        ErrorToast(
+          requestError?.response?.data?.message ||
+            "Failed to create booking."
+        );
+      },
+    });
+  };
 
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
@@ -89,7 +140,9 @@ const BookingDetailsModal = ({
                 Table
               </p>
               <p className="text-[#000000] whitespace-pre-wrap">
-                {bookingServiceData?.selectedSeating?.map(s => s.title || s.name).join(", ") || "-"}
+                {bookingServiceData?.selectedSeating
+                  ?.map((seat) => seat.title || seat.name)
+                  .join(", ") || "-"}
               </p>
             </div>
           </div>
@@ -100,7 +153,7 @@ const BookingDetailsModal = ({
             </p>
             <div className="grid grid-cols-2 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2 mb-4">
               <div>
-                {bookingServiceData?.selectedPackage.length > 0 &&
+                {bookingServiceData?.selectedPackage?.length > 0 &&
                   bookingServiceData?.selectedPackage?.map((item) => (
                     <p key={item.id} className="text-[#000000]">
                       {item.title} - {item.price}$
@@ -116,6 +169,7 @@ const BookingDetailsModal = ({
               </div>
             </div>
           </div>
+
           {bookingServiceData?.instruction && (
             <div className="mb-6">
               <p className="font-semibold text-[#181818] mb-2">
@@ -129,10 +183,16 @@ const BookingDetailsModal = ({
           )}
 
           <div className="space-y-3 mt-8">
-            <Button text="Next" type="button" onClick={onNext} />
+            <Button
+              text={isPending ? "Processing..." : "Confirm Booking"}
+              type="button"
+              onClick={handleConfirmBooking}
+              disabled={isPending}
+            />
             <button
               onClick={onClickBack}
-              className="w-full bg-[#E8E8E8] text-[#181818] text-[14px] rounded-[8px] py-2 font-semibold hover:bg-[#D8D8D8] transition"
+              className="w-full bg-[#E8E8E8] text-[#181818] text-[14px] rounded-[8px] py-2 font-semibold hover:bg-[#D8D8D8] transition disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isPending}
             >
               Back
             </button>

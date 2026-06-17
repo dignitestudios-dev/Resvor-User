@@ -4,7 +4,54 @@ import { useState } from "react";
 import BookingsTable from "../../components/bookings/BookingsTable";
 import EventBookingsTable from "../../components/bookings/EventBookingsTable";
 import StatusDropdown from "../../components/global/StatusDropdown";
-import { useBookings } from "../../hooks/queries/useQueries";
+import { useBookings, useEvents } from "../../hooks/queries/useQueries";
+
+const formatDateLabel = (isoValue) => {
+  if (!isoValue) return "-";
+
+  const dateValue = new Date(isoValue);
+  if (Number.isNaN(dateValue.getTime())) return "-";
+
+  return dateValue.toLocaleDateString("en-US", {
+    year: "2-digit",
+    month: "2-digit",
+    day: "2-digit",
+  });
+};
+
+const formatTimeLabel = (isoValue) => {
+  if (!isoValue) return "";
+
+  const dateValue = new Date(isoValue);
+  if (Number.isNaN(dateValue.getTime())) return "";
+
+  return dateValue
+    .toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .replace(" ", "");
+};
+
+const formatDisplayLabel = (value) =>
+  String(value || "-")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+const formatEventStatus = (value) => {
+  const normalized = String(value || "").toLowerCase();
+  const statusMap = {
+    pending: "Approval",
+    approved: "Upcoming",
+    confirmed: "Upcoming",
+    completed: "Completed",
+    rejected: "Rejected",
+    cancelled: "Rejected",
+  };
+
+  return statusMap[normalized] || formatDisplayLabel(value);
+};
 
 const MyBooking = () => {
   const navigate = useNavigate();
@@ -14,12 +61,22 @@ const MyBooking = () => {
     direction: "asc",
   });
 
-  const [statusFilter, setStatusFilter] = useState("");
+  const [bookingStatusFilter, setBookingStatusFilter] = useState("");
+  const [eventStatusFilter, setEventStatusFilter] = useState("");
 
-  const { data: bookingsResponse, isLoading } = useBookings({ page: 1, limit: 100 });
+  const { data: bookingsResponse, isLoading: isBookingsLoading } = useBookings(
+    { page: 1, limit: 100 },
+    { enabled: activeTab === "bookings" }
+  );
+  const { data: eventsResponse, isLoading: isEventsLoading } = useEvents(
+    { page: 1, limit: 100 },
+    { enabled: activeTab === "events" }
+  );
+
   const bookingsData = bookingsResponse?.data || [];
+  const eventsData = eventsResponse?.data || [];
 
-  const users = bookingsData.map((booking) => {
+  const bookingRows = bookingsData.map((booking) => {
     const seatingArea = booking.tableIds?.length > 0
       ? booking.tableIds.map(t => `${t.type ? t.type.charAt(0).toUpperCase() + t.type.slice(1) : "Regular"} (${t.code || `T${t.tableNumber}`})`).join(", ")
       : "Regular";
@@ -62,11 +119,37 @@ const MyBooking = () => {
     };
   });
 
-  const filteredUsers = statusFilter
-    ? users.filter((u) => u.status === statusFilter)
-    : users;
+  const eventRows = eventsData.map((event) => {
+    const startTime = formatTimeLabel(event.startDateTime);
+    const endTime = formatTimeLabel(event.endDateTime);
 
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    return {
+      _id: event._id,
+      name: event.title || "-",
+      location: event.loungeId?.name || "Venue not available",
+      date: formatDateLabel(event.startDateTime),
+      time: startTime && endTime ? `${startTime} - ${endTime}` : "-",
+      guestLimit: String(event.guestCount || 0).padStart(2, "0"),
+      eventType: formatDisplayLabel(event.eventType),
+      budget:
+        event.budget !== undefined && event.budget !== null
+          ? `$${event.budget}`
+          : "-",
+      status: formatEventStatus(event.status),
+    };
+  });
+
+  const activeRows = activeTab === "bookings" ? bookingRows : eventRows;
+  const activeStatusFilter =
+    activeTab === "bookings" ? bookingStatusFilter : eventStatusFilter;
+  const activeLoading =
+    activeTab === "bookings" ? isBookingsLoading : isEventsLoading;
+
+  const filteredRows = activeStatusFilter
+    ? activeRows.filter((row) => row.status === activeStatusFilter)
+    : activeRows;
+
+  const sortedRows = [...filteredRows].sort((a, b) => {
     if (!sortConfig.key) return 0;
 
     let valA = a[sortConfig.key];
@@ -130,17 +213,17 @@ const MyBooking = () => {
             {activeTab === "bookings" ? (
               <div className="text-white absolute top-40 right-44 z-50 w-[180px]">
                 <StatusDropdown
-                  value={statusFilter}
-                  onChange={setStatusFilter}
-                  options={["All", "Completed", "Pending"]}
+                  value={bookingStatusFilter}
+                  onChange={setBookingStatusFilter}
+                  options={["All", "Completed", "Pending", "Upcoming"]}
                 />
               </div>
             ) : (
               <div className="text-white absolute top-40 right-44 z-50 w-[180px]">
                 <StatusDropdown
-                  value={statusFilter}
-                  onChange={setStatusFilter}
-                  options={["All", "Approval", "Upcoming"]}
+                  value={eventStatusFilter}
+                  onChange={setEventStatusFilter}
+                  options={["All", "Approval", "Upcoming", "Completed", "Rejected"]}
                 />
               </div>
             )}
@@ -153,19 +236,19 @@ const MyBooking = () => {
           className=" mx-auto bg-white rounded-xl -mt-[16em] border-[1px] border-[#b9b9b95f] min-h-[200px]"
           // style={{ boxShadow: "0px 4px 30px 0px #00000026" }}
         >
-          {isLoading ? (
+          {activeLoading ? (
             <div className="flex justify-center items-center py-20 text-gray-500 font-medium">
-              Loading bookings...
+              Loading {activeTab === "bookings" ? "bookings" : "events"}...
             </div>
           ) : activeTab === "bookings" ? (
             <BookingsTable
-              users={sortedUsers}
+              users={sortedRows}
               onSort={requestSort}
               sortConfig={sortConfig}
             />
           ) : (
             <EventBookingsTable
-              events={sortedUsers}
+              events={sortedRows}
               onSort={requestSort}
               sortConfig={sortConfig}
             />

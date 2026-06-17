@@ -9,7 +9,7 @@ import ServicesModal from "./ServicesModal";
 import FloorPlanModal from "./FloorPlanModal";
 import { useAvailableTables } from "../../hooks/queries/useQueries";
 
-const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData }) => {
+const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData, loungeServices }) => {
   const [serviceModalData, setServiceModalData] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [floorPlanModal, setFloorPlanModal] = useState(false);
@@ -161,6 +161,7 @@ const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData }) => {
             isOpen={modalIsOpen}
             onClose={closeModal}
             setServiceModalData={setServiceModalData}
+            loungeServices={loungeServices}
           />
         )}
         {floorPlanModal && (

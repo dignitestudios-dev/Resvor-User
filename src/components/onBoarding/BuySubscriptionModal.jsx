@@ -28,7 +28,7 @@ const BuySubscriptionModal = ({ onClick, setCompleted, isVip }) => {
           </div>
         </div>
 
-        <div className="flex flex-col  lg:h-auto md:h-screen px-8 mb-4">
+        <div className="flex flex-col lg:h-auto md:h-screen px-8 mb-4">
           {showBill ? (
             <>
               <div className="space-y-3 xxl:w-[400px] xxl:ml-12">
@@ -43,7 +43,7 @@ const BuySubscriptionModal = ({ onClick, setCompleted, isVip }) => {
                     <p className="text-[16px] text-[#18181880] ">
                       Plan 1 (Gold)
                     </p>
-                    <p className="text-[16px] text-[#4B4B4B] ">$15.99</p>
+                    <p className="text-[16px] text-[#4B4B4B] ">$15.99</p> 
                   </div>
                 </div>
               </div>

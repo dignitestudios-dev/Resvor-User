@@ -1,10 +1,23 @@
 /* eslint-disable react/prop-types */
 import { RxCross2 } from "react-icons/rx";
 import DatePickerField from "../global/DatePickerField";
-import { useEffect, useState } from "react";
-import TimePickerField from "../global/TimePickerField";
+import { useState } from "react";
 import InputField from "../auth/InputField";
 import Button from "./../global/Button";
+import SelectField from "../global/SelectField";
+import { ErrorToast } from "../global/Toaster";
+
+const eventTypeOptions = [
+  "Birthday Party",
+  "Wedding",
+  "Engagement",
+  "Ceremony",
+  "Meeting",
+  "Private Party",
+  "Maintenance",
+  "Closed",
+  "Other",
+];
 
 const RequestEventModal = ({ onClose, onNext }) => {
   const [startDate, setStartDate] = useState(null);
@@ -14,6 +27,7 @@ const RequestEventModal = ({ onClose, onNext }) => {
 
   const [formData, setFormData] = useState({
     eventType: "",
+    eventName: "",
     name: "",
     email: "",
     phone: "",
@@ -22,17 +36,11 @@ const RequestEventModal = ({ onClose, onNext }) => {
     specialRequest: "",
     budget: "",
     ticketAtDoor: "",
+    description: "",
   });
 
-  const [openField, setOpenField] = useState(null);
   const [endDate, setEndDate] = useState("");
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const close = () => setOpenField(null);
-    window.addEventListener("click", close);
-    return () => window.removeEventListener("click", close);
-  }, []);
+  const [formErrors, setFormErrors] = useState({});
 
   // const handleSelect = (option) => {
   //   const name = option?.name || option;
@@ -54,31 +62,132 @@ const RequestEventModal = ({ onClose, onNext }) => {
       ...prev,
       [name]: value,
     }));
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+  };
+
+  const handleEventTypeChange = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      eventType: value,
+    }));
+
+    if (formErrors.eventType) {
+      setFormErrors((prev) => ({
+        ...prev,
+        eventType: "",
+      }));
+    }
+  };
+
+  const normalizeEventType = (value) => {
+    const normalized = String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_");
+
+    const aliasMap = {
+      birthday_party: "birthday",
+      birthday: "birthday",
+      wedding: "wedding",
+      engagement: "engagement",
+      ceremony: "ceremony",
+      meeting: "meeting",
+      private_party: "private_party",
+      "private party": "private_party",
+      maintenance: "maintenance",
+      closed: "closed",
+      other: "other",
+    };
+
+    return aliasMap[normalized] || normalized;
+  };
+
+  const validate = () => {
+    const errors = {};
+    const normalizedEventType = normalizeEventType(formData.eventType);
+
+    if (!formData.eventType) {
+      errors.eventType = "Event type is required";
+    } else if (![
+      "birthday",
+      "wedding",
+      "engagement",
+      "ceremony",
+      "meeting",
+      "private_party",
+      "maintenance",
+      "closed",
+      "other",
+    ].includes(normalizedEventType)) {
+      errors.eventType = "Enter a valid event type";
+    }
+    if (!formData.eventName) errors.eventName = "Event name is required";
+    if (!startDate) errors.startDate = "Date is required";
+    if (!startTime) errors.startTime = "Start time is required";
+    if (!endDate) errors.endTime = "End time is required";
+    if (!formData.name) errors.name = "Full name is required";
+    if (!formData.email) {
+      errors.email = "Email is required";
+    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) {
+      errors.email = "Invalid email format";
+    }
+    if (!formData.phone) errors.phone = "Phone number is required";
+    if (!formData.guestCount) {
+      errors.guestCount = "Guest count is required";
+    } else if (isNaN(formData.guestCount) || Number(formData.guestCount) <= 0) {
+      errors.guestCount = "Enter a valid guest count";
+    }
+    if (!formData.budget) {
+      errors.budget = "Budget is required";
+    } else if (isNaN(formData.budget) || Number(formData.budget) <= 0) {
+      errors.budget = "Enter a valid budget";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleNext = () => {
-    const eventData = {
-      // eventType: selectedType[0]?.name || "Birthday Party",
-      eventType: formData.eventType || "Birthday Party",
-      date: startDate
-        ? startDate.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "2-digit",
-          })
-        : "26 Dec, 2024",
-      startTime: "06:00 PM",
-      endTime: "06:00 PM",
-      name: formData.name || "Mike Smith",
-      email: formData.email || "designer@gmail.com",
-      phone: formData.phone || "1 462 849 558",
-      guestCount: formData.guestCount
-        ? `${formData.guestCount} Guests`
-        : "30 Guests",
-      preferredMusic: formData.preferredMusic || "Hip Hop, R&B, Rock",
-      specialRequest: formData.specialRequest || "Birthday Signage",
+    if (!validate()) {
+      ErrorToast("Please fill all the required fields.");
+      return;
+    }
 
-      budget: formData.budget || "$1000",
+    // Prepare startDateTime and endDateTime
+    const startDateTime = new Date(startDate);
+    const [startH, startM] = startTime.split(":");
+    startDateTime.setHours(parseInt(startH), parseInt(startM));
+
+    const endDateTime = new Date(startDate);
+    const [endH, endM] = endDate.split(":");
+    endDateTime.setHours(parseInt(endH), parseInt(endM));
+
+    const eventData = {
+      title: formData.eventName,
+      eventName: formData.eventName,
+      eventType: formData.eventType,
+      description: formData.description || formData.eventName,
+      date: startDate.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+      }),
+      startTime: startTime,
+      endTime: endDate,
+      startDateTime: startDateTime.toISOString(),
+      endDateTime: endDateTime.toISOString(),
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      guestCount: Number(formData.guestCount),
+      preferredMusic: formData.preferredMusic || "None",
+      specialRequest: formData.specialRequest || "None",
+      budget: Number(formData.budget),
       ticketAtDoor: formData.ticketAtDoor || "None",
       instructions: formData.instructions || "",
     };
@@ -87,7 +196,7 @@ const RequestEventModal = ({ onClose, onNext }) => {
 
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-[12px] w-[440px] pb-2 h-[700px] overflow-y-scroll ">
+      <div className="bg-white rounded-[12px] w-[440px] pb-2 h-[650px] overflow-y-scroll ">
         <div
           className={`flex justify-between items-center  px-8 pt-4 border-b-2 border-b-gray-300`}
         >
@@ -98,24 +207,16 @@ const RequestEventModal = ({ onClose, onNext }) => {
         </div>
         <div className="px-8 py-4">
           <div className=" mx-1">
-            <InputField
+            <SelectField
               label="Event Type"
-              text="eventType"
-              placeholder="Event Type"
-              type="text"
-              id={`eventType`}
               name={`eventType`}
-              maxLength={30}
+              placeholder="Select Event Type"
               value={formData.eventType}
-              onChange={handleInputChange}
+              onChange={handleEventTypeChange}
+              error={formErrors.eventType}
+              touched={!!formErrors.eventType}
+              options={eventTypeOptions}
             />
-            {/* <FilterSelectableField
-              label="Event Type"
-              placeholder={"Select Event Type"}
-              options={["Anniversary Party", "Birthday Party", "corporate"]}
-              value={selectedType}
-              onChange={handleSelect}
-            /> */}
           </div>
           <div className=" mx-1 pt-2">
             <InputField
@@ -128,19 +229,37 @@ const RequestEventModal = ({ onClose, onNext }) => {
               maxLength={30}
               value={formData.eventName}
               onChange={handleInputChange}
+              error={formErrors.eventName}
+              touched={!!formErrors.eventName}
+            />
+          </div>
+          <div className=" mx-1 pt-2">
+            <InputField
+              label="Description"
+              text="description"
+              placeholder="Event description"
+              type="text"
+              id={`description`}
+              name={`description`}
+              maxLength={100}
+              value={formData.description}
+              onChange={handleInputChange}
             />
           </div>
           <div className="my-2 mx-1">
             <DatePickerField
               label="Select Date"
               value={startDate}
-              onChange={setStartDate}
+              onChange={(date) => {
+                setStartDate(date);
+                setFormErrors((prev) => ({ ...prev, startDate: "" }));
+              }}
             />
+            {formErrors.startDate && (
+              <p className="text-red-600 text-[12px] mt-1">{formErrors.startDate}</p>
+            )}
           </div>
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full flex items-center gap-2 my-2 px-1"
-          >
+          <div className="w-full flex items-center gap-2 my-2 px-1">
             <div className="w-full">
               <label className="block text-[14px] font-[500] text-[#181818] mb-2">
                 Start Time
@@ -148,12 +267,18 @@ const RequestEventModal = ({ onClose, onNext }) => {
               <input
                 type="time"
                 data-slot="input"
-                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ring-[#CACACA]
+                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${formErrors.startTime ? "ring-red-500" : "ring-[#CACACA]"}
   focus:ring-2 focus:ring-gray-200 focus:outline-none  placeholder:font-light placeholder:text-[12px] placeholder:text-[#E6E6F0]
   }`}
                 value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
+                onChange={(e) => {
+                  setStartTime(e.target.value);
+                  setFormErrors((prev) => ({ ...prev, startTime: "" }));
+                }}
               />
+              {formErrors.startTime && (
+                <p className="text-red-600 text-[12px] mt-1">{formErrors.startTime}</p>
+              )}
             </div>
 
             {/* <TimePickerField
@@ -175,12 +300,18 @@ const RequestEventModal = ({ onClose, onNext }) => {
               <input
                 type="time"
                 data-slot="input"
-                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ring-[#CACACA]
+                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${formErrors.endTime ? "ring-red-500" : "ring-[#CACACA]"}
   focus:ring-2 focus:ring-gray-200 focus:outline-none  placeholder:font-light placeholder:text-[12px] placeholder:text-[#E6E6F0]
   }`}
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                  setFormErrors((prev) => ({ ...prev, endTime: "" }));
+                }}
               />
+              {formErrors.endTime && (
+                <p className="text-red-600 text-[12px] mt-1">{formErrors.endTime}</p>
+              )}
             </div>
             {/*
             <TimePickerField
@@ -204,6 +335,8 @@ const RequestEventModal = ({ onClose, onNext }) => {
               maxLength={30}
               value={formData.name}
               onChange={handleInputChange}
+              error={formErrors.name}
+              touched={!!formErrors.name}
             />
             <InputField
               label="Email address"
@@ -215,6 +348,8 @@ const RequestEventModal = ({ onClose, onNext }) => {
               maxLength={30}
               value={formData.email}
               onChange={handleInputChange}
+              error={formErrors.email}
+              touched={!!formErrors.email}
             />
           </div>
           <div className="w-full flex items-center gap-2 my-2 px-1">
@@ -228,6 +363,8 @@ const RequestEventModal = ({ onClose, onNext }) => {
               maxLength={30}
               value={formData.phone}
               onChange={handleInputChange}
+              error={formErrors.phone}
+              touched={!!formErrors.phone}
             />
             <InputField
               label="Guest Count"
@@ -239,6 +376,8 @@ const RequestEventModal = ({ onClose, onNext }) => {
               maxLength={30}
               value={formData.guestCount}
               onChange={handleInputChange}
+              error={formErrors.guestCount}
+              touched={!!formErrors.guestCount}
             />
           </div>
           <div className="w-full flex items-center gap-2 my-2 px-1">
@@ -276,6 +415,8 @@ const RequestEventModal = ({ onClose, onNext }) => {
               maxLength={30}
               value={formData.budget}
               onChange={handleInputChange}
+              error={formErrors.budget}
+              touched={!!formErrors.budget}
             />
             <InputField
               label="Ticket at door (optional)"

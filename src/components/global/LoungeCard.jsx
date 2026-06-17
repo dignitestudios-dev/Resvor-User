@@ -5,14 +5,48 @@ import { HiPercentBadge } from "react-icons/hi2";
 import { IoLocation } from "react-icons/io5";
 import { BiSolidBadgeDollar } from "react-icons/bi";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { ErrorToast, SuccessToast } from "./Toaster";
+import { useToggleFavorite } from "../../hooks/queries/useQueries";
 
-const LoungeCard = ({ position = null, item }) => {
-  const [liked, setLiked] = useState(false);
+const LoungeCard = ({ position = null, item, isFavorite = false }) => {
+  const [liked, setLiked] = useState(isFavorite);
+  const { mutate: toggleFavorite, isPending } = useToggleFavorite();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    setLiked(Boolean(isFavorite));
+  }, [isFavorite]);
+
   const handleNavigate = () => {
-    navigate(`/app/lounge-detail/${item?._id}`);
+    navigate(`/app/lounge-detail/${item?._id || item?.id}`);
+  };
+
+  const handleFavoriteClick = (e) => {
+    e.stopPropagation();
+
+    if (!item?._id || isPending) return;
+
+    const nextValue = !liked;
+    setLiked(nextValue);
+
+    toggleFavorite(item._id, {
+      onSuccess: (response) => {
+        SuccessToast(
+          response?.message ||
+            (nextValue
+              ? "Lounge added to favorites."
+              : "Lounge removed from favorites.")
+        );
+      },
+      onError: (requestError) => {
+        setLiked(!nextValue);
+        ErrorToast(
+          requestError?.response?.data?.message ||
+            "Unable to update favorite lounge."
+        );
+      },
+    });
   };
 
   return (
@@ -23,20 +57,17 @@ const LoungeCard = ({ position = null, item }) => {
     >
       <div>
         <img
-          src={item?.images?.[0]?.location}
+          src={item?.images?.[0]?.location || item?.image}
           className="rounded-[12px] w-full h-[200px] object-cover"
           alt="Venue"
         />
       </div>
 
       <div
-        onClick={(e) => {
-          e.stopPropagation();
-          setLiked((s) => !s);
-        }}
+        onClick={handleFavoriteClick}
         className={`p-2 cursor-pointer rounded-full bg-white absolute ${
           position ? position : "bottom-48 right-8"
-        }`}
+        } ${isPending ? "opacity-70 pointer-events-none" : ""}`}
         style={{ boxShadow: "0px 8px 25px 0px #00000012" }}
       >
         <img

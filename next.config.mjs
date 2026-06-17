@@ -10,10 +10,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "resvor-s3-bucket.s3.amazonaws.com",    
-
-
-              
+        hostname: "resvor-s3-bucket.s3.amazonaws.com",   
       },
     ],
   },

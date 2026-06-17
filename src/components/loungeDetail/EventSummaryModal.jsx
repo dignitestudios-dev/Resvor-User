@@ -1,25 +1,25 @@
 /* eslint-disable react/prop-types */
 
 import { RxCross2 } from "react-icons/rx";
-import { useCreateBooking } from "../../hooks/queries/useQueries";
+import { useCreateEvent } from "../../hooks/queries/useQueries";
 import { SuccessToast, ErrorToast } from "../global/Toaster";
 
 const EventSummaryModal = ({ onClose, onClick, apiPayload }) => {
-  const { mutate: createBooking, isPending } = useCreateBooking();
+  const { mutate: createEvent, isPending } = useCreateEvent();
 
   const handlePayNow = () => {
     if (!apiPayload) {
-      ErrorToast("Missing booking data.");
+      ErrorToast("Missing event data.");
       return;
     }
     
-    createBooking(apiPayload, {
+    createEvent(apiPayload, {
       onSuccess: (data) => {
-        SuccessToast("Booking created successfully!");
+        SuccessToast("Event request created successfully!");
         if (onClick) onClick(data);
       },
       onError: (err) => {
-        ErrorToast(err.response?.data?.message || "Failed to create booking.");
+        ErrorToast(err.response?.data?.message || "Failed to create event request.");
       }
     });
   };
@@ -42,7 +42,7 @@ const EventSummaryModal = ({ onClose, onClick, apiPayload }) => {
             </p>
             <div className="p-4 bg-[#F1F1F1] rounded-xl">
               <p className="text-[16px] text-[#181818] font-semibold  pb-2 border-b border-b-gray-300">
-                Payment Summary
+                Event Summary
               </p>
               <div className="flex justify-between items-center mt-2">
                 <p className="text-[14px] font-[500] text-[#18181880] ">

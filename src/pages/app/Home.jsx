@@ -138,15 +138,20 @@ import { FaSearch } from "react-icons/fa";
 import { useState } from "react";
 import LoungeCard from "../../components/global/LoungeCard";
 import FilterDropdown from "../../components/global/FilterDropdown";
-import { useLounges } from "../../hooks/queries/useQueries";
+import { useFavorites, useLounges } from "../../hooks/queries/useQueries";
 
 const Home = () => {
   const [open, setOpen] = useState(false);
   const [services, setServices] = useState([]);
 
   const { data: loungesResponse, isLoading } = useLounges();
+  const { data: favoritesResponse } = useFavorites({
+    enabled: !isLoading,
+  });
 
   const lounges = loungesResponse?.data || [];
+  const favoriteLounges = favoritesResponse?.data || [];
+  const favoriteIds = new Set(favoriteLounges.map((lounge) => lounge._id));
 
   const [selectedFilters, setSelectedFilters] = useState({
     location: "",
@@ -300,6 +305,7 @@ const Home = () => {
               <LoungeCard
                 key={item._id}
                 item={item}
+                isFavorite={favoriteIds.has(item._id)}
               />
             ))
           ) : (
