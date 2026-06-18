@@ -1,5 +1,46 @@
 /* eslint-disable react/prop-types */
+import LoungeAbout from "./LoungeAbout";
+import LoungeSpecialty from "./LoungeSpecialty";
+import LoungeServicesPackages from "./LoungeServicesPackages";
+import LoungeGallery from "./LoungeGallery";
+import LoungeFloorPlan from "./LoungeFloorPlan";
+import LoungeLocation from "./LoungeLocation";
 
+// 1. HELPER FUNCTION: Generates tab configurations using active lounge data
+export const getLoungeTabs = (lounge) => [
+  {
+    key: "about",
+    label: "About",
+    content: <LoungeAbout lounge={lounge} />,
+  },
+  {
+    key: "lounge",
+    label: "Lounge Specialty",
+    content: <LoungeSpecialty lounge={lounge} />,
+  },
+  {
+    key: "services",
+    label: "Services & Packages",
+    content: <LoungeServicesPackages lounge={lounge} />,
+  },
+  {
+    key: "gallery",
+    label: "Gallery",
+    content: <LoungeGallery lounge={lounge} />,
+  },
+  {
+    key: "floor",
+    label: "Floor Plan",
+    content: <LoungeFloorPlan lounge={lounge} />,
+  },
+  {
+    key: "location",
+    label: "Location",
+    content: <LoungeLocation lounge={lounge} />,
+  },
+];
+
+// 2. UI COMPONENT: Your exact layout structure intact
 const LoungeDetailTabs = ({ tabs, setActiveTab, activeTab }) => {
   return (
     <div className="w-full mx-auto p-4 md:p-6">

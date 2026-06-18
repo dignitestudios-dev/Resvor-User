@@ -1,9 +1,33 @@
 /* eslint-disable react/prop-types */
 import { RxCross2 } from "react-icons/rx";
+import { useDeleteGuest } from "../../hooks/mutations/OnboardingMutations";
+import { SuccessToast, ErrorToast } from "../global/Toaster";
 import Button from "../global/Button";
 import { binIcon } from "../../assets/export";
+import { useQueryClient } from "@tanstack/react-query"; // <-- IMPORT THIS
 
-const DeleteGuestModal = ({ onClose, onConfirm }) => {
+
+const DeleteGuestModal = ({ onClose, guest }) => {
+  const { mutate: deleteGuestMutation, isPending } = useDeleteGuest();
+  console.log("Guest to delete:", guest);
+  const queryClient = useQueryClient(); // <-- INITIALIZE QUERY CLIENT
+
+
+  const handleDelete = () => {
+    deleteGuestMutation(guest?._id, {
+      onSuccess: () => {
+        SuccessToast("Guest removed successfully!");
+                queryClient.invalidateQueries({ queryKey: ["guestbook"] });
+
+        onClose();
+      },
+      onError: (error) => {
+        console.error("Delete failed:", error);
+        ErrorToast("Failed to remove guest.");
+      },
+    });
+  };
+
   return (
     <div className="fixed inset-0 bg-[#0A150F80] z-50 flex items-center justify-center">
       <div className="bg-white rounded-[12px] w-[440px] max-w-[95%] pb-4 overflow-hidden">
@@ -21,6 +45,7 @@ const DeleteGuestModal = ({ onClose, onConfirm }) => {
           <h3 className="text-[20px] font-bold text-black mb-2">
             Confirm Removal
           </h3>
+
           <p className="text-sm text-gray-600 mb-6">
             Removing your entry will unsubscribe you from all lounge updates,
             announcements, and special offers. Would you like to continue?
@@ -29,15 +54,17 @@ const DeleteGuestModal = ({ onClose, onConfirm }) => {
           <div className="flex gap-3 w-full">
             <Button
               onClick={onClose}
-              className="flex-1 h-12 bg-white border border-gray-300 text-gray-700"
               text="Cancel"
+              disabled={isPending}
             />
+
             <button
               type="button"
-              onClick={onConfirm}
-              className="flex-1 py-2  bg-red-600 hover:opacity-90 text-white text-[13px] rounded-lg w-full"
+              onClick={handleDelete}
+              disabled={isPending}
+              className="flex-1 py-2 bg-red-600 hover:opacity-90 text-white text-[13px] rounded-lg w-full disabled:opacity-50"
             >
-              Remove
+              {isPending ? "Removing..." : "Remove"}
             </button>
           </div>
         </div>

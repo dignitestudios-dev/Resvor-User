@@ -5,65 +5,35 @@ import { useState } from "react";
 import AddGuestModal from "../../components/guestBook/AddGuestModal";
 import EditGuestModal from "../../components/guestBook/EditGuestModal";
 import DeleteGuestModal from "../../components/guestBook/DeleteGuestModal";
+import { useGuestBook } from "../../hooks/queries/useQueries";
+import { useQueryClient } from "@tanstack/react-query";
 
 const GuestBook = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const [addGuest, setAddGuest] = useState(false);
   const [editGuest, setEditGuest] = useState(null);
-  const [sortConfig, setSortConfig] = useState({
-    key: "name",
-    direction: "asc",
-  });
-  const [guestToDeleteIndex, setGuestToDeleteIndex] = useState(null);
-  const [users, setUsers] = useState([
-    {
-      name: "John Doe",
-      date: "12-05-25",
-      location: "Steve",
-      status: "Active",
-    },
-    {
-      name: "Jane Smith",
-      date: "12-05-25",
-      location: "Michael",
-      status: "Active",
-    },
-    {
-      name: "Michael Johnson",
-      date: "12-05-25",
-      location: "John",
-      status: "Active",
-    },
-    {
-      name: "Emily Davis",
-      date: "12-05-25",
-      location: "Michael",
-      status: "Inactive",
-    },
-  ]);
+  const [guestToDelete, setGuestToDelete] = useState(null);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const handleConfirmDelete = () => {
-    if (guestToDeleteIndex !== null) {
-      setUsers((prev) => prev.filter((_, i) => i !== guestToDeleteIndex));
-      setGuestToDeleteIndex(null);
-    }
+  // Pass currentPage to your hook so TanStack Query refetches when the page updates
+  const { data: guestbookResponse, isLoading } = useGuestBook(currentPage);
+  console.log("🚀 ~ GuestBook ~ guestbookResponse:", guestbookResponse);
+
+  const users = guestbookResponse?.data || []; 
+  const pagination = guestbookResponse?.pagination || {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 20
   };
 
-  const sortedUsers = [...users].sort((a, b) => {
-    if (!sortConfig.key) return 0;
-
-    let valA = a[sortConfig.key];
-    let valB = b[sortConfig.key];
-
-    // Convert guestLimit to number for numeric sorting
-    if (sortConfig.key === "guestLimit") {
-      valA = parseInt(valA, 10);
-      valB = parseInt(valB, 10);
-    }
-
-    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
-    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
-    return 0;
+  const [sortConfig, setSortConfig] = useState({
+    key: "fullName",
+    direction: "asc",
   });
 
   const requestSort = (key) => {
@@ -72,6 +42,40 @@ const GuestBook = () => {
       direction = "desc";
     }
     setSortConfig({ key, direction });
+  };
+
+  const sortedUsers = [...users].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+
+    let valA = a[sortConfig.key] || "";
+    let valB = b[sortConfig.key] || "";
+
+    if (sortConfig.key === "loungeId") {
+      valA = a.loungeId?.name || "";
+      valB = b.loungeId?.name || "";
+    }
+
+    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  const handleConfirmDelete = () => {
+    queryClient.invalidateQueries({ queryKey: ["guestbook"] });
+    setGuestToDelete(null);
+  };
+
+  // Pagination Change Handlers
+  const handlePrevPage = () => {
+    if (pagination.currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pagination.currentPage < pagination.totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
   };
 
   return (
@@ -86,6 +90,7 @@ const GuestBook = () => {
               Guestbook
             </h2>
           </div>
+
           <div className="w-[140px]">
             <button
               type="button"
@@ -99,10 +104,16 @@ const GuestBook = () => {
           </div>
         </div>
       </div>
-      <div className="px-5 lg:px-40">
-        <div className=" mx-auto bg-white rounded-xl -mt-[16em] border-[1px] border-[#b9b9b95f]">
-          <div className="bg-white rounded-xl hidden md:block overflow-x-auto overflow-y-auto min-h-[300px]">
-            {users.length === 0 ? (
+
+      <div className="px-5 lg:px-40 pb-10">
+        <div className="mx-auto bg-white rounded-xl -mt-[16em] border-[1px] border-[#b9b9b95f] overflow-hidden">
+          {/* Desktop View */}
+          <div className="bg-white hidden md:block overflow-x-auto overflow-y-auto min-h-[300px]">
+            {isLoading ? (
+              <div className="flex justify-center items-center h-[300px] text-gray-500 text-[14.82px]">
+                Loading guests...
+              </div>
+            ) : sortedUsers.length === 0 ? (
               <div className="flex justify-center items-center h-[300px] text-gray-500 text-[14.82px]">
                 No record found
               </div>
@@ -111,50 +122,50 @@ const GuestBook = () => {
                 <thead className="sticky top-0 z-0">
                   <tr className="bg-[#E8E8FF] text-[14.82px]">
                     <th
-                      onClick={() => requestSort("name")}
-                      className="pl-8 pr-4 py-5 text-left text-nowrap font-[500] "
+                      onClick={() => requestSort("loungeId")}
+                      className="pl-8 pr-4 py-5 text-left text-nowrap font-[500] cursor-pointer"
                     >
-                      Lounge Name{" "}
-                      {sortConfig.key === "name" ? (
-                        sortConfig.direction === "asc" ? (
-                          <span className="cursor-pointer">↑</span>
-                        ) : (
-                          <span className="cursor-pointer">↓</span>
-                        )
-                      ) : (
-                        ""
-                      )}
+                      Lounge
+                      {sortConfig.key === "loungeId" &&
+                        (sortConfig.direction === "asc" ? " ↑" : " ↓")}
                     </th>
-                    <th className="px-4 py-5 text-left text-nowrap font-[500] ">
+                    <th
+                      onClick={() => requestSort("fullName")}
+                      className="px-4 py-5 text-left text-nowrap font-[500] cursor-pointer"
+                    >
                       Full Name
+                      {sortConfig.key === "fullName" &&
+                        (sortConfig.direction === "asc" ? " ↑" : " ↓")}
                     </th>
-                    <th className="px-4 py-5 text-left text-nowrap font-[500] ">
+                    <th className="px-4 py-5 text-left text-nowrap font-[500]">
                       Special Date
                     </th>
-                    <th className="px-4 py-5 text-left text-nowrap font-[500] ">
+                    <th className="px-4 py-5 text-left text-nowrap font-[500]">
                       Action
                     </th>
                   </tr>
                 </thead>
-                <tbody className="mt-10">
-                  {sortedUsers.map((user, index) => (
+
+                <tbody>
+                  {sortedUsers.map((user) => (
                     <tr
-                      key={index}
+                      key={user._id}
                       className="border-b border-[#D4D4D4] text-[14.82px]"
                     >
-                      <td className="pl-8 pr-4 py-6">
-                        <div className="flex items-center gap-3">
-                          {user.name}
-                        </div>
+                      <td className="pl-8 pr-4 py-6 font-semibold">
+                        {user.loungeId?.name || "N/A"}
                       </td>
-                      <td className="px-4 py-6">{user.location}</td>
-                      <td className={"px-4 py-6 "}>{user.date}</td>
-                      <td className="px-4 py-6 text-nowrap underline cursor-pointer">
+                      <td className="px-4 py-6">{user.fullName}</td>
+                      <td className="px-4 py-6">
+                        {user.specialDates?.length > 0
+                          ? user.specialDates[0]
+                          : new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-6 text-nowrap">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setEditGuest(user)}
                             type="button"
-                            className="cursor-pointer"
                           >
                             <img
                               src={editIcon}
@@ -162,7 +173,10 @@ const GuestBook = () => {
                               className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
                             />
                           </button>
-                          <button onClick={() => setGuestToDeleteIndex(index)}>
+                          <button
+                            type="button"
+                            onClick={() => setGuestToDelete(user)}
+                          >
                             <img
                               src={binIcon}
                               alt="delete"
@@ -178,73 +192,94 @@ const GuestBook = () => {
             )}
           </div>
 
-          <div className="space-y-4 md:hidden">
-            {users.map((user, idx) => (
-              <div
-                key={idx}
-                className="border rounded-xl p-4 shadow-sm bg-gray-50 hover:bg-white transition "
-              >
-                <div className="flex justify-between mb-2">
-                  <span className="text-gray-500 text-sm font-medium">
-                    Lounge Name
-                  </span>
-                  <span className="text-gray-800 font-semibold">
-                    {user.name}
-                  </span>
-                </div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-gray-500 text-sm font-medium">
-                    Location
-                  </span>
-                  <span className="text-gray-800">{user.location}</span>
-                </div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-gray-500 text-sm font-medium">
-                    Date Joined
-                  </span>
-                  <span className="text-gray-800">{user.date}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500 text-sm font-medium">
-                    Action
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setEditGuest(user)}
-                      type="button"
-                      className="cursor-pointer"
-                    >
-                      <img
-                        src={editIcon}
-                        alt="edit"
-                        className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
-                      />
-                    </button>
-                    <button onClick={() => setGuestToDeleteIndex(idx)}>
-                      <img
-                        src={binIcon}
-                        alt="delete"
-                        className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
-                      />
-                    </button>
+          {/* Mobile View */}
+          <div className="space-y-4 md:hidden p-4">
+            {isLoading ? (
+              <div className="text-center py-10">Loading guests...</div>
+            ) : sortedUsers.length === 0 ? (
+              <div className="text-center py-10">No record found</div>
+            ) : (
+              sortedUsers.map((user) => (
+                <div
+                  key={user._id}
+                  className="border rounded-xl p-4 shadow-sm bg-gray-50 hover:bg-white transition"
+                >
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-500 text-sm font-medium">Lounge</span>
+                    <span className="text-gray-800 font-semibold">
+                      {user.loungeId?.name || "N/A"}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-500 text-sm font-medium">Full Name</span>
+                    <span className="text-gray-800">{user.fullName}</span>
+                  </div>
+
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-500 text-sm font-medium">Special Date</span>
+                    <span className="text-gray-800">
+                      {user.specialDates?.length > 0
+                        ? user.specialDates[0]
+                        : new Date(user.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 text-sm font-medium">Action</span>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setEditGuest(user)} type="button">
+                        <img src={editIcon} alt="edit" className="w-5" />
+                      </button>
+                      <button type="button" onClick={() => setGuestToDelete(user)}>
+                        <img src={binIcon} alt="delete" className="w-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
+
+          {/* Pagination Controls Section */}
+          {!isLoading && sortedUsers.length > 0 && (
+            <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4">
+              <div className="text-sm text-gray-500">
+                Showing page <span className="font-semibold text-gray-800">{pagination.currentPage}</span> of{" "}
+                <span className="font-semibold text-gray-800">{pagination.totalPages}</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handlePrevPage}
+                  disabled={pagination.currentPage === 1}
+                  className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextPage}
+                  disabled={pagination.currentPage === pagination.totalPages}
+                  className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {addGuest && <AddGuestModal onClose={() => setAddGuest(false)} />}
+
         {editGuest && (
-          <EditGuestModal
-            guestData={editGuest}
-            onClose={() => setEditGuest(null)}
-          />
+          <EditGuestModal guestData={editGuest} onClose={() => setEditGuest(null)} />
         )}
 
-        {guestToDeleteIndex !== null && (
+        {guestToDelete && (
           <DeleteGuestModal
-            onClose={() => setGuestToDeleteIndex(null)}
+            guest={guestToDelete}
+            onClose={() => setGuestToDelete(null)}
             onConfirm={handleConfirmDelete}
           />
         )}

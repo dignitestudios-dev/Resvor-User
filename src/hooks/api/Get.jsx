@@ -29,3 +29,9 @@ const useUsers = (url, currentPage = 1) => {
 };
 
 export { useUsers };
+
+
+export const getGuestBook = async () => {
+  const response = await axios.get("/guestbook");
+  return response.data;
+};

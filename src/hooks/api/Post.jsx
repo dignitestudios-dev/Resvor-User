@@ -83,3 +83,15 @@ export const submitLogout = async () => {
   const { data } = await axios.post("/auth/logout");
   return data;
 };
+
+
+export const addGuest = async (payload) => {
+  const { data } = await axios.post("/guestbook", payload);
+  return data;
+};
+
+export const updateGuest = async ({ entryId, payload }) => {
+  const { data } = await axios.patch(`/guestbook/${entryId}`, payload);
+
+  return data;
+};

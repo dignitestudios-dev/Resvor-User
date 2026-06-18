@@ -1,4 +1,5 @@
-import { submitLogin, submitSignUp, submitVerifyEmail, submitPersonalDetails, submitVerifyPhone, submitPreferences,submitForgotPassword,submitVerifyForgotOtp,submitResetPassword, getLounges,resendEmailVerificationOtp, submitLogout } from "../api/Post";
+import { deleteGuest } from "../api/Delete";
+import { submitLogin, submitSignUp, submitVerifyEmail, submitPersonalDetails, submitVerifyPhone, submitPreferences,submitForgotPassword,submitVerifyForgotOtp,submitResetPassword, getLounges,resendEmailVerificationOtp, submitLogout, addGuest, updateGuest } from "../api/Post";
 import { useMutation } from "@tanstack/react-query";
 
 
@@ -80,3 +81,21 @@ export const useLogout = () => {
   });
 };
  
+
+export const useAddGuest = () => {
+  return useMutation({
+    mutationFn: addGuest,
+  });
+};
+
+export const useUpdateGuest = () => {
+  return useMutation({
+    mutationFn: updateGuest,
+  });
+};
+
+export const useDeleteGuest = () => {
+  return useMutation({
+    mutationFn: deleteGuest,
+  });
+};

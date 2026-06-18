@@ -19,11 +19,10 @@ export default function LoungeSelectField({
   const [search, setSearch] = useState("");
   const ref = useRef(null);
 
-  const filteredOptions = options.filter((opt) =>
-    opt.toLowerCase().includes(search.toLowerCase())
+  const filteredOptions = options.filter((option) =>
+    option?.label?.toLowerCase().includes(search.toLowerCase())
   );
 
-  // close dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) {
@@ -31,9 +30,17 @@ export default function LoungeSelectField({
         setSearch("");
       }
     };
+
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+
+    return () => {
+      document.removeEventListener("mousedown", handler);
+    };
   }, []);
+
+  const selectedOption = options.find(
+    (option) => option.value === value
+  );
 
   return (
     <div ref={ref}>
@@ -42,24 +49,28 @@ export default function LoungeSelectField({
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
 
-      {/* Trigger */}
+      {/* Select Trigger */}
       <div
-        onClick={() => !disabled && setIsOpen((p) => !p)}
+        onClick={() => !disabled && setIsOpen((prev) => !prev)}
         className={`w-full px-4 py-2 text-sm rounded-[15px] bg-transparent ring-1 ring-[#CACACA]
-          focus-within:ring-2 focus-within:ring-gray-200 cursor-pointer flex justify-between items-center
-          ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+        focus-within:ring-2 focus-within:ring-gray-200 cursor-pointer flex justify-between items-center
+        ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
       >
-        <span className={`text-[#727272] ${!value && "text-[12px]"}`}>
-          {value || placeholder}
+        <span className={`text-[#727272] ${!value ? "text-[12px]" : ""}`}>
+          {selectedOption?.label || placeholder}
         </span>
 
-        {isOpen ? <IoIosArrowUp size={20} /> : <IoIosArrowDown size={20} />}
+        {isOpen ? (
+          <IoIosArrowUp size={20} />
+        ) : (
+          <IoIosArrowDown size={20} />
+        )}
       </div>
 
       {/* Dropdown */}
       {isOpen && (
         <div className="mt-2 border border-[#CACACA] rounded-[15px] bg-white shadow-sm overflow-hidden">
-          {/* Search */}
+          {/* Search Input */}
           <input
             autoFocus
             type="text"
@@ -74,18 +85,23 @@ export default function LoungeSelectField({
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <div
-                  key={option}
+                  key={option.value}
                   onClick={() => {
-                    onChange(option);
+                    onChange(option.value);
                     setIsOpen(false);
                     setSearch("");
-                    onBlur?.({ target: { name } });
+
+                    onBlur?.({
+                      target: { name },
+                    });
                   }}
                   className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${
-                    option === value ? "bg-gray-100 font-medium" : ""
+                    option.value === value
+                      ? "bg-gray-100 font-medium"
+                      : ""
                   }`}
                 >
-                  {option}
+                  {option.label}
                 </div>
               ))
             ) : (
@@ -98,7 +114,9 @@ export default function LoungeSelectField({
       )}
 
       {error && touched && (
-        <p className="text-red-600 text-[12px] mt-1">{error}</p>
+        <p className="text-red-600 text-[12px] mt-1">
+          {error}
+        </p>
       )}
     </div>
   );

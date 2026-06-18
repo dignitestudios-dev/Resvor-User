@@ -2,6 +2,8 @@
 // hooks/queries/useAuthMe.js
 import { useQuery } from "@tanstack/react-query";
 import axios from "../../axios";
+import GuestBook from './../../pages/app/GuestBook';
+import { getGuestBook } from "../api/Get";
 
 const fetchAuthMe = async () => {
   const { data } = await axios.get("/auth/me");
@@ -41,5 +43,13 @@ export const useLoungeDetails = (loungeId) => {
     queryFn: () => fetchLoungeDetails(loungeId),
     enabled: !!loungeId,
     retry: false,
+  });
+};
+
+
+export const useGuestBook = () => {
+  return useQuery({
+    queryKey: ["guest-book"],
+    queryFn: () => getGuestBook(),
   });
 };

@@ -4,20 +4,31 @@ import { RxCross2 } from "react-icons/rx";
 import Button from "../global/Button";
 import InputField from "../auth/InputField";
 import { useFormik } from "formik";
-import { changPasswordValues } from "../../init/app/appValues";
-import { changePasswordSchema } from "../../schema/app/appSchema";
-import PhoneInput from "../auth/PhoneInput";
-// import { phoneFormatter } from "../../lib/helpers";
-import TagsInputField from "../onBoarding/TagsInputField";
 import { useState } from "react";
-import { binIcon } from "../../assets/export";
 import TagsModal from "../onBoarding/TagsModal";
 import LoungeSelectField from "../global/LoungeSelectField";
+import { useLounges } from "../../hooks/queries/useQueries";
+import { useUpdateGuest } from "../../hooks/mutations/OnboardingMutations";
+import { SuccessToast, ErrorToast } from "../global/Toaster";
+import { guestbookSchema } from "../../schema/app/appSchema";
+import { useQueryClient } from "@tanstack/react-query"; // <-- IMPORT THIS
 
 const EditGuestModal = ({ onClose, guestData }) => {
   const [dateModalData, setDateModalData] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  
+  const queryClient = useQueryClient(); // <-- INITIALIZE QUERY CLIENT
+
   const closeModal = () => setModalIsOpen(false);
+
+  const { data: loungesResponse, isLoading } = useLounges();
+  const { mutate: updateGuestMutation, isPending } = useUpdateGuest();
+
+  const loungeOptions =
+    loungesResponse?.data?.map((lounge) => ({
+      label: lounge.name,
+      value: lounge._id,
+    })) || [];
 
   const {
     values,
@@ -25,36 +36,62 @@ const EditGuestModal = ({ onClose, guestData }) => {
     handleChange,
     errors,
     touched,
-    setFieldValue,
     handleSubmit,
+    setFieldValue,
   } = useFormik({
+    enableReinitialize: true,
+
     initialValues: {
-      name: guestData?.name || "",
+      name: guestData?.fullName || "",
       email: guestData?.email || "",
-      number: guestData?.phone || "",
-      lounge: guestData?.lounge || "",
-      ...changPasswordValues,
+      // lounge: guestData?.loungeId?._id || "", // Adjusted to default populate lounge safely if present
     },
-    validationSchema: changePasswordSchema,
-    onSubmit: async (values) => {
-      console.log("🚀 ~ EditGuestModal ~ values:", values);
-      onClose();
+
+    validationSchema: guestbookSchema,
+
+    onSubmit: (values) => {
+      updateGuestMutation(
+        {
+          entryId: guestData?._id,
+          payload: {
+            loungeId: values.lounge,
+            fullName: values.name.trim(),
+            email: values.email.trim(),
+          },
+        },
+        {
+          onSuccess: () => {
+            // INVALIDATE THE GUESTBOOK QUERY KEY
+            // Note: Verify if your hook uses a string key like "guestbook" or an array like ["guestbook"]
+            queryClient.invalidateQueries({ queryKey: ["guestbook"] }); 
+            
+            SuccessToast("Guest updated successfully!");
+            onClose();
+          },
+          onError: (error) => {
+            console.error(error);
+            ErrorToast("Failed to update guest.");
+          },
+        }
+      );
     },
   });
 
   return (
     <div className="fixed inset-0 bg-[#0A150F80] z-50 flex items-center justify-center">
-      <div className="bg-white rounded-[12px] h-[630px] w-[490px] max-w-[95%] pb-10 overflow-y-auto">
+      <div className="bg-white rounded-[12px] h-auto w-[490px] max-w-[95%] pb-10 overflow-y-auto">
+        {/* Header */}
         <div className="flex justify-between items-center px-8 pt-4 border-b border-b-[#00000033]">
-          <h2 className="text-[28px] font-bold mb-4">Edit Entry</h2>
+          <h2 className="text-[28px] font-bold mb-4">Edit Guest</h2>
           <div onClick={onClose} className="cursor-pointer">
             <RxCross2 className="text-[28px] text-[#181818]" />
           </div>
         </div>
+
+        {/* Form */}
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-6 w-full pt-4 px-8">
             <InputField
-              type="text"
               label="Full Name"
               placeholder="Full Name"
               id="name"
@@ -66,6 +103,7 @@ const EditGuestModal = ({ onClose, guestData }) => {
               touched={touched.name}
               maxLength={50}
             />
+
             <InputField
               label="Email address"
               placeholder="Enter Email Address"
@@ -78,74 +116,30 @@ const EditGuestModal = ({ onClose, guestData }) => {
               touched={touched.email}
               maxLength={50}
             />
-            <label
-              htmlFor=""
-              className="text-[14px] text-[#181818] font-[500] -mb-4"
-            >
-              Phone Number
-            </label>
-            <PhoneInput
-              value={values.number}
-              id={"number"}
-              name={"number"}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.number}
-              touched={touched.number}
-              autoComplete="off"
-              placeholderText={"text-black"}
-            />
-            <div>
-              <label className="block text-[14px] font-[500] text-[#181818] mb-2">
-                Add birthday and special dates
-              </label>
 
-              <TagsInputField setModalIsOpen={setModalIsOpen} />
-              {dateModalData && (
-                <div
-                  className={`flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5`}
-                >
-                  <div className="flex flex-wrap py-1 pl-4 w-[80%] text-[#FFFFFF] font-thin text-[14px]">
-                    Date of Birth: {dateModalData?.dobDate?.day}{" "}
-                    {dateModalData?.dobDate?.month}{" "}
-                    {dateModalData?.dobDate?.year}
-                  </div>
-                  <div className="flex items-start h-full justify-end w-[20%]">
-                    <button
-                      type="button"
-                      onClick={() => setDateModalData("")}
-                      className="py-1.5 rounded-xl"
-                    >
-                      <img src={binIcon} alt="bin" className="w-7 pr-2" />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-            <LoungeSelectField
+            {/* <LoungeSelectField
               label="Lounge Name"
-              placeholder="Search lounge..."
+              placeholder={isLoading ? "Loading lounges..." : "Search lounge..."}
               name="lounge"
               value={values.lounge}
               onChange={(value) => setFieldValue("lounge", value)}
               onBlur={handleBlur}
               error={errors.lounge}
               touched={touched.lounge}
-              options={[
-                "Sky Lounge",
-                "Blue Moon Lounge",
-                "Rooftop Vibes",
-                "Elite Club",
-                "Sunset Terrace",
-                "Urban Nights",
-              ]}
+              options={loungeOptions}
+            /> */}
+          </div>
+
+          <div className="mt-8 mx-8">
+            <Button
+              text={isPending ? "Updating..." : "Update Guest"}
+              type="submit"
+              disabled={isPending}
             />
           </div>
         </form>
-        <div className="mt-8 mx-8">
-          <Button text="Update Guest" onClick={onClose} />
-        </div>
       </div>
+
       {modalIsOpen && (
         <TagsModal
           isOpen={modalIsOpen}
