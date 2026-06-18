@@ -17,7 +17,12 @@ import EventSummaryModal from "../../components/loungeDetail/EventSummaryModal";
 import EventConfirmedModal from "../../components/loungeDetail/EventConfirmedModal";
 import EventServiceModal from "../../components/loungeDetail/EventServiceModal";
 import BookingServiceModal from "../../components/loungeDetail/BookingServiceModal";
-import { useLoungeDetails } from "../../hooks/queries/useQueries";
+import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
+import {
+  useFavorites,
+  useLoungeDetails,
+  useToggleFavorite,
+} from "../../hooks/queries/useQueries";
 
 const LoungeDetail = () => {
   const [activeTab, setActiveTab] = useState("about");
@@ -47,20 +52,28 @@ const LoungeDetail = () => {
     data: loungeResponse,
     isLoading,
   } = useLoungeDetails(id);
+  const { data: favoritesResponse } = useFavorites({
+    enabled: !!id,
+  });
+  const { mutate: toggleFavorite, isPending: isTogglingFavorite } =
+    useToggleFavorite();
 
   const lounge = loungeResponse?.data;
-  console.log("🚀 ~ LoungeDetail ~ lounge:", lounge);
 
   useEffect(() => {
-    if (lounge?.isFavorite !== undefined) {
-      setLiked(lounge.isFavorite);
-    }
-  }, [lounge]);
+    const isFavoriteFromServer = Boolean(
+      lounge?.isFavorite ||
+        favoritesResponse?.data?.some((favorite) => favorite._id === lounge?._id)
+    );
+
+    setLiked(isFavoriteFromServer);
+  }, [favoritesResponse?.data, lounge?.isFavorite, lounge?._id]);
 
   const handleEventRequestNext = (data) => {
     setEventData(data);
     setIsEventRequest(false);
-    setIsEventServices(true);
+    setIsEventServices(false);
+    setIsEventDetails(true);
   };
 
   const handleServiceRequestNext = (data) => {
@@ -71,8 +84,55 @@ const LoungeDetail = () => {
 
   const handleEventDetailsClose = () => {
     setIsEventDetails(false);
-    setEventData(null);
     setIsEventSubmit(true);
+  };
+
+  const handleFavoriteClick = () => {
+    if (!lounge?._id || isTogglingFavorite) return;
+
+    const nextValue = !liked;
+    setLiked(nextValue);
+
+    toggleFavorite(lounge._id, {
+      onSuccess: (response) => {
+        SuccessToast(
+          response?.message ||
+            (nextValue
+              ? "Lounge added to favorites."
+              : "Lounge removed from favorites.")
+        );
+      },
+      onError: (requestError) => {
+        setLiked(!nextValue);
+        ErrorToast(
+          requestError?.response?.data?.message ||
+            "Unable to update favorite lounge."
+        );
+      },
+    });
+  };
+
+  const normalizeEventType = (value) => {
+    const normalized = String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_");
+
+    const aliasMap = {
+      birthday_party: "birthday",
+      birthday: "birthday",
+      wedding: "wedding",
+      engagement: "engagement",
+      ceremony: "ceremony",
+      meeting: "meeting",
+      private_party: "private_party",
+      "private party": "private_party",
+      maintenance: "maintenance",
+      closed: "closed",
+      other: "other",
+    };
+
+    return aliasMap[normalized] || normalized;
   };
 
   const handleBookingNext = (data) => {
@@ -90,6 +150,14 @@ const LoungeDetail = () => {
   const handleBookingDetailsClose = () => {
     setIsBookingDetails(false);
     setBookingData(null);
+    setBookingServiceData(null);
+  };
+
+  const handleBookingConfirmed = () => {
+    setIsBookingDetails(false);
+    setBookingData(null);
+    setBookingServiceData(null);
+    navigate("/app/bookings");
   };
 
   const handleEventSubmit = () => {
@@ -162,8 +230,8 @@ const LoungeDetail = () => {
                   </div>
 
                   <div
-                    onClick={() => setLiked((s) => !s)}
-                    className="cursor-pointer"
+                    onClick={handleFavoriteClick}
+                    className={`cursor-pointer ${isTogglingFavorite ? "opacity-70 pointer-events-none" : ""}`}
                   >
                     <img
                       src={liked ? likedIcon : likeIcon}
@@ -218,7 +286,7 @@ const LoungeDetail = () => {
                 <div className="w-full">
                   <Button
                     type="button"
-                    text="Make Reservation"
+                    text="Book Now"
                     onClick={() => setIsBooking(true)}
                   />
                 </div>
@@ -237,6 +305,8 @@ const LoungeDetail = () => {
 
         {isBooking && (
           <BookingModal
+            loungeId={id}
+            
             onClose={() => setIsBooking(false)}
             onNext={handleBookingNext}
           />
@@ -244,6 +314,9 @@ const LoungeDetail = () => {
 
         {isBookingServices && (
           <BookingServiceModal
+            loungeId={id}
+            bookingData={bookingData}
+            loungeServices={lounge?.services || []}
             onClose={() => setIsBookingServices(false)}
             onNext={handleBookingServiceNext}
           />
@@ -254,13 +327,10 @@ const LoungeDetail = () => {
             onClose={handleBookingDetailsClose}
             bookingData={bookingData}
             bookingServiceData={bookingServiceData}
-            onNext={() => {
-              setIsBookingDetails(false);
-              setISEventSummary(true);
-            }}
+            onNext={handleBookingConfirmed}
             onClickBack={() => {
               setIsBookingDetails(false);
-              setIsBooking(true);
+              setIsBookingServices(true);
             }}
           />
         )}
@@ -312,6 +382,26 @@ const LoungeDetail = () => {
 
         {isEventSummary && (
           <EventSummaryModal
+            apiPayload={{
+              loungeId: id,
+              title: eventData?.title || eventData?.eventName || "",
+              eventType: normalizeEventType(eventData?.eventType),
+              guestCount: Number(eventData?.guestCount),
+              budget: Number(eventData?.budget),
+              preferredMusic: eventData?.preferredMusic,
+              specialRequest:
+                eventData?.specialRequest ||
+                eventServices?.instruction ||
+                "",
+              startDateTime:
+                typeof eventData?.startDateTime === "string"
+                  ? eventData.startDateTime
+                  : eventData?.startDateTime?.toISOString?.() || "",
+              endDateTime:
+                typeof eventData?.endDateTime === "string"
+                  ? eventData.endDateTime
+                  : eventData?.endDateTime?.toISOString?.() || "",
+            }}
             onClick={handleEventSummary}
             onClose={() => setISEventSummary(false)}
           />

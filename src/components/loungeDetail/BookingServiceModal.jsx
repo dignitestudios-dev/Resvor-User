@@ -7,8 +7,9 @@ import TagsInputField from "../onBoarding/TagsInputField";
 import { binIcon } from "../../assets/export";
 import ServicesModal from "./ServicesModal";
 import FloorPlanModal from "./FloorPlanModal";
+import { useAvailableTables } from "../../hooks/queries/useQueries";
 
-const BookingServiceModal = ({ onClose, onNext }) => {
+const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData, loungeServices }) => {
   const [serviceModalData, setServiceModalData] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [floorPlanModal, setFloorPlanModal] = useState(false);
@@ -18,15 +19,36 @@ const BookingServiceModal = ({ onClose, onNext }) => {
   const [selectedTable, setSelectedTable] = useState([]);
   const [instruction, setInstruction] = useState("");
 
+  console.log("BookingServiceModal props:", { loungeId, bookingData });
+  console.log("Fetching tables with:", {
+    loungeId,
+    date: bookingData?.apiPayload?.bookingDate,
+    startTime: bookingData?.apiPayload?.startTime,
+    endTime: bookingData?.apiPayload?.endTime
+  });
+
+  const { data: tablesResponse, isLoading: isLoadingTables } = useAvailableTables(
+    loungeId,
+    bookingData?.apiPayload?.bookingDate,
+    bookingData?.apiPayload?.startTime,
+    bookingData?.apiPayload?.endTime
+  );
+
+  const availableTables = tablesResponse?.data || [];
+  const tableOptions = availableTables.map(t => ({
+    title: `${t.code || `Table ${t.tableNumber}`} (${t.type ? t.type.charAt(0).toUpperCase() + t.type.slice(1) : ''} - Cap: ${t.capacity || 'N/A'})`,
+    _id: t._id
+  }));
+
   const handleSelect = (option) => {
-    const name = option?.name || option;
+    const title = option?.title || option;
     setSelectedTable((prev) => {
-      const exists = prev.some((item) => item.name === name);
+      const exists = prev.some((item) => (item.title || item.name) === title);
 
       if (exists) {
-        return prev.filter((item) => item.name !== name);
+        return prev.filter((item) => (item.title || item.name) !== title);
       } else {
-        return [...prev, { name }];
+        return [...prev, { title, _id: option._id || option.id }];
       }
     });
   };
@@ -40,6 +62,8 @@ const BookingServiceModal = ({ onClose, onNext }) => {
       selectedSeating: selectedTable,
       selectedPackage: serviceModalData,
       instruction: instruction,
+      tableIds: selectedTable.map(t => t._id).filter(Boolean),
+      specialRequest: instruction || undefined,
     };
     onNext(eventData);
   };
@@ -65,11 +89,14 @@ const BookingServiceModal = ({ onClose, onNext }) => {
           <div className="my-2 mx-1 ">
             <FilterSelectableField
               label="Select table"
-              placeholder={"Select table"}
-              options={["Table No 2", "Table No 5", "Table No 20"]}
+              placeholder={isLoadingTables ? "Loading..." : "Select table"}
+              options={tableOptions}
               value={selectedTable}
               onChange={handleSelect}
             />
+            {(!bookingData?.apiPayload?.bookingDate) && (
+              <p className="text-[12px] text-gray-500 mt-1">Date and time required to see tables.</p>
+            )}
           </div>
           <div className="mx-1">
             <label className="block text-[14px] font-[500] text-[#181818] mb-1">
@@ -134,6 +161,7 @@ const BookingServiceModal = ({ onClose, onNext }) => {
             isOpen={modalIsOpen}
             onClose={closeModal}
             setServiceModalData={setServiceModalData}
+            loungeServices={loungeServices}
           />
         )}
         {floorPlanModal && (

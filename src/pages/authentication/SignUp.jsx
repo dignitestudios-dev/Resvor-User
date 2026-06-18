@@ -19,16 +19,38 @@ import { useNavigate } from "react-router";
 export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0);
 
-  const { data: authData, isLoading } = useAuthMe(); // 👈 fetch current step
+  const { data: authData, isLoading, refetch } = useAuthMe(); // 👈 fetch current step
 console.log("🚀 ~ SignUp ~ authData:", authData);
 const navigate = useNavigate();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    if (queryParams.get("session_id") || queryParams.get("success") === "true") {
+      refetch();
+    }
+  }, [refetch]);
   // 👇 once API responds, set the correct step
   useEffect(() => {
     if (authData?.success) {
-      if(authData?.data?.sessionType === "access_token"){
-navigate("/app/home");
+      const queryParams = new URLSearchParams(window.location.search);
+      const hasSuccessParam = queryParams.get("session_id") || queryParams.get("success") === "true";
+      const onboardingCompleteAcknowledged = localStorage.getItem("onboarding_complete_acknowledged") === "true";
+
+      if (authData?.data?.onboardingStep === "completed") {
+        if (onboardingCompleteAcknowledged) {
+          navigate("/app/home");
+          return;
+        } else {
+          setCurrentStep(5);
+          return;
+        }
+      }
+
+      if (hasSuccessParam) {
+        setCurrentStep(5);
         return;
       }
+
       const stepIndex = mapOnboardingStepToIndex(authData?.data?.onboardingStep);
       setCurrentStep(stepIndex);
     } else if (!isLoading) {

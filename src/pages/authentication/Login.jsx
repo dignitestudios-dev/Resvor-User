@@ -10,9 +10,11 @@ import { loginValues } from "../../init/authentication/authValues";
 import { useLogin } from "../../hooks/mutations/OnboardingMutations";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import { setStoredTokenType } from "../../lib/authSession";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Login = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [state, setState] = useState("idle");
   const [apiError, setApiError] = useState("");
 
@@ -47,7 +49,9 @@ const Login = () => {
 
     const tokenType = response?.data?.tokenType || response?.tokenType || "session_token";
 
+    localStorage.removeItem("onboarding_complete_acknowledged");
     setStoredTokenType(tokenType);
+    await queryClient.invalidateQueries({ queryKey: ["auth-me"] });
 
     if (tokenType === "access_token") {
       SuccessToast("Login successful");

@@ -2,6 +2,7 @@ export const personalDetailValues = {
   profile: null,
   userImage: null,
   fullName: "",
+  number: "",
   specialDatesData: null,
   location: "",
 };

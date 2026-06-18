@@ -1,16 +1,69 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BuySubscriptionModal from "./BuySubscriptionModal";
 import AuthButton from "../auth/AuthButton";
 import { successLight } from "../../assets/export";
-import { FaArrowLeftLong } from "react-icons/fa6";
+import { useAuthMe, usePurchaseSubscription, useSubscriptionPlans } from "../../hooks/queries/useQueries";
 import { useNavigate } from "react-router";
+import { ErrorToast } from "../global/Toaster";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Subscription = ({ handlePrevious }) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [subscriptionModal, setSubscriptionModal] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [isVip, setIsVip] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [loadingPlanId, setLoadingPlanId] = useState(null);
+
+  const { data: plansResponse, isLoading } = useSubscriptionPlans();
+  const plans = plansResponse?.data || [];
+  const purchaseMutation = usePurchaseSubscription();
+  const { data: authData, refetch: refetchAuth } = useAuthMe();
+  const standardPlans = plans.filter((plan) => plan.key !== "vip");
+  const vipPlan = plans.find((plan) => plan.key === "vip");
+
+  console.log("authData", authData?.data?.user?.isSubscribed);
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    if (queryParams.get("session_id") || queryParams.get("success") === "true") {
+      refetchAuth();
+    }
+  }, [refetchAuth]);
+
+  useEffect(() => {
+    if (     
+      authData?.data?.user?.isSubscribed
+    ) {
+      setCompleted(true);
+    }
+  }, [authData]);
+
+  const handleBuyNow = async (plan) => {
+    setSelectedPlan(plan);
+    setLoadingPlanId(plan._id);
+    try {
+      const res = await purchaseMutation.mutateAsync({
+        planId: plan._id,
+        payload: {}
+      });
+      const redirectUrl = res?.data?.checkoutUrl ;
+      if (redirectUrl) {
+        queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+        window.location.href = redirectUrl;
+      } else {
+        ErrorToast("Redirect URL not found in API response.");
+      }
+    } catch (error) {
+      console.error("Purchase error:", error);
+      ErrorToast(error?.response?.data?.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoadingPlanId(null);
+    }
+  };
+
   return (
     <div className="flex flex-col justify-center items-center min-h-screen w-full text-white relative px-4 py-6">
       {/* Back Button */}
@@ -20,7 +73,12 @@ const Subscription = ({ handlePrevious }) => {
         </button>
       </div> */}
 
-      {completed ? (
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-300 text-lg">Loading plans...</p>
+        </div>
+      ) : completed ? (
         <div className="mt-8 text-center space-y-4 max-w-sm w-full">
           <div className="flex justify-center pb-4">
             <img
@@ -41,7 +99,11 @@ const Subscription = ({ handlePrevious }) => {
             <AuthButton
               type="button"
               text={"Explore Lounges"}
-              onClick={() => navigate("/app/home")}
+              onClick={() => {
+                localStorage.setItem("onboarding_complete_acknowledged", "true");
+                queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+                navigate("/app/home");
+              }}
             />
           </div>
         </div>
@@ -59,123 +121,105 @@ const Subscription = ({ handlePrevious }) => {
 
           {/* Plans Section */}
           <div className="w-full max-w-5xl mx-auto mt-6 px-2">
+            {plans.length === 0 && (
+              <div className="text-center text-gray-400 py-10">
+                No subscription plans available at the moment.
+              </div>
+            )}
+
             {/* 3 Plans Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {/* Plan 1 */}
-              <div className="bg-[#EFEFEF1A] border border-[#CACACA] rounded-3xl p-6 sm:p-8">
-                <div className="text-sm text-gray-300 mb-1">Plan 1</div>
-                <h2 className="text-3xl sm:text-4xl font-bold mb-3">Gold</h2>
-                <div className="text-3xl sm:text-4xl font-bold text-orange-400 mb-4">
-                  $15.99
+              {standardPlans.map((plan, index) => (
+                <div key={plan._id} className="bg-[#EFEFEF1A] border border-[#CACACA] rounded-3xl p-6 sm:p-8 flex flex-col justify-between">
+                  <div>
+                    <div className="text-sm text-gray-300 mb-1">Plan {index + 1}</div>
+                    <h2 className="text-3xl sm:text-4xl font-bold mb-3 capitalize">{plan.label}</h2>
+                    <div className={`text-3xl sm:text-4xl font-bold mb-4 ${
+                      plan.key === "gold" ? "text-orange-400" : plan.key === "bronze" ? "text-orange-500" : ""
+                    }`}>
+                      ${plan.displayPrice}
+                    </div>
+
+                    <ul className="space-y-2 mb-6 text-sm sm:text-base">
+                      {plan.features?.map((feature, fIdx) => (
+                        <li key={fIdx} className="flex items-center">• {feature}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <button
+                    onClick={() => handleBuyNow(plan)}
+                    disabled={loadingPlanId !== null}
+                    className="w-full bg-white text-black py-2.5 rounded-xl text-[13px] font-semibold mt-auto flex justify-center items-center gap-2 disabled:opacity-60"
+                  >
+                    {loadingPlanId === plan._id ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      "Buy Now"
+                    )}
+                  </button>
                 </div>
-
-                <ul className="space-y-2 mb-6 text-sm sm:text-base">
-                  <li className="flex items-center">• 50 Guests Per Event</li>
-                  <li className="flex items-center">• Unlimited Event</li>
-                </ul>
-
-                <button
-                  onClick={() => {
-                    setIsVip(true);
-                    setSubscriptionModal(true);
-                  }}
-                  className="w-full bg-white text-black py-2.5 rounded-xl text-[13px] font-semibold"
-                >
-                  Buy Now
-                </button>
-              </div>
-
-              {/* Plan 2 */}
-              <div className="bg-[#EFEFEF1A] border border-[#CACACA] rounded-3xl p-6 sm:p-8">
-                <div className="text-sm text-gray-300 mb-1">Plan 2</div>
-                <h2 className="text-3xl sm:text-4xl font-bold mb-3">Silver</h2>
-                <div className="text-3xl sm:text-4xl font-bold mb-4">
-                  $11.99
-                </div>
-
-                <ul className="space-y-2 mb-6 text-sm sm:text-base">
-                  <li className="flex items-center">• 25 Guests Per Event</li>
-                  <li className="flex items-center">• Unlimited Event</li>
-                </ul>
-
-                <button
-                  onClick={() => {
-                    setIsVip(true);
-                    setSubscriptionModal(true);
-                  }}
-                  className="w-full bg-white text-black py-2.5 rounded-xl text-[13px] font-semibold"
-                >
-                  Buy Now
-                </button>
-              </div>
-
-              {/* Plan 3 */}
-              <div className="bg-[#EFEFEF1A] border border-[#CACACA] rounded-3xl p-6 sm:p-8">
-                <div className="text-sm text-gray-300 mb-1">Plan 3</div>
-                <h2 className="text-3xl sm:text-4xl font-bold mb-3">Bronze</h2>
-                <div className="text-3xl sm:text-4xl font-bold text-orange-500 mb-4">
-                  $7.99
-                </div>
-
-                <ul className="space-y-2 mb-6 text-sm sm:text-base">
-                  <li className="flex items-center">• 15 Guests Per Event</li>
-                  <li className="flex items-center">• Unlimited Event</li>
-                </ul>
-
-                <button
-                  onClick={() => {
-                    setIsVip(true);
-                    setSubscriptionModal(true);
-                  }}
-                  className="w-full bg-white text-black py-2.5 rounded-xl text-[13px] font-semibold"
-                >
-                  Buy Now
-                </button>
-              </div>
+              ))}
             </div>
 
             {/* VIP Plan */}
-            <div className="bg-[#EFEFEF1A] border border-[#CACACA] rounded-3xl p-6 sm:p-8 mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <div className="text-sm text-gray-300 mb-1">Plan 4</div>
-                  <h2 className="text-3xl sm:text-4xl font-bold mb-3">
-                    VIP Plan
-                  </h2>
-                  <div className="text-3xl sm:text-4xl font-bold mb-4">
-                    $99.99
+            {vipPlan && (
+              <div className="bg-[#EFEFEF1A] border border-[#CACACA] rounded-3xl p-6 sm:p-8 mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <div className="text-sm text-gray-300 mb-1">Plan {standardPlans.length + 1}</div>
+                    <h2 className="text-3xl sm:text-4xl font-bold mb-3 capitalize">
+                      {vipPlan.label}
+                    </h2>
+                    <div className="text-3xl sm:text-4xl font-bold mb-4">
+                      ${vipPlan.displayPrice}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-sm sm:text-base">
+                    {vipPlan.features?.map((feature, fIdx) => (
+                      <p key={fIdx}>• {feature}</p>
+                    ))}
                   </div>
                 </div>
 
-                <div className="space-y-2 text-sm sm:text-base">
-                  <p>• Fast Track Access</p>
-                  <p>• Exclusive Room Access</p>
-                  <p>• Specialized Items & Discounts</p>
-                  <p>• QR Code Integration</p>
-                </div>
+                <button
+                  onClick={() => handleBuyNow(vipPlan)}
+                  disabled={loadingPlanId !== null}
+                  className="w-full bg-white text-black py-2.5 rounded-xl text-[13px] font-semibold mt-6 flex justify-center items-center gap-2 disabled:opacity-60"
+                >
+                  {loadingPlanId === vipPlan._id ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    "Buy Now"
+                  )}
+                </button>
               </div>
-
-              <button
-                onClick={() => {
-                  setIsVip(true);
-                  setSubscriptionModal(true);
-                }}
-                className="w-full bg-white text-black py-2.5 rounded-xl text-[13px] font-semibold mt-6"
-              >
-                Buy Now
-              </button>
-            </div>
+            )}
           </div>
         </>
       )}
-
-      {subscriptionModal && (
-        <BuySubscriptionModal
-          onClick={() => setSubscriptionModal(false)}
-          setCompleted={setCompleted}
-          isVip={isVip}
-        />
-      )}
+      {
+        !completed&&(
+          <div className="w-full mt-6">
+         <button 
+           onClick={() => {
+             queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+             setCompleted(true);
+           }}
+           className="w-full bg-[#EFEFEF1A] border border-[#CACACA] text-white py-2.5 rounded-xl text-[13px] font-semibold mt-auto"
+           >
+           Skip                  
+         </button>
+      </div>
+        )
+      }
     </div>
   );
 };

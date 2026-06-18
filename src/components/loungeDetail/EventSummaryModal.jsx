@@ -1,8 +1,29 @@
 /* eslint-disable react/prop-types */
 
 import { RxCross2 } from "react-icons/rx";
+import { useCreateEvent } from "../../hooks/queries/useQueries";
+import { SuccessToast, ErrorToast } from "../global/Toaster";
 
-const EventSummaryModal = ({ onClose, onClick }) => {
+const EventSummaryModal = ({ onClose, onClick, apiPayload }) => {
+  const { mutate: createEvent, isPending } = useCreateEvent();
+
+  const handlePayNow = () => {
+    if (!apiPayload) {
+      ErrorToast("Missing event data.");
+      return;
+    }
+    
+    createEvent(apiPayload, {
+      onSuccess: (data) => {
+        SuccessToast("Event request created successfully!");
+        if (onClick) onClick(data);
+      },
+      onError: (err) => {
+        ErrorToast(err.response?.data?.message || "Failed to create event request.");
+      }
+    });
+  };
+
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
       <div className="bg-white rounded-[12px] w-[440px] pb-2 overflow-y-auto ">
@@ -21,7 +42,7 @@ const EventSummaryModal = ({ onClose, onClick }) => {
             </p>
             <div className="p-4 bg-[#F1F1F1] rounded-xl">
               <p className="text-[16px] text-[#181818] font-semibold  pb-2 border-b border-b-gray-300">
-                Payment Summary
+                Event Summary
               </p>
               <div className="flex justify-between items-center mt-2">
                 <p className="text-[14px] font-[500] text-[#18181880] ">
@@ -43,10 +64,11 @@ const EventSummaryModal = ({ onClose, onClick }) => {
           </div>
           <div className="mt-4 flex justify-center">
             <button
-              onClick={onClick}
-              className="bg-gradient-to-l from-[#012C57] to-[#061523] text-white text-[13px] font-bold px-4 py-3 rounded-[12px] w-[97%]"
+              onClick={handlePayNow}
+              disabled={isPending}
+              className={`bg-gradient-to-l from-[#012C57] to-[#061523] text-white text-[13px] font-bold px-4 py-3 rounded-[12px] w-[97%] ${isPending ? 'opacity-70' : ''}`}
             >
-              Pay Now
+              {isPending ? "Processing..." : "Pay Now"}
             </button>
           </div>
         </div>

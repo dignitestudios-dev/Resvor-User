@@ -80,7 +80,7 @@ const BookingsTable = ({ users, onSort, sortConfig }) => {
 
                 <td className="px-4 py-6 text-nowrap underline cursor-pointer">
                   <div
-                    onClick={() => navigate(`/app/bookingDetails/${index}`)}
+                    onClick={() => navigate(`/app/bookingDetails/${user._id || index}`)}
                     className="flex items-center gap-2"
                   >
                     <IoIosArrowForward className="text-[#212935] text-[20px] ml-2" />
@@ -137,7 +137,7 @@ const BookingsTable = ({ users, onSort, sortConfig }) => {
               <span className="text-gray-500 text-sm font-medium">Action</span>
               <div className="flex items-center gap-2">
                 <div
-                  onClick={() => navigate(`/app/bookingDetails/${idx}`)}
+                  onClick={() => navigate(`/app/bookingDetails/${user._id || idx}`)}
                   className="flex items-center gap-2"
                 >
                   <IoIosArrowForward className="text-[#212935] text-[20px] ml-2" />

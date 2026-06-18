@@ -23,22 +23,52 @@ import Chat from "./pages/app/Chat";
 import TermsAndConditions from "./pages/app/TermsAndConditions";
 import PrivacyPolicy from "./pages/app/PrivacyPolicy";
 import Notifications from "./pages/app/Notifications";
-import { getStoredTokenType } from "./lib/authSession";
+import { useAuthMe } from "./hooks/queries/useQueries";
 
 const ProtectedAppRoute = () => {
-  const tokenType = getStoredTokenType();
+  const { data: authData, isLoading } = useAuthMe();
 
-  if (tokenType === "access_token") {
-    return <Outlet />;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen w-full bg-[#030e17] text-white">
+        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  const isAuthenticated = authData?.success && authData?.data;
+  const isOnboardingCompleted = 
+    authData?.data?.onboardingStep === "completed" &&
+    localStorage.getItem("onboarding_complete_acknowledged") === "true";
+
+  if (isAuthenticated) {
+    if (isOnboardingCompleted) {
+      return <Outlet />;
+    } else {
+      return <Navigate to="/auth/signup" replace />;
+    }
   }
 
   return <Navigate to="/auth/login" replace />;
 };
 
 const PublicAuthRoute = () => {
-  const tokenType = getStoredTokenType();
+  const { data: authData, isLoading } = useAuthMe();
 
-  if (tokenType === "access_token") {
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen w-full bg-[#030e17] text-white">
+        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  const isAuthenticated = authData?.success && authData?.data;
+  const isOnboardingCompleted = 
+    authData?.data?.onboardingStep === "completed" &&
+    localStorage.getItem("onboarding_complete_acknowledged") === "true";
+
+  if (isAuthenticated && isOnboardingCompleted) {
     return <Navigate to="/app/home" replace />;
   }
 
@@ -46,16 +76,33 @@ const PublicAuthRoute = () => {
 };
 
 function App() {
-  const tokenType = getStoredTokenType();
-  console.log("🚀 ~ App ~ tokenType:", tokenType);
+  const { data: authData, isLoading } = useAuthMe();
+  console.log("🚀 ~ App ~ authData:", authData);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen w-full bg-[#030e17] text-white">
+        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  const isAuthenticated = authData?.success && authData?.data;
+  const isOnboardingCompleted = 
+    authData?.data?.onboardingStep === "completed" &&
+    localStorage.getItem("onboarding_complete_acknowledged") === "true";
 
   return (
     <Routes>
       <Route
         path="/"
         element={
-          tokenType === "access_token" ? (
-            <Navigate to="/app/home" replace />
+          isAuthenticated ? (
+            isOnboardingCompleted ? (
+              <Navigate to="/app/home" replace />
+            ) : (
+              <Navigate to="/auth/signup" replace />
+            )
           ) : (
             <Navigate to="/auth/login" replace />
           )

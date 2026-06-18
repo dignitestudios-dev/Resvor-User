@@ -5,7 +5,7 @@ import { useState } from "react";
 import Button from "../global/Button";
 import { servicesData } from "../../static/MockData";
 
-const ServicesModal = ({ isOpen, onClose, setServiceModalData }) => {
+const ServicesModal = ({ isOpen, onClose, setServiceModalData, loungeServices }) => {
   const [selectedServices, setSelectedServices] = useState([]);
 
   const handleDateData = () => {
@@ -36,7 +36,7 @@ const ServicesModal = ({ isOpen, onClose, setServiceModalData }) => {
           {/* (e) => handleDobChange("month", e.target.value) */}
           <div className="space-y-4 text-[#6B6B6B]">
             <div className="grid grid-cols-3 gap-2">
-              {servicesData?.map((item) => {
+              {loungeServices?.map((item) => {
                 const isAdded = selectedServices.some((s) => s.id === item.id);
                 return (
                   <div
@@ -45,28 +45,22 @@ const ServicesModal = ({ isOpen, onClose, setServiceModalData }) => {
                   >
                     <div>
                       <img
-                        src={item.img}
+                        src={item.images[1].location}
                         className="rounded-[12px] w-full"
-                        alt={item.title}
+                        alt={item.name}
                       />
                     </div>
 
                     <div className="my-2">
                       <p className="text-[16px] text-blue-950 font-[600]">
-                        {item.title}
+                        {item.name}
+                      </p>
+                      <p className="text-[16px] text-blue-950 font-[600]">
+                        {item.description}
                       </p>
 
-                      <p className="leading-relaxed text-[15px] font-[500]">
-                        Includes :
-                      </p>
-
-                      <ul className="list-disc text-[15px] font-[500] list-inside h-[100px]">
-                        {item.includes.map((point, index) => (
-                          <li key={index}>{point}</li>
-                        ))}
-                      </ul>
                     </div>
-
+                           
                     <div className="my-2">
                       <p className="text-indigo-950 text-[20px] font-[700]">
                         Price: ${item.price}
@@ -83,7 +77,7 @@ const ServicesModal = ({ isOpen, onClose, setServiceModalData }) => {
                             !isAdded &&
                             handleAddService({
                               id: item.id,
-                              title: item.title,
+                              title: item.name,
                               price: item.price,
                             })
                           }
