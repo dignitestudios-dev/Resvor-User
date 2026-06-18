@@ -3,10 +3,13 @@
 import { RxCross2 } from "react-icons/rx";
 import { useState } from "react";
 import { qrSnap, successCheck } from "../../assets/export";
+import { usePurchaseSubscription } from "../../hooks/queries/useQueries";
+import { ErrorToast } from "../global/Toaster";
 
-const BuySubscriptionModal = ({ onClick, setCompleted, isVip }) => {
+const BuySubscriptionModal = ({ onClick, setCompleted, isVip, plan }) => {
   const [showBill, setShowBill] = useState(false);
   const [success, setSuccess] = useState(false);
+  const purchaseMutation = usePurchaseSubscription();
 
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
@@ -41,22 +44,43 @@ const BuySubscriptionModal = ({ onClick, setCompleted, isVip }) => {
                   </p>
                   <div className="flex justify-between items-center mt-2">
                     <p className="text-[16px] text-[#18181880] ">
-                      Plan 1 (Gold)
+                      {plan?.label || "Gold Plan"}
                     </p>
-                    <p className="text-[16px] text-[#4B4B4B] ">$15.99</p> 
+                    <p className="text-[16px] text-[#4B4B4B] ">${plan?.displayPrice}</p> 
                   </div>
                 </div>
               </div>
               <div className="mt-4 flex justify-center">
                 <button
-                  onClick={() => {
-                    setSuccess(true);
-                    setCompleted(true);
-                    setShowBill(false);
+                  onClick={async () => {
+                    try {
+                      const res = await purchaseMutation.mutateAsync({
+                        planId: plan?._id,
+                        payload: {}
+                      });
+                      if (res?.success) {
+                        setSuccess(true);
+                        setCompleted(true);
+                        setShowBill(false);
+                      } else {
+                        ErrorToast(res?.message || "Purchase failed. Please try again.");
+                      }
+                    } catch (error) {
+                      console.error("Purchase error:", error);
+                      ErrorToast(error?.response?.data?.message || "Something went wrong. Please try again.");
+                    }
                   }}
-                  className="bg-gradient-to-l from-[#012C57] to-[#061523] text-white text-[13px] font-bold px-4 py-3 rounded-[12px] w-[97%]"
+                  disabled={purchaseMutation.isPending}
+                  className="bg-gradient-to-l from-[#012C57] to-[#061523] text-white text-[13px] font-bold px-4 py-3 rounded-[12px] w-[97%] disabled:opacity-60 flex justify-center items-center gap-2"
                 >
-                  Pay Now
+                  {purchaseMutation.isPending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    "Pay Now"
+                  )}
                 </button>
               </div>
               <div className="my-4 flex justify-center">
@@ -109,7 +133,7 @@ const BuySubscriptionModal = ({ onClick, setCompleted, isVip }) => {
                   Congratulations
                 </p>
                 <p className="xxl:text-[26px] text-[16px] text-[#565656] capitalize ">
-                  You have successfully subscribed to Gold Plan.
+                  You have successfully subscribed to {plan?.label || "Gold"} Plan.
                 </p>
               </div>
             </div>

@@ -41,6 +41,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
           if (response?.success) {
             // Server automatically sets HTTP-only cookie
             // No need to manually store token
+            localStorage.removeItem("onboarding_complete_acknowledged");
             Cookies.set("email", values.email, { expires: 1 });
             setEmail(values.email);
             handleNext();

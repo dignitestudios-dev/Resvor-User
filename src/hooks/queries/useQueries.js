@@ -198,3 +198,38 @@ export const useCancelBooking = () => {
     mutationFn: cancelBooking,
   });
 };
+
+const fetchSubscriptionPlans = async () => {
+  const { data } = await axios.get("/subscriptions/plans");
+  return data;
+};
+
+export const useSubscriptionPlans = () => {
+  return useQuery({
+    queryKey: ["subscription-plans"],
+    queryFn: fetchSubscriptionPlans,
+    retry: false,
+  });
+};
+
+const purchaseSubscription = async ({ planId, payload }) => {
+  const { data } = await axios.post(`/subscriptions/purchase/${planId}`, payload || {});
+  return data;
+};
+
+export const usePurchaseSubscription = () => {
+  return useMutation({
+    mutationFn: purchaseSubscription,
+  });
+};
+
+const cancelSubscription = async (payload) => {
+  const { data } = await axios.delete("/subscriptions/cancel", { data: payload || {} });
+  return data;
+};
+
+export const useCancelSubscription = () => {
+  return useMutation({
+    mutationFn: cancelSubscription,
+  });
+};
