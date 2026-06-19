@@ -61,7 +61,7 @@ const {
       onSuccess: (response) => {
         console.log("Guest added:", response);
         SuccessToast("Guest added successfully!");
-        queryClient.invalidateQueries({ queryKey: ["guestbook"] });
+        queryClient.invalidateQueries({ queryKey: ["guest-book"] });
         onClose();
       },
       onError: (error) => {

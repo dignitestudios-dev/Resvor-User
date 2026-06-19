@@ -10,7 +10,7 @@ import LoungeSelectField from "../global/LoungeSelectField";
 import { useLounges } from "../../hooks/queries/useQueries";
 import { useUpdateGuest } from "../../hooks/mutations/OnboardingMutations";
 import { SuccessToast, ErrorToast } from "../global/Toaster";
-import { guestbookSchema } from "../../schema/app/appSchema";
+import { editGuestbookSchema } from "../../schema/app/appSchema";
 import { useQueryClient } from "@tanstack/react-query"; // <-- IMPORT THIS
 
 const EditGuestModal = ({ onClose, guestData }) => {
@@ -18,7 +18,7 @@ const EditGuestModal = ({ onClose, guestData }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   
   const queryClient = useQueryClient(); // <-- INITIALIZE QUERY CLIENT
-
+  
   const closeModal = () => setModalIsOpen(false);
 
   const { data: loungesResponse, isLoading } = useLounges();
@@ -47,7 +47,7 @@ const EditGuestModal = ({ onClose, guestData }) => {
       // lounge: guestData?.loungeId?._id || "", // Adjusted to default populate lounge safely if present
     },
 
-    validationSchema: guestbookSchema,
+    validationSchema: editGuestbookSchema,
 
     onSubmit: (values) => {
       updateGuestMutation(
@@ -63,7 +63,7 @@ const EditGuestModal = ({ onClose, guestData }) => {
           onSuccess: () => {
             // INVALIDATE THE GUESTBOOK QUERY KEY
             // Note: Verify if your hook uses a string key like "guestbook" or an array like ["guestbook"]
-            queryClient.invalidateQueries({ queryKey: ["guestbook"] }); 
+            queryClient.invalidateQueries({ queryKey: ["guest-book"] }); 
             
             SuccessToast("Guest updated successfully!");
             onClose();
