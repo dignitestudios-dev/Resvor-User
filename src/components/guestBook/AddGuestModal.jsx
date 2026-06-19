@@ -42,6 +42,8 @@ const {
   touched,
   handleSubmit,
   setFieldValue,
+    setFieldTouched,
+
 } = useFormik({
   initialValues: {
     name: "",
@@ -111,19 +113,19 @@ const {
               maxLength={50}
             />
 
-            <LoungeSelectField
-              label="Lounge Name"
-              placeholder={
-                isLoading ? "Loading lounges..." : "Search lounge..."
-              }
-              name="lounge"
-              value={values.lounge}
-              onChange={(value) => setFieldValue("lounge", value)}
-              onBlur={handleBlur}
-              error={errors.lounge}
-              touched={touched.lounge}
-              options={loungeOptions}
-            />
+         <LoungeSelectField
+  label="Lounge Name"
+  placeholder={isLoading ? "Loading lounges..." : "Search lounge..."}
+  name="lounge"
+  value={values.lounge}
+  onChange={(value) => {
+    setFieldValue("lounge", value);
+    setFieldTouched("lounge", true, false); // Marks it touched safely without firing immediate error rules
+  }}
+  error={errors.lounge}
+  touched={touched.lounge}
+  options={loungeOptions}
+/>
           </div>
             <div className="mt-8 mx-8">
 <Button

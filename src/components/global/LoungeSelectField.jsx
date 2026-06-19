@@ -50,7 +50,7 @@ export default function LoungeSelectField({
       </label>
 
       {/* Select Trigger */}
-      <div
+      <div  
         onClick={() => !disabled && setIsOpen((prev) => !prev)}
         className={`w-full px-4 py-2 text-sm rounded-[15px] bg-transparent ring-1 ring-[#CACACA]
         focus-within:ring-2 focus-within:ring-gray-200 cursor-pointer flex justify-between items-center
@@ -91,9 +91,9 @@ export default function LoungeSelectField({
                     setIsOpen(false);
                     setSearch("");
 
-                    onBlur?.({
-                      target: { name },
-                    });
+                    // onBlur?.({
+                    //   target: { name },
+                    // });
                   }}
                   className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${
                     option.value === value
