@@ -24,6 +24,7 @@ import TermsAndConditions from "./pages/app/TermsAndConditions";
 import PrivacyPolicy from "./pages/app/PrivacyPolicy";
 import Notifications from "./pages/app/Notifications";
 import { useAuthMe } from "./hooks/queries/useQueries";
+import { getStoredTokenType } from "./lib/authSession";
 
 const ProtectedAppRoute = () => {
   const { data: authData, isLoading } = useAuthMe();
@@ -39,7 +40,8 @@ const ProtectedAppRoute = () => {
   const isAuthenticated = authData?.success && authData?.data;
   const isOnboardingCompleted = 
     authData?.data?.onboardingStep === "completed" &&
-    localStorage.getItem("onboarding_complete_acknowledged") === "true";
+    (localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
+     getStoredTokenType() === "access_token");
 
   if (isAuthenticated) {
     if (isOnboardingCompleted) {
@@ -66,7 +68,8 @@ const PublicAuthRoute = () => {
   const isAuthenticated = authData?.success && authData?.data;
   const isOnboardingCompleted = 
     authData?.data?.onboardingStep === "completed" &&
-    localStorage.getItem("onboarding_complete_acknowledged") === "true";
+    (localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
+     getStoredTokenType() === "access_token");
 
   if (isAuthenticated && isOnboardingCompleted) {
     return <Navigate to="/app/home" replace />;
@@ -90,7 +93,8 @@ function App() {
   const isAuthenticated = authData?.success && authData?.data;
   const isOnboardingCompleted = 
     authData?.data?.onboardingStep === "completed" &&
-    localStorage.getItem("onboarding_complete_acknowledged") === "true";
+    (localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
+     getStoredTokenType() === "access_token");
 
   return (
     <Routes>

@@ -33,6 +33,27 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
     }
   };
 
+  const handlePaste = (e, index) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pasteData) return;
+
+    const newOtp = [...otp];
+    const startIndex = pasteData.length === otp.length ? 0 : index;
+
+    for (let i = 0; i < pasteData.length; i++) {
+      if (startIndex + i < otp.length) {
+        newOtp[startIndex + i] = pasteData[i];
+      }
+    }
+    setOtp(newOtp);
+
+    const focusIndex = Math.min(startIndex + pasteData.length - 1, otp.length - 1);
+    if (inputs.current[focusIndex]) {
+      inputs.current[focusIndex].focus();
+    }
+  };
+
   const handleKeyDown = (e, index) => {
     if (e.key === "Backspace") {
       e.preventDefault(); // prevent default backspace behavior
@@ -94,7 +115,7 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
         </div>
         <div className="mt-4 py-4 space-y-3 xxl:w-[400px] xxl:ml-12 text-center">
           <p className=" xxl:text-[48px] text-[32px] font-[600] capitalize">
-            verification
+             verification
           </p>
           <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] w-[384px] ">
             Please enter OTP sent to your phone.
@@ -114,6 +135,7 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
                   value={digit}
                   onChange={(e) => handleChange(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)}
+                  onPaste={(e) => handlePaste(e, index)}
                   ref={(el) => (inputs.current[index] = el)}
                   className="xxl:h-[79px] xxl:w-[79px] md:h-[70px] md:w-[70px] w-[60px] h-[60px] rounded-[12px] outline-none text-center border-[1px] bg-white/10 backdrop-blur-[28.9px] placeholder:text-[#E6E6F0]
                 placeholder:text-[16px] xxl:placeholder:text-[20px] focus-within:border-[#CACACA] flex items-center justify-center"

@@ -42,6 +42,27 @@ const isValidOtp = otp.join("").length === 5;
     }
   };
 
+  const handlePaste = (e, index) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pasteData) return;
+
+    const newOtp = [...otp];
+    const startIndex = pasteData.length === otp.length ? 0 : index;
+
+    for (let i = 0; i < pasteData.length; i++) {
+      if (startIndex + i < otp.length) {
+        newOtp[startIndex + i] = pasteData[i];
+      }
+    }
+    setOtp(newOtp);
+
+    const focusIndex = Math.min(startIndex + pasteData.length - 1, otp.length - 1);
+    if (inputs.current[focusIndex]) {
+      inputs.current[focusIndex].focus();
+    }
+  };
+
   const handleKeyDown = (e, index) => {
     if (e.key === "Backspace") {
       e.preventDefault();
@@ -163,6 +184,7 @@ const handleResendOtp = async () => {
               inputMode="numeric"
               onChange={(e) => handleChange(e, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
+              onPaste={(e) => handlePaste(e, index)}
               ref={(el) => (inputs.current[index] = el)}
               className="
                 h-[40px] w-[40px]
