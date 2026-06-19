@@ -14,6 +14,7 @@ import { ErrorToast } from "../global/Toaster";
 import { phoneFormatter } from "./../../lib/helpers";
 import Cookies from "js-cookie";
 import { useSignUp } from "../../hooks/mutations/OnboardingMutations";
+import { setStoredTokenType } from "../../lib/authSession";
 
 const CreateAccount = ({ handleNext, setEmail }) => {
   const navigate = useNavigate();
@@ -39,8 +40,17 @@ const CreateAccount = ({ handleNext, setEmail }) => {
           const response = await signupMutation.mutateAsync(data);
           
           if (response?.success) {
-            // Server automatically sets HTTP-only cookie
-            // No need to manually store token
+            const token = response?.data?.token || response?.token || response?.data?.accessToken || response?.accessToken;
+            const tokenType = response?.data?.tokenType || response?.tokenType || "session_token";
+
+            if (token) {
+              Cookies.set("token", token, { expires: 7 });
+            }
+            if (tokenType) {
+              Cookies.set("tokenType", tokenType, { expires: 7 });
+              setStoredTokenType(tokenType);
+            }
+
             localStorage.removeItem("onboarding_complete_acknowledged");
             Cookies.set("email", values.email, { expires: 1 });
             setEmail(values.email);

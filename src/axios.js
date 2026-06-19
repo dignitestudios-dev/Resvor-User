@@ -50,6 +50,12 @@ instance.interceptors.request.use(async (request) => {
   if (!isFormData) {
     headers["Content-Type"] = "application/json";
   }
+
+  // Add Bearer Token if present in client cookies
+  const token = Cookies.get("token");
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
   
   request.headers = headers;
 
@@ -81,7 +87,19 @@ instance.interceptors.response.use(
     }
 
     if (error.response && error.response.status === 401) {
-      ErrorToast("Session expired. Please relogin");
+      const hasToken = Cookies.get("token");
+      if (hasToken) {
+        ErrorToast("Session expired. Please relogin");
+        Cookies.remove("token");
+        Cookies.remove("tokenType");
+        Cookies.remove("token_type");
+        localStorage.removeItem("resvor_auth_token_type");
+        
+        // Force redirect to login if not already on an auth page
+        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
+          window.location.href = "/auth/login";
+        }
+      }
     }
 
     return Promise.reject(error);
