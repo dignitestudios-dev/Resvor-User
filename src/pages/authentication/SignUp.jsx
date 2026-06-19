@@ -15,6 +15,7 @@ import Subscription from "../../components/onBoarding/Subscription";
 import { mapOnboardingStepToIndex } from "../../static/onboardingStepMapper";
 import { useAuthMe } from "../../hooks/queries/useQueries";
 import { useNavigate } from "react-router";
+import { getStoredTokenType } from "../../lib/authSession";
 
 export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -34,7 +35,9 @@ const navigate = useNavigate();
     if (authData?.success) {
       const queryParams = new URLSearchParams(window.location.search);
       const hasSuccessParam = queryParams.get("session_id") || queryParams.get("success") === "true";
-      const onboardingCompleteAcknowledged = localStorage.getItem("onboarding_complete_acknowledged") === "true";
+      const onboardingCompleteAcknowledged = 
+        localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
+        getStoredTokenType() === "access_token";
 
       if (authData?.data?.onboardingStep === "completed") {
         if (onboardingCompleteAcknowledged) {
