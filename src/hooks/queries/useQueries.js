@@ -11,7 +11,7 @@ const fetchAuthMe = async () => {
 };
 
 export const useAuthMe = () => {
-  const token = Cookies.get("token");
+  const token = Cookies.get("token") || (typeof window !== "undefined" && localStorage.getItem("token"));
   return useQuery({
     queryKey: ["auth-me"],
     queryFn: fetchAuthMe,

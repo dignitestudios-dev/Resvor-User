@@ -41,7 +41,7 @@ const ProtectedAppRoute = () => {
   const isOnboardingCompleted = 
     authData?.data?.onboardingStep === "completed" &&
     (localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
-     getStoredTokenType() === "access_token");
+     authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed);
 
   if (isAuthenticated) {
     if (isOnboardingCompleted) {
@@ -69,7 +69,7 @@ const PublicAuthRoute = () => {
   const isOnboardingCompleted = 
     authData?.data?.onboardingStep === "completed" &&
     (localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
-     getStoredTokenType() === "access_token");
+     authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed);
 
   if (isAuthenticated && isOnboardingCompleted) {
     return <Navigate to="/app/home" replace />;
@@ -94,7 +94,7 @@ function App() {
   const isOnboardingCompleted = 
     authData?.data?.onboardingStep === "completed" &&
     (localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
-     getStoredTokenType() === "access_token");
+     authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed);
 
   return (
     <Routes>

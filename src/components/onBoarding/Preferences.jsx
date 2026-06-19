@@ -11,9 +11,14 @@ import { useFormik } from "formik";
 import { preferencesSchema } from "../../schema/onBoarding/onBoardSchema";
 import { preferencesValues } from "../../init/onBoarding/onBoardValues";
 import { usePreferences } from "../../hooks/mutations/OnboardingMutations";
+import { ErrorToast } from "../global/Toaster";
+import Cookies from "js-cookie";
+import { setStoredTokenType } from "../../lib/authSession";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Preferences = ({ handleNext, handlePrevious }) => {
   const preferencesMutation = usePreferences();
+  const queryClient = useQueryClient();
 
   // 👇 3 separate states instead of one shared activeCategories
   const [activeMusicGenres, setActiveMusicGenres] = useState([]);
@@ -46,6 +51,22 @@ const Preferences = ({ handleNext, handlePrevious }) => {
         const response = await preferencesMutation.mutateAsync(payload);
 
         if (response?.success) {
+          // Extract and persist token if returned (onboarding completion grants access_token)
+          const token = response?.data?.token || response?.data?.accessToken;
+          const tokenType = response?.data?.tokenType;
+
+          if (token) {
+            Cookies.set("token", token, { expires: 7 });
+            localStorage.setItem("token", token);
+          }
+          if (tokenType) {
+            Cookies.set("tokenType", tokenType, { expires: 7 });
+            localStorage.setItem("tokenType", tokenType);
+            setStoredTokenType(tokenType);
+          }
+
+          // Refresh auth state so routing picks up the new access_token
+          await queryClient.invalidateQueries({ queryKey: ["auth-me"] });
           handleNext();
         } else {
           ErrorToast(response?.message || "Something went wrong. Please try again.");

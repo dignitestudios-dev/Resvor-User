@@ -40,14 +40,16 @@ const CreateAccount = ({ handleNext, setEmail }) => {
           const response = await signupMutation.mutateAsync(data);
           
           if (response?.success) {
-            const token = response?.data?.token || response?.token || response?.data?.accessToken || response?.accessToken;
-            const tokenType = response?.data?.tokenType || response?.tokenType || "session_token";
+            const token = response?.data?.token || response?.token || response?.data?.accessToken || response?.accessToken || (response?.data?.data && (response.data.data.token || response.data.data.accessToken));
+            const tokenType = response?.data?.tokenType || response?.tokenType || (response?.data?.data && response.data.data.tokenType) || "session_token";
 
             if (token) {
               Cookies.set("token", token, { expires: 7 });
+              localStorage.setItem("token", token);
             }
             if (tokenType) {
               Cookies.set("tokenType", tokenType, { expires: 7 });
+              localStorage.setItem("tokenType", tokenType);
               setStoredTokenType(tokenType);
             }
 

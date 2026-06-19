@@ -6,6 +6,9 @@ import TextCountDown from "./TextCountDown";
 import AuthSuccessModal from "../auth/AuthSuccessModal";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { useVerifyPhone } from "../../hooks/mutations/OnboardingMutations";
+import { ErrorToast } from "../global/Toaster";
+import Cookies from "js-cookie";
+import { setStoredTokenType } from "../../lib/authSession";
 
 const VerifyPhone = ({ handleNext, handlePrevious }) => {
   const inputs = useRef([]);
@@ -78,6 +81,18 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
         const response = await verifyPhoneMutation.mutateAsync({otp:otp.join("")});
         
         if (response?.success) {
+          // Persist any token returned by this step
+          const token = response?.data?.token || response?.data?.accessToken;
+          const tokenType = response?.data?.tokenType;
+          if (token) {
+            Cookies.set("token", token, { expires: 7 });
+            localStorage.setItem("token", token);
+          }
+          if (tokenType) {
+            Cookies.set("tokenType", tokenType, { expires: 7 });
+            localStorage.setItem("tokenType", tokenType);
+            setStoredTokenType(tokenType);
+          }
           setRequestSendModal(true);
         } else {
           ErrorToast(response?.message || "Something went wrong. Please try again.");
