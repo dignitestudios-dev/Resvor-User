@@ -28,15 +28,16 @@ const Subscription = ({ handlePrevious }) => {
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
-    if (queryParams.get("session_id") || queryParams.get("success") === "true") {
+    const isSuccess = queryParams.get("session_id") || queryParams.get("success") === "true";
+    if (isSuccess) {
+      setCompleted(true); // Automatically show success UI upon returning from payment
       refetchAuth();
     }
   }, [refetchAuth]);
 
   useEffect(() => {
-    if (     
-      authData?.data?.user?.isSubscribed
-    ) {
+    const isSubscribed = authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed;
+    if (isSubscribed) {
       setCompleted(true);
     }
   }, [authData]);
@@ -210,8 +211,9 @@ const Subscription = ({ handlePrevious }) => {
           <div className="w-full mt-6">
          <button 
            onClick={() => {
+             localStorage.setItem("onboarding_complete_acknowledged", "true");
              queryClient.invalidateQueries({ queryKey: ["auth-me"] });
-             setCompleted(true);
+             navigate("/app/home");
            }}
            className="w-full bg-[#EFEFEF1A] border border-[#CACACA] text-white py-2.5 rounded-xl text-[13px] font-semibold mt-auto"
            >

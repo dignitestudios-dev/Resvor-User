@@ -38,20 +38,21 @@ instance.interceptors.request.use(async (request) => {
   // Get device fingerprint and add to headers
   const fingerprint = await getDeviceFingerprint();
   
-  // Only set Content-Type if not FormData (FormData should be handled by browser)
   const isFormData = request.data instanceof FormData;
-  const headers = {
-    ...request.headers,
-    "devicemodel": fingerprint,
-    "deviceuniqueid": fingerprint,
-  };
   
-  // Add Content-Type only for non-FormData requests
+  // Set headers directly on request.headers to preserve AxiosHeaders methods
+  request.headers["devicemodel"] = fingerprint;
+  request.headers["deviceuniqueid"] = fingerprint;
+  
   if (!isFormData) {
-    headers["Content-Type"] = "application/json";
+    request.headers["Content-Type"] = "application/json";
   }
-  
-  request.headers = headers;
+
+  // Add Bearer Token if present in client cookies or localStorage
+  const token = Cookies.get("token") || localStorage.getItem("token");
+  if (token) {
+    request.headers["Authorization"] = `Bearer ${token}`;
+  }
 
   console.log("📤 Request:", request.url, {
     withCredentials: request.withCredentials,
@@ -81,7 +82,21 @@ instance.interceptors.response.use(
     }
 
     if (error.response && error.response.status === 401) {
-      ErrorToast("Session expired. Please relogin");
+      const hasToken = Cookies.get("token") || localStorage.getItem("token");
+      if (hasToken) {
+        ErrorToast("Session expired. Please relogin");
+        Cookies.remove("token");
+        Cookies.remove("tokenType");
+        Cookies.remove("token_type");
+        localStorage.removeItem("token");
+        localStorage.removeItem("tokenType");
+        localStorage.removeItem("resvor_auth_token_type");
+        
+        // Force redirect to login if not already on an auth page
+        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
+          window.location.href = "/auth/login";
+        }
+      }
     }
 
     return Promise.reject(error);

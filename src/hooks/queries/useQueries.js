@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "../../axios";
 import GuestBook from './../../pages/app/GuestBook';
 import { getGuestBook } from "../api/Get";
+import Cookies from "js-cookie";
 
 // ... existing code ...
 const fetchAuthMe = async () => {
@@ -10,9 +11,11 @@ const fetchAuthMe = async () => {
 };
 
 export const useAuthMe = () => {
+  const token = Cookies.get("token") || (typeof window !== "undefined" && localStorage.getItem("token"));
   return useQuery({
     queryKey: ["auth-me"],
     queryFn: fetchAuthMe,
+    enabled: !!token,
     retry: false,
   });
 };

@@ -37,7 +37,7 @@ const navigate = useNavigate();
       const hasSuccessParam = queryParams.get("session_id") || queryParams.get("success") === "true";
       const onboardingCompleteAcknowledged = 
         localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
-        getStoredTokenType() === "access_token";
+        authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed;
 
       if (authData?.data?.onboardingStep === "completed") {
         if (onboardingCompleteAcknowledged) {

@@ -14,6 +14,8 @@ import { ErrorToast } from "../global/Toaster";
 import { usePersonalDetails } from "../../hooks/mutations/OnboardingMutations";
 import PhoneInput from "../auth/PhoneInput";
 import { phoneFormatter, phoneToE164 } from "../../lib/helpers";
+import Cookies from "js-cookie";
+import { setStoredTokenType } from "../../lib/authSession";
 
 const PersonalDetails = ({ handleNext, handlePrevious }) => {
   // const [dateModalData, setDateModalData] = useState("");
@@ -78,6 +80,18 @@ if (values.profile instanceof File) { // 👈 instanceof File ensures it's an ac
         const response = await personalDetailsMutation.mutateAsync(formData);
 
         if (response?.success) {
+          // Persist any token returned by this step
+          const token = response?.data?.token || response?.data?.accessToken;
+          const tokenType = response?.data?.tokenType;
+          if (token) {
+            Cookies.set("token", token, { expires: 7 });
+            localStorage.setItem("token", token);
+          }
+          if (tokenType) {
+            Cookies.set("tokenType", tokenType, { expires: 7 });
+            localStorage.setItem("tokenType", tokenType);
+            setStoredTokenType(tokenType);
+          }
           handleNext();
         } else {
           ErrorToast(response?.message || "Something went wrong. Please try again.");

@@ -7,6 +7,7 @@ export const getStoredTokenType = () => {
 
   return (
     localStorage.getItem(AUTH_TOKEN_TYPE_KEY) ||
+    localStorage.getItem("tokenType") ||
     Cookies.get("tokenType") ||
     Cookies.get("token_type") ||
     null
@@ -27,6 +28,11 @@ export const clearStoredAuthSession = () => {
   if (typeof window === "undefined") return;
 
   localStorage.removeItem(AUTH_TOKEN_TYPE_KEY);
+  localStorage.removeItem("token");
+  localStorage.removeItem("tokenType");
+  Cookies.remove("token");
+  Cookies.remove("tokenType");
+  Cookies.remove("token_type");
 };
 
 export const isAccessTokenSession = () => getStoredTokenType() === "access_token";

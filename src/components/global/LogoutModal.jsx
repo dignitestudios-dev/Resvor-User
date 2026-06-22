@@ -6,6 +6,7 @@ import { logout } from "../../assets/export";
 import { ErrorToast } from "./Toaster";
 import { useLogout } from "../../hooks/mutations/OnboardingMutations";
 import { useQueryClient } from "@tanstack/react-query";
+import { clearStoredAuthSession } from "../../lib/authSession";
 
 const LogOutModal = ({ isOpen, setIsOpen, onConfirm, loading = false }) => {
   const navigate = useNavigate(); // (not used now, kept if you need close+navigate on "No")
@@ -17,7 +18,7 @@ const handleConfirmLogout = async () => {
       await logoutMutation.mutateAsync();
       queryClient.setQueryData(["auth-me"], null);
       
-      localStorage.removeItem("resvor_auth_token_type");
+      clearStoredAuthSession();
       onConfirm(); // Call the onConfirm callback to clear client-side auth state
       
     } catch (error) {

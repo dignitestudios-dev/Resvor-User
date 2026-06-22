@@ -11,6 +11,7 @@ import { useLogin } from "../../hooks/mutations/OnboardingMutations";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import { setStoredTokenType } from "../../lib/authSession";
 import { useQueryClient } from "@tanstack/react-query";
+import Cookies from "js-cookie";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -47,7 +48,17 @@ const Login = () => {
       return;
     }
 
-    const tokenType = response?.data?.tokenType || response?.tokenType || "session_token";
+    const token = response?.data?.token || response?.token || response?.data?.accessToken || response?.accessToken || (response?.data?.data && (response.data.data.token || response.data.data.accessToken));
+    const tokenType = response?.data?.tokenType || response?.tokenType || (response?.data?.data && response.data.data.tokenType) || "session_token";
+
+    if (token) {
+      Cookies.set("token", token, { expires: 7 });
+      localStorage.setItem("token", token);
+    }
+    if (tokenType) {
+      Cookies.set("tokenType", tokenType, { expires: 7 });
+      localStorage.setItem("tokenType", tokenType);
+    }
 
     localStorage.removeItem("onboarding_complete_acknowledged");
     setStoredTokenType(tokenType);
