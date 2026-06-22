@@ -70,7 +70,7 @@ const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData, loungeSer
 
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-[12px] w-[440px] pb-2  ">
+      <div className="bg-white rounded-[12px] w-[440px] pb-2">
         <div
           className={`flex justify-between items-center  px-8 pt-4 border-b-2 border-b-gray-300`}
         >
