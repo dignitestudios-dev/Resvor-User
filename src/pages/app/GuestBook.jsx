@@ -19,8 +19,10 @@ const GuestBook = () => {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
 
+  const limit = 5;
+
   // Pass currentPage to your hook so TanStack Query refetches when the page updates
-  const { data: guestbookResponse, isLoading } = useGuestBook(currentPage);
+  const { data: guestbookResponse, isLoading } = useGuestBook(currentPage, limit);
   console.log("🚀 ~ GuestBook ~ guestbookResponse:", guestbookResponse);
 
   const users = guestbookResponse?.data || []; 
@@ -137,6 +139,9 @@ const GuestBook = () => {
                       {sortConfig.key === "fullName" &&
                         (sortConfig.direction === "asc" ? " ↑" : " ↓")}
                     </th>
+                     <th className="px-4 py-5 text-left text-nowrap font-[500]">
+                      Email
+                    </th>
                     <th className="px-4 py-5 text-left text-nowrap font-[500]">
                       Special Date
                     </th>
@@ -156,6 +161,8 @@ const GuestBook = () => {
                         {user.loungeId?.name || "N/A"}
                       </td>
                       <td className="px-4 py-6">{user.fullName}</td>
+                                            <td className="px-4 py-6">{user.email}</td>
+
                       <td className="px-4 py-6">
                         {user.specialDates?.length > 0
                           ? user.specialDates[0]
@@ -217,7 +224,12 @@ const GuestBook = () => {
                   </div>
 
                   <div className="flex justify-between mb-2">
-                    <span className="text-gray-500 text-sm font-medium">Special Date</span>
+                    <span className="text-gray-500 text-sm font-medium">Email</span>
+                    <span className="text-gray-800">{user.email}</span>
+                  </div>
+
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-500 text-sm font-medium">Date</span>
                     <span className="text-gray-800">
                       {user.specialDates?.length > 0
                         ? user.specialDates[0]
