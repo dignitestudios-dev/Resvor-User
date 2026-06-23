@@ -1,5 +1,4 @@
 /* eslint-disable react/prop-types */
-import { RxCross2 } from "react-icons/rx";
 
 const ConfirmationModal = ({
   isOpen,
@@ -30,12 +29,6 @@ const ConfirmationModal = ({
         onClick={(event) => event.stopPropagation()}
         role="presentation"
       >
-        <div className="flex justify-end">
-          <button type="button" onClick={onCancel} disabled={loading}>
-            <RxCross2 className="text-[28px] text-[#181818]" />
-          </button>
-        </div>
-
         <div className="flex flex-col items-center gap-3 text-center">
           <h2 className="text-[28px] font-semibold text-[#181818]">
             {title}

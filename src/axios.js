@@ -3,9 +3,7 @@ import { ErrorToast } from "./components/global/Toaster"; // Import your toaster
 import Cookies from "js-cookie";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
-export const baseUrl = import.meta.env.DEV 
-  ? "/api" // Use Vite proxy in development
-  : "https://api-dev.resvor.com"; // Use direct URL in production
+export const baseUrl = "https://api-dev.resvor.com";
 
 async function getDeviceFingerprint() {
   const fp = await FingerprintJS.load();

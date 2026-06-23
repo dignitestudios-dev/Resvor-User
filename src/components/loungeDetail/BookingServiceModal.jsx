@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { RxCross2 } from "react-icons/rx";
 import FilterSelectableField from "../global/FilterSelectableField";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../global/Button";
 import TagsInputField from "../onBoarding/TagsInputField";
 import { binIcon } from "../../assets/export";
@@ -9,15 +9,31 @@ import ServicesModal from "./ServicesModal";
 import FloorPlanModal from "./FloorPlanModal";
 import { useAvailableTables } from "../../hooks/queries/useQueries";
 
-const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData, loungeServices }) => {
-  const [serviceModalData, setServiceModalData] = useState("");
+const BookingServiceModal = ({
+  onClose,
+  onNext,
+  loungeId,
+  bookingData,
+  bookingServiceData,
+  loungeServices,
+  onClickBack,
+  floorPlan,
+}) => {
+  const [serviceModalData, setServiceModalData] = useState(
+    bookingServiceData?.selectedPackage || []
+  );
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [floorPlanModal, setFloorPlanModal] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   const closeModal = () => setModalIsOpen(false);
 
-  const [selectedTable, setSelectedTable] = useState([]);
-  const [instruction, setInstruction] = useState("");
+  const [selectedTable, setSelectedTable] = useState(
+    bookingServiceData?.selectedSeating || []
+  );
+  const [instruction, setInstruction] = useState(
+    bookingServiceData?.instruction || ""
+  );
 
   console.log("BookingServiceModal props:", { loungeId, bookingData });
   console.log("Fetching tables with:", {
@@ -44,12 +60,14 @@ const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData, loungeSer
     const title = option?.title || option;
     setSelectedTable((prev) => {
       const exists = prev.some((item) => (item.title || item.name) === title);
+      const nextVal = exists
+        ? prev.filter((item) => (item.title || item.name) !== title)
+        : [...prev, { title, _id: option._id || option.id }];
 
-      if (exists) {
-        return prev.filter((item) => (item.title || item.name) !== title);
-      } else {
-        return [...prev, { title, _id: option._id || option.id }];
+      if (nextVal.length > 0) {
+        setFormErrors((prevErr) => ({ ...prevErr, table: "" }));
       }
+      return nextVal;
     });
   };
 
@@ -57,7 +75,28 @@ const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData, loungeSer
     setServiceModalData((prev) => prev.filter((item) => item.id !== id));
   };
 
+  // Clear service validation error when service is selected
+  useEffect(() => {
+    if (serviceModalData && serviceModalData.length > 0) {
+      setFormErrors((prev) => ({ ...prev, service: "" }));
+    }
+  }, [serviceModalData]);
+
   const handleNext = () => {
+    const errors = {};
+    if (!selectedTable || selectedTable.length === 0) {
+      errors.table = "Please select at least one table.";
+    }
+    if (!serviceModalData || serviceModalData.length === 0) {
+      errors.service = "Please select at least one service or package.";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      ErrorToast("Please select both a table and a service to proceed.");
+      return;
+    }
+
     const eventData = {
       selectedSeating: selectedTable,
       selectedPackage: serviceModalData,
@@ -74,7 +113,7 @@ const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData, loungeSer
         <div
           className={`flex justify-between items-center  px-8 pt-4 border-b-2 border-b-gray-300`}
         >
-          <h2 className="text-[28px] font-bold mb-4">Make Reservation</h2>
+          <h2 className="text-[28px] font-bold mb-4">Book Now</h2>
           <div onClick={onClose} className="cursor-pointer">
             <RxCross2 className="text-[28px] text-[#181818]" />
           </div>
@@ -94,6 +133,9 @@ const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData, loungeSer
               value={selectedTable}
               onChange={handleSelect}
             />
+            {formErrors.table && (
+              <p className="text-red-600 text-[12px] mt-1">{formErrors.table}</p>
+            )}
             {(!bookingData?.apiPayload?.bookingDate) && (
               <p className="text-[12px] text-gray-500 mt-1">Date and time required to see tables.</p>
             )}
@@ -107,6 +149,9 @@ const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData, loungeSer
               setModalIsOpen={setModalIsOpen}
               text="Add Services and Packages"
             />
+            {formErrors.service && (
+              <p className="text-red-600 text-[12px] mt-1">{formErrors.service}</p>
+            )}
             {serviceModalData.length > 0 && (
               <div
                 className="flex items-end border border-gray-400 text-sm rounded-[13px] 
@@ -142,8 +187,8 @@ const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData, loungeSer
                   name="instructions"
                   value={instruction}
                   onChange={(e) => setInstruction(e.target.value)}
-                  placeholder="add text here"
-                  maxLength={30}
+                  placeholder="Add here"
+                  maxLength={2000}
                   className={`w-full px-4 py-2 text-sm rounded-[15px] bg-transparent ring-1 ring-[#CACACA] 
                           focus:ring-2 focus:ring-gray-200 focus:outline-none pr-12 placeholder:font-light placeholder:text-[12px] placeholder:text-[#727272] `}
                 ></textarea>
@@ -151,8 +196,17 @@ const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData, loungeSer
             </div>
           </div>
           <div>
-            <div className="mt-4 px-1">
+            <div className="mt-4 px-1 space-y-2">
               <Button text="Next" type="button" onClick={handleNext} />
+              {onClickBack && (
+                <button
+                  type="button"
+                  onClick={onClickBack}
+                  className="w-full bg-[#E8E8E8] text-[#181818] text-[14px] rounded-[8px] py-2 font-semibold hover:bg-[#D8D8D8] transition"
+                >
+                  Back
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -161,11 +215,16 @@ const BookingServiceModal = ({ onClose, onNext, loungeId, bookingData, loungeSer
             isOpen={modalIsOpen}
             onClose={closeModal}
             setServiceModalData={setServiceModalData}
+            initialSelectedServices={serviceModalData}
             loungeServices={loungeServices}
           />
         )}
         {floorPlanModal && (
-          <FloorPlanModal onClose={() => setFloorPlanModal(false)} />
+          <FloorPlanModal 
+            onClose={() => setFloorPlanModal(false)} 
+            floorPlan={floorPlan}
+            availableTables={availableTables}
+          />
         )}
       </div>
     </div>

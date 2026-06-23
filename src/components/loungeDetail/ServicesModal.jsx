@@ -5,8 +5,8 @@ import { useState } from "react";
 import Button from "../global/Button";
 import { servicesData } from "../../static/MockData";
 
-const ServicesModal = ({ isOpen, onClose, setServiceModalData, loungeServices }) => {
-  const [selectedServices, setSelectedServices] = useState([]);
+const ServicesModal = ({ isOpen, onClose, setServiceModalData, loungeServices, initialSelectedServices }) => {
+  const [selectedServices, setSelectedServices] = useState(initialSelectedServices || []);
 
   const handleDateData = () => {
     setServiceModalData(selectedServices);
@@ -45,7 +45,7 @@ const ServicesModal = ({ isOpen, onClose, setServiceModalData, loungeServices })
                   >
                     <div>
                       <img
-                        src={item.images[1].location}
+                        src={item.images?.[0]?.location || item.images?.[1]?.location || ""}
                         className="rounded-[12px] w-full"
                         alt={item.name}
                       />

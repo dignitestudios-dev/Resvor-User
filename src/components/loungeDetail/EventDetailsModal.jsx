@@ -27,7 +27,7 @@ const EventDetailsModal = ({
 
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-[12px] w-[440px] pb-2 h-[650px] overflow-y-auto">
+      <div className="bg-white rounded-[12px] w-full max-w-[440px] mx-4 pb-2 h-[650px] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center px-8 pt-4 border-b-2 border-b-gray-300">
           <h2 className="text-[28px] font-bold mb-4">Event Details</h2>
@@ -40,120 +40,95 @@ const EventDetailsModal = ({
           >
             <RxCross2 className="text-[28px] text-[#181818]" />
           </div>
-        </div>
-
-        {/* Content */}
-        <div className="px-8 py-6">
-          {/* Booking Overview Section */}
-          <div className="mb-6">
-            <h3 className="text-[16px] font-semibold text-[#181818] mb-3">
-              Booking Overview
+        </div>        {/* Content */}
+        <div className="px-8 pt-6 pb-2">
+          {/* Booking & Personal Overview */}
+          <div className="space-y-2.5 text-[14px] border-b-2 border-b-gray-300 pb-4 mb-4">
+            <h3 className="text-[16px] font-bold text-[#181818] mb-3">
+              Booking & Personal Overview
             </h3>
-            <div className="grid grid-cols-4 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2">
-              <div>
-                <p className="font-semibold text-[#000000] mb-1">Event Type</p>
-                <p className="text-[#000000]">{eventType}</p>
-              </div>
-              <div className="border-l-2 border-b-gray-300 pl-1">
-                <p className="font-semibold text-[#000000] mb-1">Date</p>
-                <p className="text-[#000000]">{date}</p>
-              </div>
-              <div className="border-l-2 border-b-gray-300 pl-1">
-                <p className="font-semibold text-[#000000] mb-1">Start Time</p>
-                <p className="text-[#000000]">{startTime}</p>
-              </div>
-              <div className="border-l-2 border-b-gray-300 pl-1">
-                <p className="font-semibold text-[#000000] mb-1">End Time</p>
-                <p className="text-[#000000]">{endTime}</p>
-              </div>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Event Type</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{eventType}</span>
+            </div>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Date</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{date}</span>
+            </div>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Time</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{startTime} – {endTime}</span>
+            </div>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Name</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{name}</span>
+            </div>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Email Address</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{email}</span>
+            </div>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Phone Number</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{phone}</span>
             </div>
           </div>
 
-          {/* Personal Details Section */}
-          <div className="mb-6">
-            <div className="grid grid-cols-3 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2">
-              <div>
-                <p className="font-semibold text-[#000000] mb-1">Name</p>
-                <p className="text-[#000000]">{name}</p>
-              </div>
-              <div className="border-l-2 border-b-gray-300 pl-1">
-                <p className="font-semibold text-[#000000] mb-1">
-                  Email Address
-                </p>
-                <p className="text-[#000000] break-all">{email}</p>
-              </div>
-              <div className="border-l-2 border-b-gray-300 pl-1">
-                <p className="font-semibold text-[#000000] mb-1">
-                  Phone Number
-                </p>
-                <p className="text-[#000000]">{phone}</p>
-              </div>
+          {/* Event Details & Budget */}
+          <div className="space-y-2.5 text-[14px] border-b-2 border-b-gray-300 pb-4 mb-4">
+            <h3 className="text-[16px] font-bold text-[#181818] mb-3">
+              Event Details & Budget
+            </h3>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Guest Count</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{guestCount}</span>
+            </div>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Preferred Music</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{preferredMusic}</span>
+            </div>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Special Request</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{specialRequest}</span>
+            </div>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Budget</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{budget}</span>
+            </div>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Ticket at Door</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{ticketAtDoor}</span>
             </div>
           </div>
 
-          {/* Guest & Preferences Section */}
-          <div className="mb-6">
-            <div className="grid grid-cols-3 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2">
+          {/* Services & Seating Area */}
+          <div className="mb-4">
+            <p className="font-semibold text-[16px] text-[#000000] mb-3">
+              Services, Packages & Seating
+            </p>
+            <div className="grid grid-cols-2 gap-3 text-[14px] bg-gray-50 p-3 rounded-lg border border-gray-200">
               <div>
-                <p className="font-semibold text-[#000000] mb-1">Guest Count</p>
-                <p className="text-[#000000]">{guestCount}</p>
-              </div>
-              <div className="border-l-2 border-b-gray-300 pl-1">
-                <p className="font-semibold text-[#000000] mb-1">
-                  Preferred Music
-                </p>
-                <p className="text-[#000000]">{preferredMusic}</p>
-              </div>
-              <div className="border-l-2 border-b-gray-300 pl-1">
-                <p className="font-semibold text-[#000000] mb-1">
-                  Special Request
-                </p>
-                <p className="text-[#000000]">{specialRequest}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Services & Budget Section */}
-          <div className="mb-6">
-            <div className="grid grid-cols-2 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2">
-              <div>
-                <p className="font-semibold text-[#000000] mb-1">
-                  Services and Packages
-                </p>
-
-                {serviceData?.selectedPackage.length > 0 &&
-                  serviceData?.selectedPackage?.map((item) => (
-                    <p key={item.id} className="text-[#000000]">
-                      {item.title} - {item.price}$
+                <p className="font-bold text-gray-800 mb-1">Services/Packages</p>
+                {serviceData?.selectedPackage?.length > 0 ? (
+                  serviceData.selectedPackage.map((item) => (
+                    <p key={item.id} className="text-gray-700 text-sm break-words max-w-[150px]">
+                      {item.title} - ${item.price}
                     </p>
-                  ))}
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-xs">None</p>
+                )}
               </div>
-              <div className="border-l-2 border-b-gray-300 pl-1">
-                <p className="font-semibold text-[#000000] mb-1">
-                  Preferred Seating Area
-                </p>
-                {serviceData?.selectedSeating?.map((item, index) => (
-                  <p key={index} className="text-[#000000]">
-                    {item.name}
-                  </p>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Budget & Ticket Section */}
-          <div className="mb-6">
-            <div className="grid grid-cols-2 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2">
-              <div>
-                <p className="font-semibold text-[#000000] mb-1">Budget</p>
-                <p className="text-[#000000]">{budget}</p>
-              </div>
-              <div>
-                <p className="font-semibold text-[#000000] mb-1">
-                  Ticket at Door{" "}
-                  <span className="text-[#727272]">(Optional)</span>
-                </p>
-                <p className="text-[#000000]">{ticketAtDoor}</p>
+              <div className="border-l border-gray-300 pl-3">
+                <p className="font-bold text-gray-800 mb-1">Preferred Seating</p>
+                {serviceData?.selectedSeating?.length > 0 ? (
+                  serviceData.selectedSeating.map((item, index) => (
+                    <p key={index} className="text-gray-700 text-sm break-words max-w-[150px]">
+                      {item.name || item.title}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-xs">None</p>
+                )}
               </div>
             </div>
           </div>
@@ -164,14 +139,14 @@ const EventDetailsModal = ({
                 Any Instruction{" "}
                 <span className="text-[#727272] text-[11px]">(optional)</span>
               </p>
-              <p className="text-[#000000] text-[12px] leading-5">
+              <p className="text-[#6B6B6B] text-[12px] leading-5 break-words max-h-[100px] overflow-y-auto">
                 {serviceData?.instruction}
               </p>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="space-y-2 mt-8">
+          <div className="space-y-2 mt-6">
             <Button text="Send Request" type="button" onClick={onClick} />
             <button
               onClick={onClickBack}

@@ -10,7 +10,7 @@ const DatePickerField = ({
   label = "Select Date",
   value,
   onChange,
-  minDate = null,
+  minDate = new Date(),
   maxDate = null,
 }) => {
   const [showPicker, setShowPicker] = useState(false);

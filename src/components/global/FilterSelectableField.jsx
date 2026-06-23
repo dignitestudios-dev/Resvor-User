@@ -10,6 +10,7 @@ const FilterSelectableField = ({
   onChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [sortedOptions, setSortedOptions] = useState([]);
   const dropdownRef = useRef();
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
@@ -27,6 +28,44 @@ const FilterSelectableField = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Sort options when dropdown is opened so checked items are grouped at the top
+  const valueRef = useRef(value);
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
+  const prevIsOpenRef = useRef(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (!prevIsOpenRef.current || sortedOptions.length !== options.length) {
+        const initialSorted = [...(options || [])].sort((a, b) => {
+          const aKey = a?.title ?? a;
+          const bKey = b?.title ?? b;
+
+          const aChecked = valueRef.current?.some((item) => {
+            const itemKey = item?.name ?? item?.title ?? item;
+            return itemKey === aKey;
+          });
+
+          const bChecked = valueRef.current?.some((item) => {
+            const itemKey = item?.name ?? item?.title ?? item;
+            return itemKey === bKey;
+          });
+
+          if (aChecked && !bChecked) return -1;
+          if (!aChecked && bChecked) return 1;
+          return 0;
+        });
+        setSortedOptions(initialSorted);
+      }
+    } else {
+      // Synchronize sorted options when closed so list matches options prop
+      setSortedOptions(options || []);
+    }
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, options, sortedOptions.length]);
 
   return (
     <div
@@ -77,7 +116,7 @@ const FilterSelectableField = ({
       >
         {isOpen && (
           <div className="border border-[#CACACA] rounded-[8px] max-h-[200px] overflow-y-auto text-[#727272]">
-            {options?.map((option) => {
+            {sortedOptions?.map((option) => {
               // derive a stable key for option (works for objects and strings)
               const optionKey = option?.title ?? option;
 

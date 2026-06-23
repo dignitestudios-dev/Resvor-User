@@ -6,14 +6,15 @@ import EventBookingsTable from "../../components/bookings/EventBookingsTable";
 import StatusDropdown from "../../components/global/StatusDropdown";
 import { useBookings, useEvents } from "../../hooks/queries/useQueries";
 
+// ── helpers ──────────────────────────────────────────────────────────────────
+
 const formatDateLabel = (isoValue) => {
   if (!isoValue) return "-";
-
-  const dateValue = new Date(isoValue);
-  if (Number.isNaN(dateValue.getTime())) return "-";
-
-  return dateValue.toLocaleDateString("en-US", {
-    year: "2-digit",
+  const d = new Date(isoValue);
+  if (Number.isNaN(d.getTime())) return "-";
+  // MM/DD/YYYY
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
     month: "2-digit",
     day: "2-digit",
   });
@@ -21,23 +22,17 @@ const formatDateLabel = (isoValue) => {
 
 const formatTimeLabel = (isoValue) => {
   if (!isoValue) return "";
-
-  const dateValue = new Date(isoValue);
-  if (Number.isNaN(dateValue.getTime())) return "";
-
-  return dateValue
-    .toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    })
+  const d = new Date(isoValue);
+  if (Number.isNaN(d.getTime())) return "";
+  return d
+    .toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })
     .replace(" ", "");
 };
 
 const formatDisplayLabel = (value) =>
   String(value || "-")
     .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(/\b\w/g, (l) => l.toUpperCase());
 
 const formatEventStatus = (value) => {
   const normalized = String(value || "").toLowerCase();
@@ -49,18 +44,15 @@ const formatEventStatus = (value) => {
     rejected: "Rejected",
     cancelled: "Rejected",
   };
-
   return statusMap[normalized] || formatDisplayLabel(value);
 };
+
+// ── component ─────────────────────────────────────────────────────────────────
 
 const MyBooking = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("bookings");
-  const [sortConfig, setSortConfig] = useState({
-    key: "name",
-    direction: "asc",
-  });
-
+  const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
   const [bookingStatusFilter, setBookingStatusFilter] = useState("");
   const [eventStatusFilter, setEventStatusFilter] = useState("");
 
@@ -76,49 +68,69 @@ const MyBooking = () => {
   const bookingsData = bookingsResponse?.data || [];
   const eventsData = eventsResponse?.data || [];
 
+  // ── bookings rows ──────────────────────────────────────────────────────────
   const bookingRows = bookingsData.map((booking) => {
-    const seatingArea = booking.tableIds?.length > 0
-      ? booking.tableIds.map(t => `${t.type ? t.type.charAt(0).toUpperCase() + t.type.slice(1) : "Regular"} (${t.code || `T${t.tableNumber}`})`).join(", ")
-      : "Regular";
+    const seatingArea =
+      booking.tableIds?.length > 0
+        ? booking.tableIds
+            .map((t) => {
+              const label = t.type
+                ? t.type.charAt(0).toUpperCase() + t.type.slice(1)
+                : "Regular";
+              const code = t.code || (t.tableNumber != null ? `T${t.tableNumber}` : "");
+              return code ? `${label} (${code})` : label;
+            })
+            .join(", ")
+        : "Regular";
 
-    const location = booking.loungeId?.location?.address || "Address not available";
+    const location =
+      booking.loungeId?.location?.address ||
+      booking.loungeId?.address ||
+      booking.loungeId?.city ||
+      "Address not available";
 
+    // MM/DD/YYYY
     const dateStr = booking.bookingDate
-      ? new Date(booking.bookingDate).toLocaleDateString("en-US", { year: "2-digit", month: "2-digit", day: "2-digit" }).replace(/\//g, '-')
+      ? formatDateLabel(booking.bookingDate)
       : "-";
 
-    const formatTimeStr = (isoStr) => {
+    const fmtTime = (isoStr) => {
       if (!isoStr) return "";
-      const dateObj = new Date(isoStr);
-      return dateObj.toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit', hour12: true }).replace(" ", "");
+      const d = new Date(isoStr);
+      return d
+        .toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })
+        .replace(" ", "");
     };
 
-    const startTimeStr = formatTimeStr(booking.startTime);
-    const endTimeStr = formatTimeStr(booking.endTime);
-    const time = startTimeStr && endTimeStr ? `${startTimeStr} - ${endTimeStr}` : "-";
+    const startTimeStr = fmtTime(booking.startTime);
+    const endTimeStr = fmtTime(booking.endTime);
+    const time = startTimeStr && endTimeStr ? `${startTimeStr} - ${endTimeStr}` : startTimeStr || endTimeStr || "-";
 
     let status = "Pending";
     if (booking.status === "completed") {
       status = "Completed";
     } else if (booking.status === "awaiting_payment" || booking.status === "pending") {
       status = "Pending";
-    } else if (booking.status === "confirmed") {
+    } else if (booking.status === "confirmed" || booking.status === "approved") {
       status = "Upcoming";
+    } else if (booking.status === "cancelled" || booking.status === "rejected") {
+      status = "Cancelled";
     }
 
     return {
       _id: booking._id,
       name: booking.loungeId?.name || "Testing Lounge",
       date: dateStr,
-      time: time,
-      guestLimit: String(booking.guestCount || 0).padStart(2, '0'),
-      seatingArea: seatingArea,
-      location: location,
-      status: status,
+      time,
+      guestLimit: String(booking.guestCount || 0).padStart(2, "0"),
+      seatingArea,
+      location,
+      status,
       eventType: booking.specialRequest || "-",
     };
   });
 
+  // ── event rows ─────────────────────────────────────────────────────────────
   const eventRows = eventsData.map((event) => {
     const startTime = formatTimeLabel(event.startDateTime);
     const endTime = formatTimeLabel(event.endDateTime);
@@ -139,11 +151,10 @@ const MyBooking = () => {
     };
   });
 
+  // ── filter + sort ──────────────────────────────────────────────────────────
   const activeRows = activeTab === "bookings" ? bookingRows : eventRows;
-  const activeStatusFilter =
-    activeTab === "bookings" ? bookingStatusFilter : eventStatusFilter;
-  const activeLoading =
-    activeTab === "bookings" ? isBookingsLoading : isEventsLoading;
+  const activeStatusFilter = activeTab === "bookings" ? bookingStatusFilter : eventStatusFilter;
+  const activeLoading = activeTab === "bookings" ? isBookingsLoading : isEventsLoading;
 
   const filteredRows = activeStatusFilter
     ? activeRows.filter((row) => row.status === activeStatusFilter)
@@ -151,16 +162,12 @@ const MyBooking = () => {
 
   const sortedRows = [...filteredRows].sort((a, b) => {
     if (!sortConfig.key) return 0;
-
     let valA = a[sortConfig.key];
     let valB = b[sortConfig.key];
-
-    // Convert guestLimit to number for numeric sorting
     if (sortConfig.key === "guestLimit") {
       valA = parseInt(valA, 10);
       valB = parseInt(valB, 10);
     }
-
     if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
     if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
     return 0;
@@ -168,12 +175,11 @@ const MyBooking = () => {
 
   const requestSort = (key) => {
     let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
+    if (sortConfig.key === key && sortConfig.direction === "asc") direction = "desc";
     setSortConfig({ key, direction });
   };
 
+  // ── render ─────────────────────────────────────────────────────────────────
   return (
     <>
       <div className="flex items-center pt-[16px] pb-[18em] homeSectionImage">
@@ -186,8 +192,9 @@ const MyBooking = () => {
               My Bookings
             </h2>
           </div>
-          <div className="flex flex-col ">
-            <div className="w-[320px] flex ">
+
+          <div className="flex flex-col">
+            <div className="w-[320px] flex">
               <button
                 className={`text-[12px] py-3 px-6 rounded-l-2xl w-full ${
                   activeTab === "bookings"
@@ -210,12 +217,13 @@ const MyBooking = () => {
                 My Events
               </button>
             </div>
+
             {activeTab === "bookings" ? (
               <div className="text-white absolute top-40 right-44 z-50 w-[180px]">
                 <StatusDropdown
                   value={bookingStatusFilter}
                   onChange={setBookingStatusFilter}
-                  options={["All", "Completed", "Pending", "Upcoming"]}
+                  options={["All", "Completed", "Pending", "Upcoming", "Cancelled"]}
                 />
               </div>
             ) : (
@@ -232,10 +240,7 @@ const MyBooking = () => {
       </div>
 
       <div className="px-5 lg:px-40 mt-12">
-        <div
-          className=" mx-auto bg-white rounded-xl -mt-[16em] border-[1px] border-[#b9b9b95f] min-h-[200px]"
-          // style={{ boxShadow: "0px 4px 30px 0px #00000026" }}
-        >
+        <div className="mx-auto bg-white rounded-xl -mt-[16em] border-[1px] border-[#b9b9b95f] min-h-[200px]">
           {activeLoading ? (
             <div className="flex justify-center items-center py-20 text-gray-500 font-medium">
               Loading {activeTab === "bookings" ? "bookings" : "events"}...

@@ -24,10 +24,10 @@ import TermsAndConditions from "./pages/app/TermsAndConditions";
 import PrivacyPolicy from "./pages/app/PrivacyPolicy";
 import Notifications from "./pages/app/Notifications";
 import { useAuthMe } from "./hooks/queries/useQueries";
-import { getStoredTokenType } from "./lib/authSession";
+import Cookies from "js-cookie";
 
 const ProtectedAppRoute = () => {
-  const { data: authData, isLoading } = useAuthMe();
+  const { data: authData, isLoading, isError } = useAuthMe();
 
   if (isLoading) {
     return (
@@ -35,6 +35,13 @@ const ProtectedAppRoute = () => {
         <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
+  }
+
+  // If the auth query errored (e.g. 404, expired token), clear stale tokens and redirect to login
+  if (isError) {
+    Cookies.remove("token");
+    localStorage.removeItem("token");
+    return <Navigate to="/auth/login" replace />;
   }
 
   const isAuthenticated = authData?.success && authData?.data;
@@ -55,7 +62,7 @@ const ProtectedAppRoute = () => {
 };
 
 const PublicAuthRoute = () => {
-  const { data: authData, isLoading } = useAuthMe();
+  const { data: authData, isLoading, isError } = useAuthMe();
 
   if (isLoading) {
     return (
@@ -63,6 +70,11 @@ const PublicAuthRoute = () => {
         <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
+  }
+
+  // If auth query errored or no data, user is not authenticated — show auth pages
+  if (isError) {
+    return <Outlet />;
   }
 
   const isAuthenticated = authData?.success && authData?.data;
@@ -79,34 +91,17 @@ const PublicAuthRoute = () => {
 };
 
 function App() {
-  const { data: authData, isLoading } = useAuthMe();
-  console.log("🚀 ~ App ~ authData:", authData);
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen w-full bg-[#030e17] text-white">
-        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  const isAuthenticated = authData?.success && authData?.data;
-  const isOnboardingCompleted = 
-    authData?.data?.onboardingStep === "completed" &&
-    (localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
-     authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed);
+  // Just check if a token exists for root redirect.
+  // Actual auth verification happens in ProtectedAppRoute and PublicAuthRoute.
+  const hasToken = !!(Cookies.get("token") || localStorage.getItem("token"));
 
   return (
     <Routes>
       <Route
         path="/"
         element={
-          isAuthenticated ? (
-            isOnboardingCompleted ? (
-              <Navigate to="/app/home" replace />
-            ) : (
-              <Navigate to="/auth/signup" replace />
-            )
+          hasToken ? (
+            <Navigate to="/app/home" replace />
           ) : (
             <Navigate to="/auth/login" replace />
           )

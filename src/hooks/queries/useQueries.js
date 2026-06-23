@@ -17,6 +17,10 @@ export const useAuthMe = () => {
     queryFn: fetchAuthMe,
     enabled: !!token,
     retry: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes - don't refetch if data is fresh
   });
 };
 

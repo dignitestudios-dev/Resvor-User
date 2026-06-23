@@ -276,7 +276,11 @@ const LoungeDetail = () => {
               <div className="flex justify-between items-center gap-2 w-[50%] py-4">
                 <div className="w-full">
                   <button
-                    onClick={() => setIsEventRequest(true)}
+                    onClick={() => {
+                      setEventData(null);
+                      setEventServices(null);
+                      setIsEventRequest(true);
+                    }}
                     className="bg-[#21293514] text-[#212935] font-semibold text-[13px] rounded-[8px] w-full py-2 flex-1"
                   >
                     Request Event
@@ -287,7 +291,11 @@ const LoungeDetail = () => {
                   <Button
                     type="button"
                     text="Book Now"
-                    onClick={() => setIsBooking(true)}
+                    onClick={() => {
+                      setBookingData(null);
+                      setBookingServiceData(null);
+                      setIsBooking(true);
+                    }}
                   />
                 </div>
               </div>
@@ -306,9 +314,10 @@ const LoungeDetail = () => {
         {isBooking && (
           <BookingModal
             loungeId={id}
-            
+            operatingHours={lounge?.operatingHours}
             onClose={() => setIsBooking(false)}
             onNext={handleBookingNext}
+            bookingData={bookingData}
           />
         )}
 
@@ -316,9 +325,15 @@ const LoungeDetail = () => {
           <BookingServiceModal
             loungeId={id}
             bookingData={bookingData}
+            bookingServiceData={bookingServiceData}
             loungeServices={lounge?.services || []}
+            floorPlan={lounge?.floorPlan}
             onClose={() => setIsBookingServices(false)}
             onNext={handleBookingServiceNext}
+            onClickBack={() => {
+              setIsBookingServices(false);
+              setIsBooking(true);
+            }}
           />
         )}
 
@@ -339,6 +354,8 @@ const LoungeDetail = () => {
           <RequestEventModal
             onClose={() => setIsEventRequest(false)}
             onNext={handleEventRequestNext}
+            operatingHours={lounge?.operatingHours}
+            eventData={eventData}
           />
         )}
 

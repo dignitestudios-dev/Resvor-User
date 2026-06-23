@@ -19,27 +19,105 @@ const eventTypeOptions = [
   "Other",
 ];
 
-const RequestEventModal = ({ onClose, onNext }) => {
-  const [startDate, setStartDate] = useState(null);
-  const [startTime, setStartTime] = useState(null);
+const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
+  const [startDate, setStartDate] = useState(
+    eventData?.startDateTime ? new Date(eventData.startDateTime) : null
+  );
+  const [startTime, setStartTime] = useState(eventData?.startTime || null);
+
+  // Parse API format: "1:30 PM - 6:00 PM"  OR plain "9:00 AM" / "21:00"
+  const parseTimeRange = (rangeStr) => {
+    if (!rangeStr) return { start: "", end: "", openLabel: "", closeLabel: "" };
+
+    const toHHMM = (t) => {
+      const s = (t || "").trim();
+      const m12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (m12) {
+        let h = parseInt(m12[1], 10);
+        const min = m12[2];
+        const p = m12[3].toUpperCase();
+        if (p === "AM" && h === 12) h = 0;
+        if (p === "PM" && h !== 12) h += 12;
+        return `${String(h).padStart(2, "0")}:${min}`;
+      }
+      const m24 = s.match(/^(\d{1,2}):(\d{2})$/);
+      if (m24) return `${String(parseInt(m24[1], 10)).padStart(2, "0")}:${m24[2]}`;
+      return "";
+    };
+
+    const parts = rangeStr.split(/\s+-\s+/);
+    const startLabel = parts[0]?.trim() || "";
+    const endLabel   = parts[1]?.trim() || "";
+
+    return {
+      start: toHHMM(startLabel),
+      end:   toHHMM(endLabel || startLabel),
+      openLabel:  startLabel || rangeStr,
+      closeLabel: endLabel   || startLabel || rangeStr,
+    };
+  };
+
+  const { start: minTime, end: maxTime, openLabel, closeLabel } = parseTimeRange(operatingHours?.open);
+
+  // If today is selected, enforce a 1-hour grace period / buffer from current time
+  const getNowWithBuffer = () => {
+    const now = new Date();
+    const buffer = new Date(now.getTime() + 60 * 60 * 1000); // add 1 hour
+    const isNextDay = buffer.getDate() !== now.getDate();
+    return {
+      timeStr: isNextDay
+        ? "25:00"
+        : `${String(buffer.getHours()).padStart(2, "0")}:${String(buffer.getMinutes()).padStart(2, "0")}`,
+      label: buffer.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
+  };
+
+  const isToday = (date) => {
+    if (!date) return false;
+    const now = new Date();
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate()
+    );
+  };
+
+  // Effective min = max(lounge open, current time + 1 hour buffer) when today; else just lounge open
+  const effectiveMinTime = isToday(startDate)
+    ? (() => {
+        const { timeStr } = getNowWithBuffer();
+        if (!minTime) return timeStr;
+        return timeStr > minTime ? timeStr : minTime;
+      })()
+    : minTime;
+
+  const effectiveMinLabel = isToday(startDate)
+    ? (() => {
+        const { timeStr, label } = getNowWithBuffer();
+        if (!minTime || timeStr > minTime) return `${label} (1-hour buffer)`;
+        return openLabel;
+      })()
+    : openLabel;
+
+  const isBufferEnforced = isToday(startDate) && (!minTime || getNowWithBuffer().timeStr > minTime);
 
   // const [selectedType, setSelectedType] = useState([]);
 
   const [formData, setFormData] = useState({
-    eventType: "",
-    eventName: "",
-    name: "",
-    email: "",
-    phone: "",
-    guestCount: "",
-    preferredMusic: "",
-    specialRequest: "",
-    budget: "",
-    ticketAtDoor: "",
-    description: "",
+    eventType: eventData?.eventType || "",
+    eventName: eventData?.eventName || "",
+    name: eventData?.name || "",
+    email: eventData?.email || "",
+    phone: eventData?.phone || "",
+    guestCount: eventData?.guestCount ? String(eventData.guestCount) : "",
+    preferredMusic: eventData?.preferredMusic === "None" ? "" : eventData?.preferredMusic || "",
+    specialRequest: eventData?.specialRequest === "None" ? "" : eventData?.specialRequest || "",
+    budget: eventData?.budget ? String(eventData.budget) : "",
+    ticketAtDoor: eventData?.ticketAtDoor === "None" ? "" : eventData?.ticketAtDoor || "",
+    description: eventData?.description || "",
   });
 
-  const [endDate, setEndDate] = useState("");
+  const [endDate, setEndDate] = useState(eventData?.endTime || "");
   const [formErrors, setFormErrors] = useState({});
 
   // const handleSelect = (option) => {
@@ -56,18 +134,111 @@ const RequestEventModal = ({ onClose, onNext }) => {
   //   // });
   // };
 
+  const validateName = (val) => {
+    if (!val) return "Full name is required";
+    if (val.trim().length === 0) return "Full name cannot be empty or only spaces";
+    if (!/^[\p{L}' -]+$/u.test(val)) return "Full name can only contain letters, spaces, hyphens (-), and apostrophes (') ";
+    return "";
+  };
+
+  const validateEmail = (val) => {
+    if (!val) return "Email is required";
+    const emailRegex = /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
+    if (!emailRegex.test(val)) return "Invalid email format";
+    if (/\.@/.test(val)) return "Invalid email format"; // no dot before @
+    const parts = val.split("@");
+    if (parts.length === 2 && /^[.-]/.test(parts[1])) return "Invalid email format";
+    return "";
+  };
+
+  const validatePhone = (val) => {
+    if (!val) return "Phone number is required";
+    if (val.length !== 10) return "Phone number must be exactly 10 digits";
+    return "";
+  };
+
+  const validateGuestCount = (val) => {
+    if (!val) return "Guest count is required";
+    const num = Number(val);
+    if (isNaN(num) || num <= 0) return "Enter a valid guest count";
+    return "";
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "phone") {
+      const cleanVal = value.replace(/\D/g, "").slice(0, 10);
+      setFormData((prev) => ({ ...prev, phone: cleanVal }));
+      setFormErrors((prev) => ({ ...prev, phone: validatePhone(cleanVal) }));
+      return;
+    }
+
+    if (name === "guestCount") {
+      const cleanVal = value.replace(/\D/g, "").slice(0, 4);
+      setFormData((prev) => ({ ...prev, guestCount: cleanVal }));
+      setFormErrors((prev) => ({ ...prev, guestCount: validateGuestCount(cleanVal) }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    if (formErrors[name]) {
+    
+    if (name === "name") {
+      setFormErrors((prev) => ({ ...prev, name: validateName(value) }));
+    } else if (name === "email") {
+      setFormErrors((prev) => ({ ...prev, email: validateEmail(value) }));
+    } else if (formErrors[name]) {
       setFormErrors((prev) => ({
         ...prev,
         [name]: "",
       }));
     }
+  };
+
+  // Real-time operating hours + past-time check
+  const checkTimeInRange = (val, field) => {
+    if (!val) return "";
+    if (effectiveMinTime && val < effectiveMinTime)
+      return isBufferEnforced
+        ? `${field} must be at least 1 hour in the future (after ${effectiveMinLabel})`
+        : `${field} must be at or after opening time (${openLabel})`;
+    if (maxTime && val > maxTime)
+      return `${field} cannot exceed closing time (${closeLabel})`;
+    return "";
+  };
+
+  const handleStartTimeChange = (e) => {
+    const val = e.target.value;
+    setStartTime(val);
+    setFormErrors((p) => ({ ...p, startTime: checkTimeInRange(val, "Start time") }));
+  };
+
+  const handleEndTimeChange = (e) => {
+    const val = e.target.value;
+    setEndDate(val);
+    setFormErrors((p) => ({ ...p, endTime: checkTimeInRange(val, "End time") }));
+  };
+
+  // Clamp to valid range on blur
+  const handleStartTimeBlur = () => {
+    if (!startTime) return;
+    if (effectiveMinTime && startTime < effectiveMinTime) {
+      setStartTime(effectiveMinTime <= "23:59" ? effectiveMinTime : "");
+      setFormErrors((p) => ({ ...p, startTime: "" }));
+    }
+    if (maxTime && startTime > maxTime) { setStartTime(maxTime); setFormErrors((p) => ({ ...p, startTime: "" })); }
+  };
+
+  const handleEndTimeBlur = () => {
+    if (!endDate) return;
+    if (effectiveMinTime && endDate < effectiveMinTime) {
+      setEndDate(effectiveMinTime <= "23:59" ? effectiveMinTime : "");
+      setFormErrors((p) => ({ ...p, endTime: "" }));
+    }
+    if (maxTime && endDate > maxTime) { setEndDate(maxTime); setFormErrors((p) => ({ ...p, endTime: "" })); }
   };
 
   const handleEventTypeChange = (value) => {
@@ -130,22 +301,39 @@ const RequestEventModal = ({ onClose, onNext }) => {
     if (!startDate) errors.startDate = "Date is required";
     if (!startTime) errors.startTime = "Start time is required";
     if (!endDate) errors.endTime = "End time is required";
-    if (!formData.name) errors.name = "Full name is required";
-    if (!formData.email) {
-      errors.email = "Email is required";
-    } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) {
-      errors.email = "Invalid email format";
-    }
-    if (!formData.phone) errors.phone = "Phone number is required";
-    if (!formData.guestCount) {
-      errors.guestCount = "Guest count is required";
-    } else if (isNaN(formData.guestCount) || Number(formData.guestCount) <= 0) {
-      errors.guestCount = "Enter a valid guest count";
-    }
+    const nameErr = validateName(formData.name);
+    if (nameErr) errors.name = nameErr;
+
+    const emailErr = validateEmail(formData.email);
+    if (emailErr) errors.email = emailErr;
+
+    const phoneErr = validatePhone(formData.phone);
+    if (phoneErr) errors.phone = phoneErr;
+
+    const guestErr = validateGuestCount(formData.guestCount);
+    if (guestErr) errors.guestCount = guestErr;
     if (!formData.budget) {
       errors.budget = "Budget is required";
     } else if (isNaN(formData.budget) || Number(formData.budget) <= 0) {
       errors.budget = "Enter a valid budget";
+    }
+
+    // Operating hours + past-time validation
+    if (effectiveMinTime && startTime && startTime < effectiveMinTime) {
+      errors.startTime = isBufferEnforced
+        ? `Start time must be at least 1 hour in the future (after ${effectiveMinLabel})`
+        : `Start time must be at or after opening time (${openLabel})`;
+    }
+    if (maxTime && startTime && startTime > maxTime) {
+      errors.startTime = `Start time must be before closing time (${closeLabel})`;
+    }
+    if (effectiveMinTime && endDate && endDate < effectiveMinTime) {
+      errors.endTime = isBufferEnforced
+        ? `End time must be at least 1 hour in the future (after ${effectiveMinLabel})`
+        : `End time must be at or after opening time (${openLabel})`;
+    }
+    if (maxTime && endDate && endDate > maxTime) {
+      errors.endTime = `End time cannot exceed closing time (${closeLabel})`;
     }
 
     setFormErrors(errors);
@@ -267,31 +455,24 @@ const RequestEventModal = ({ onClose, onNext }) => {
               <input
                 type="time"
                 data-slot="input"
-                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${formErrors.startTime ? "ring-red-500" : "ring-[#CACACA]"}
-  focus:ring-2 focus:ring-gray-200 focus:outline-none  placeholder:font-light placeholder:text-[12px] placeholder:text-[#E6E6F0]
-  }`}
+                min={effectiveMinTime && effectiveMinTime <= "23:59" ? effectiveMinTime : undefined}
+                max={maxTime || undefined}
+                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
+                  formErrors.startTime ? "ring-red-500" : "ring-[#CACACA]"
+                } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
                 value={startTime}
-                onChange={(e) => {
-                  setStartTime(e.target.value);
-                  setFormErrors((prev) => ({ ...prev, startTime: "" }));
-                }}
+                onChange={handleStartTimeChange}
+                onBlur={handleStartTimeBlur}
               />
+              {effectiveMinTime && maxTime && (
+                <p className="text-[11px] text-[#727272] mt-1">
+                  Allowed: {effectiveMinLabel} – {closeLabel}
+                </p>
+              )}
               {formErrors.startTime && (
                 <p className="text-red-600 text-[12px] mt-1">{formErrors.startTime}</p>
               )}
             </div>
-
-            {/* <TimePickerField
-              text="Start Time"
-              label="Select Time"
-              value={startTime}
-              onChange={setStartTime}
-              open={openField === "start"}
-              onOpen={() =>
-                setOpenField(openField === "start" ? null : "start")
-              }
-              position={"-left-4"}
-            />*/}
 
             <div className="w-full">
               <label className="block text-[14px] font-[500] text-[#181818] mb-2">
@@ -300,29 +481,25 @@ const RequestEventModal = ({ onClose, onNext }) => {
               <input
                 type="time"
                 data-slot="input"
-                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${formErrors.endTime ? "ring-red-500" : "ring-[#CACACA]"}
-  focus:ring-2 focus:ring-gray-200 focus:outline-none  placeholder:font-light placeholder:text-[12px] placeholder:text-[#E6E6F0]
-  }`}
+                min={effectiveMinTime && effectiveMinTime <= "23:59" ? effectiveMinTime : undefined}
+                max={maxTime || undefined}
+                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
+                  formErrors.endTime ? "ring-red-500" : "ring-[#CACACA]"
+                } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
                 value={endDate}
-                onChange={(e) => {
-                  setEndDate(e.target.value);
-                  setFormErrors((prev) => ({ ...prev, endTime: "" }));
-                }}
+                onChange={handleEndTimeChange}
+                onBlur={handleEndTimeBlur}
               />
+              {effectiveMinTime && maxTime && (
+                <p className="text-[11px] text-[#727272] mt-1">
+                  Allowed: {effectiveMinLabel} – {closeLabel}
+                </p>
+              )}
               {formErrors.endTime && (
                 <p className="text-red-600 text-[12px] mt-1">{formErrors.endTime}</p>
               )}
             </div>
-            {/*
-            <TimePickerField
-              text="End Time"
-              label="Select Time"
-              value={endDate}
-              onChange={setEndDate}
-              open={openField === "end"}
-              onOpen={() => setOpenField(openField === "end" ? null : "end")}
-              position={"-right-6"}
-            /> */}
+            
           </div>
           <div className="w-full flex items-center gap-2 my-2 px-1">
             <InputField
@@ -360,7 +537,7 @@ const RequestEventModal = ({ onClose, onNext }) => {
               type="text"
               id={`phone`}
               name={`phone`}
-              maxLength={30}
+              maxLength={10}
               value={formData.phone}
               onChange={handleInputChange}
               error={formErrors.phone}
@@ -373,7 +550,7 @@ const RequestEventModal = ({ onClose, onNext }) => {
               type="text"
               id={`guest`}
               name={`guestCount`}
-              maxLength={30}
+              maxLength={4}
               value={formData.guestCount}
               onChange={handleInputChange}
               error={formErrors.guestCount}

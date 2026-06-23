@@ -6,57 +6,50 @@ import { useNavigate, useParams } from "react-router";
 import ConfirmationModal from "../global/ConfirmationModal";
 import { ErrorToast, SuccessToast } from "../global/Toaster";
 import {
-  useAuthMe,
   useBookingDetails,
   useCancelBooking,
 } from "../../hooks/queries/useQueries";
 
+// ── helpers ───────────────────────────────────────────────────────────────────
+
 const formatLabel = (value) =>
   String(value || "-")
     .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .replace(/\b\w/g, (l) => l.toUpperCase());
 
+// MM/DD/YYYY — Issue #2
 const formatDate = (value) => {
   if (!value) return "-";
-
-  const dateValue = new Date(value);
-  if (Number.isNaN(dateValue.getTime())) {
-    return String(value);
-  }
-
-  return dateValue.toLocaleDateString("en-US", {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString("en-US", {
     year: "numeric",
-    month: "short",
+    month: "2-digit",
     day: "2-digit",
   });
 };
 
 const formatTime = (value) => {
   if (!value) return "-";
-
-  const dateValue = new Date(value);
-  if (Number.isNaN(dateValue.getTime())) {
-    return String(value);
-  }
-
-  return dateValue.toLocaleTimeString("en-US", {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
   });
 };
 
-const formatCurrency = (amount, currency = "usd") => {
+// Issue #12 — no currency suffix, just $symbol
+const formatCurrency = (amount) => {
   if (amount === undefined || amount === null || amount === "") return "-";
-
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: String(currency || "USD").toUpperCase(),
-    }).format(Number(amount));
-  } catch {
-    return `${amount}`;
-  }
+  const num = Number(amount);
+  if (Number.isNaN(num)) return String(amount);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  }).format(num);
 };
 
 const isRenderableImage = (value) =>
@@ -68,34 +61,17 @@ const isRenderableImage = (value) =>
     value.startsWith("/"));
 
 const getStatusClasses = (status) => {
-  const normalized = String(status || "").toLowerCase();
-
-  if (normalized === "pending" || normalized === "awaiting_payment") {
-    return "bg-amber-100 text-amber-700";
-  }
-
-  if (normalized === "approved" || normalized === "confirmed") {
-    return "bg-emerald-100 text-emerald-700";
-  }
-
-  if (normalized === "completed") {
-    return "bg-blue-100 text-blue-700";
-  }
-
-  if (normalized === "cancelled" || normalized === "rejected") {
-    return "bg-rose-100 text-rose-700";
-  }
-
+  const s = String(status || "").toLowerCase();
+  if (s === "pending" || s === "awaiting_payment") return "bg-amber-100 text-amber-700";
+  if (s === "approved" || s === "confirmed")       return "bg-emerald-100 text-emerald-700";
+  if (s === "completed")                            return "bg-blue-100 text-blue-700";
+  if (s === "cancelled" || s === "rejected")        return "bg-rose-100 text-rose-700";
   return "bg-gray-100 text-gray-700";
 };
 
 const formatTable = (table, index) => {
   if (!table) return `Table ${index + 1}`;
-
-  if (typeof table === "string") {
-    return table;
-  }
-
+  if (typeof table === "string") return table;
   const typeLabel = table.type
     ? `${String(table.type).charAt(0).toUpperCase()}${String(table.type).slice(1)} `
     : "";
@@ -106,9 +82,10 @@ const formatTable = (table, index) => {
       : "") ||
     table.name ||
     "";
-
   return `${typeLabel}${identifier}`.trim() || `Table ${index + 1}`;
 };
+
+// ── component ──────────────────────────────────────────────────────────────────
 
 export default function BookingDetails() {
   const navigate = useNavigate();
@@ -116,7 +93,6 @@ export default function BookingDetails() {
   const queryClient = useQueryClient();
   const [showCancelModal, setShowCancelModal] = useState(false);
 
-  const { data: authData } = useAuthMe();
   const {
     data: bookingResponse,
     isLoading,
@@ -130,52 +106,103 @@ export default function BookingDetails() {
   const isCancelable =
     booking && !["cancelled", "completed", "rejected"].includes(normalizedStatus);
 
+  // ── dates / times ──────────────────────────────────────────────────────────
   const bookingDate = formatDate(
     booking?.bookingDate || booking?.startDateTime || booking?.startTime
   );
   const startTime = formatTime(booking?.startTime || booking?.startDateTime);
-  const endTime = formatTime(booking?.endTime || booking?.endDateTime);
+  const endTime   = formatTime(booking?.endTime   || booking?.endDateTime);
   const timeRange =
     startTime !== "-" && endTime !== "-"
-      ? `${startTime} - ${endTime}`
+      ? `${startTime} – ${endTime}`
       : startTime !== "-"
       ? startTime
       : endTime;
 
+  // ── seating ────────────────────────────────────────────────────────────────
   const tableIds = Array.isArray(booking?.tableIds) ? booking.tableIds : [];
   const seatingArea = tableIds.length > 0 ? tableIds.map(formatTable).join(", ") : "-";
 
-  const bookingUser =
-    booking?.userId && typeof booking.userId === "object"
-      ? booking.userId
-      : authData?.data || {};
+  // ── Issue #13 — prefer booking-level contact fields over populated userId ──
+  const contactName =
+    booking?.contactName ||
+    booking?.guestName ||
+    (booking?.userId && typeof booking.userId === "object"
+      ? [booking.userId.firstName || booking.userId.name, booking.userId.lastName]
+          .filter(Boolean)
+          .join(" ")
+          .trim()
+      : "") ||
+    "-";
 
-  const userName = [
-    bookingUser?.firstName || bookingUser?.name,
-    bookingUser?.lastName,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .trim() || "-";
+  const contactEmail =
+    booking?.contactEmail ||
+    booking?.email ||
+    (booking?.userId && typeof booking.userId === "object"
+      ? booking.userId.email
+      : "") ||
+    "-";
 
-  const userEmail = bookingUser?.email || "-";
-  const userPhone =
-    bookingUser?.phone || bookingUser?.phoneNumber || bookingUser?.mobile || "-";
+  const contactPhone =
+    booking?.contactPhone ||
+    booking?.phoneNumber ||
+    booking?.phone ||
+    (booking?.userId && typeof booking.userId === "object"
+      ? booking.userId.phone ||
+        booking.userId.phoneNumber ||
+        booking.userId.mobile
+      : "") ||
+    "-";
 
-  const displayedLoungeName = booking?.loungeId?.name || "Venue not available";
-  const displayedAddress =
-    booking?.loungeId?.location?.address ||
-    booking?.loungeId?.address ||
-    booking?.loungeId?.city ||
-    booking?.location?.address ||
-    "Location not available";
-  const displayedImage =
-    [booking?.loungeId?.images?.[0]?.location, booking?.loungeId?.image]
-      .find(isRenderableImage) ||
-    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=60";
-  const statusLabel = formatLabel(booking?.status);
-  const paymentStatus = formatLabel(booking?.paymentStatus);
+  // ── Issue #4 — lounge cover image: widen lookup ───────────────────────────
+  const lounge = booking?.loungeId;
+  const displayedImage =booking?.loungeId?.logo?.location
 
+  // ── Issue #5 — lounge location: widen lookup ──────────────────────────────
+  const displayedAddress = (() => {
+    const parts = [];
+    const loc = lounge?.location;
+    if (loc?.address) return loc.address;
+    if (loc?.street)  parts.push(loc.street);
+    if (loc?.city)    parts.push(loc.city);
+    if (loc?.state)   parts.push(loc.state);
+    if (parts.length) return parts.join(", ");
+    return (
+      lounge?.address ||
+      lounge?.city ||
+      booking?.location?.address ||
+      "Location not available"
+    );
+  })();
+
+  // ── Issue #14 — lounge tags / amenities ───────────────────────────────────
+  const loungeTags = [
+    ...(lounge?.tags      || []),
+    ...(lounge?.amenities || []),
+    ...(lounge?.features  || []),
+  ].filter(Boolean);
+
+  // ── Issue #10 — services & package ───────────────────────────────────────
+  const bookingServices = Array.isArray(booking?.services)
+    ? booking.services
+    : Array.isArray(booking?.serviceIds)
+    ? booking.serviceIds
+    : [];
+  const bookingPackage =
+    booking?.package ||
+    booking?.packageId ||
+    null;
+
+  // ── Issue #11 — payment amounts ──────────────────────────────────────────
+  const isAwaitingPayment =
+    normalizedStatus === "awaiting_payment" || normalizedStatus === "pending";
+  const amountPaid  = Number(booking?.amountPaid  ?? 0);
+  const totalPrice  = Number(booking?.totalPrice  ?? booking?.totalAmount ?? booking?.amount ?? 0);
+
+  const statusLabel  = formatLabel(booking?.status);
+  const paymentStatusLabel = formatLabel(booking?.paymentStatus);
+
+  // ── actions ────────────────────────────────────────────────────────────────
   const handleCancelBooking = () => {
     if (!isCancelable || isCancelling) return;
     setShowCancelModal(true);
@@ -191,13 +218,13 @@ export default function BookingDetails() {
       },
       onError: (requestError) => {
         ErrorToast(
-          requestError?.response?.data?.message ||
-            "Failed to cancel this booking."
+          requestError?.response?.data?.message || "Failed to cancel this booking."
         );
       },
     });
   };
 
+  // ── loading / error states ─────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen bg-[#F5F5F5]">
@@ -227,8 +254,10 @@ export default function BookingDetails() {
     );
   }
 
+  // ── render ─────────────────────────────────────────────────────────────────
   return (
     <>
+      {/* Header banner */}
       <div className="flex items-center pt-[16px] pb-[18em] homeSectionImage">
         <div className="flex items-center justify-start w-full px-5 lg:px-40 gap-3">
           <div className="flex justify-between items-center w-full gap-4">
@@ -251,38 +280,41 @@ export default function BookingDetails() {
                   : "border-gray-200 bg-white text-gray-400 cursor-not-allowed"
               }`}
             >
-              {isCancelling
-                ? "Cancelling..."
-                : isCancelable
-                ? "Cancel Booking"
-                : statusLabel}
+              {isCancelling ? "Cancelling…" : isCancelable ? "Cancel Booking" : statusLabel}
             </button>
           </div>
         </div>
       </div>
 
+      {/* Main card */}
       <div className="px-5 lg:px-40">
         <div
           className="mx-auto p-4 bg-white rounded-[16px] -mt-[16em]"
           style={{ boxShadow: "0px 4px 30px 0px #00000026" }}
         >
-          <div className="p-4 bg-[#F5F5F5] rounded-xl">
-            <h2 className="text-[24px] font-semibold text-gray-800 mb-4">
+          <div className="p-4 bg-[#F5F5F5] rounded-xl space-y-4">
+
+            {/* ── Section: Reservation Overview ─────────────────────────── */}
+            <h2 className="text-[24px] font-semibold text-gray-800">
               Reservation Overview
             </h2>
 
-            <div className="bg-[#FFFFFF] rounded-[24px] p-5 space-y-6">
+            <div className="bg-white rounded-[24px] p-5 space-y-6">
+
+              {/* Top: image + core info */}
               <div className="flex flex-col md:flex-row gap-8 pb-5 border-b border-[#0000001A]">
+                {/* Issue #4 — dynamic cover image */}
                 <img
                   src={displayedImage}
-                  alt="Venue"
-                  className="rounded-xl w-[368px] h-[212px] object-cover"
+                  alt="Venue cover"
+                  className="rounded-xl w-full md:w-[368px] h-[212px] object-cover flex-shrink-0"
                 />
 
                 <div className="flex-1 mt-[10px] md:mt-[38px]">
+                  {/* Name + single status badge — Issue #7 */}
                   <div className="flex flex-wrap items-center gap-3">
-                    <h3 className="text-[24px] font-semibold text-[#000000]">
-                      {displayedLoungeName}
+                    <h3 className="text-[22px] font-semibold text-[#000000]">
+                      {lounge?.name || "Venue not available"}
                     </h3>
                     <span
                       className={`px-3 py-1 rounded-full text-[12px] font-semibold capitalize ${getStatusClasses(
@@ -293,147 +325,177 @@ export default function BookingDetails() {
                     </span>
                   </div>
 
-                  <p className="mt-2 text-[14px] text-[#505050] break-all">
+                  <p className="mt-2 text-[13px] text-[#505050] break-all">
                     Booking ID: {booking?._id || id}
                   </p>
 
-                  <div className="flex items-center gap-1 mt-4">
-                    <IoLocation className="text-xl text-[#010067]" />
-                    <p className="text-[#505050] text-[16px] font-[500]">
+                  {/* Issue #5 — address */}
+                  <div className="flex items-start gap-1 mt-3">
+                    <IoLocation className="text-xl text-[#010067] mt-0.5 flex-shrink-0" />
+                    <p className="text-[#505050] text-[15px] font-[500]">
                       {displayedAddress}
                     </p>
                   </div>
 
-                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-[14px]">
+                  {/* Issue #8 — date + time shown ONCE here only */}
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-[14px]">
                     <div>
                       <p className="text-[#727272]">Booking Date</p>
-                      <p className="font-semibold text-[#181818]">
-                        {bookingDate}
-                      </p>
+                      <p className="font-semibold text-[#181818]">{bookingDate}</p>
                     </div>
                     <div>
                       <p className="text-[#727272]">Time Range</p>
                       <p className="font-semibold text-[#181818]">{timeRange}</p>
                     </div>
                   </div>
+
+                  {/* Issue #14 — lounge tags */}
+                  {loungeTags.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {loungeTags.map((tag, i) => (
+                        <span
+                          key={i}
+                          className="px-3 py-1 rounded-full bg-[#E8E8FF] text-[#222246] text-[12px] font-medium"
+                        >
+                          {typeof tag === "object" ? tag.name || tag.label || JSON.stringify(tag) : tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 text-sm">
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Booking Date
-                  </p>
-                  <p className="text-[#000000] text-[15px]">{bookingDate}</p>
+              {/* Guest details row — Issue #6 children count, Issue #8 no dupe date */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 text-sm pb-5 border-b border-[#0000001A]">
+                <div className="space-y-1">
+                  <p className="font-semibold text-[#000000] text-[15px]">Guests</p>
+                  <p className="text-[#505050] text-[14px]">{booking?.guestCount ?? "-"}</p>
                 </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Start Time
-                  </p>
-                  <p className="text-[#000000] text-[15px]">{startTime}</p>
+                {/* Issue #6 — children count */}
+                {(booking?.childrenCount ?? 0) > 0 && (
+                  <div className="space-y-1">
+                    <p className="font-semibold text-[#000000] text-[15px]">Children</p>
+                    <p className="text-[#505050] text-[14px]">{booking.childrenCount}</p>
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <p className="font-semibold text-[#000000] text-[15px]">Seating Area</p>
+                  <p className="text-[#505050] text-[14px]">{seatingArea}</p>
                 </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    End Time
-                  </p>
-                  <p className="text-[#000000] text-[15px]">{endTime}</p>
-                </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Guest Count
-                  </p>
-                  <p className="text-[#000000] text-[15px]">
-                    {booking?.guestCount ?? "-"}
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Seating Area
-                  </p>
-                  <p className="text-[#000000] text-[15px]">{seatingArea}</p>
-                </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Status
-                  </p>
-                  <p className="text-[#000000] text-[15px]">{statusLabel}</p>
+                <div className="space-y-1">
+                  <p className="font-semibold text-[#000000] text-[15px]">Payment</p>
+                  <p className="text-[#505050] text-[14px]">{paymentStatusLabel}</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-[#0000001A] text-sm">
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Special Request
-                  </p>
-                  <p className="text-[#000000] text-[15px]">
-                    {formatLabel(booking?.specialRequest)}
-                  </p>
+              {/* Issue #9 — "Any Instructions" (renamed from "Special Request") */}
+              {booking?.specialRequest && (
+                <div className="space-y-1 pb-5 border-b border-[#0000001A]">
+                  <p className="font-semibold text-[#000000] text-[15px]">Any Instructions</p>
+                  <p className="text-[#505050] text-[14px]">{booking.specialRequest}</p>
                 </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Payment Status
-                  </p>
-                  <p className="text-[#000000] text-[15px]">
-                    {paymentStatus}
-                  </p>
-                </div>
-              </div>
+              )}
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-[#0000001A] text-sm">
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Amount Paid
-                  </p>
-                  <p className="text-[#000000] text-[15px]">
-                    {formatCurrency(booking?.amountPaid, booking?.currency)}
+              {/* Issue #10 — Services */}
+              {bookingServices.length > 0 && (
+                <div className="space-y-2 pb-5 border-b border-[#0000001A]">
+                  <p className="font-semibold text-[#000000] text-[15px]">Selected Services</p>
+                  <div className="flex flex-wrap gap-2">
+                    {bookingServices.map((svc, i) => {
+                      const label =
+                        typeof svc === "object"
+                          ? svc.name || svc.title || svc.label || `Service ${i + 1}`
+                          : String(svc);
+                      const price =
+                        typeof svc === "object" && (svc.price !== undefined)
+                          ? ` — ${formatCurrency(svc.price)}`
+                          : "";
+                      return (
+                        <span
+                          key={i}
+                          className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-[12px] font-medium"
+                        >
+                          {label}{price}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Issue #10 — Package */}
+              {bookingPackage && (
+                <div className="space-y-1 pb-5 border-b border-[#0000001A]">
+                  <p className="font-semibold text-[#000000] text-[15px]">Package</p>
+                  <p className="text-[#505050] text-[14px]">
+                    {typeof bookingPackage === "object"
+                      ? bookingPackage.name || bookingPackage.title || JSON.stringify(bookingPackage)
+                      : String(bookingPackage)}
+                    {typeof bookingPackage === "object" && bookingPackage.price !== undefined
+                      ? ` — ${formatCurrency(bookingPackage.price)}`
+                      : ""}
                   </p>
                 </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Currency
-                  </p>
-                  <p className="text-[#000000] text-[15px] uppercase">
-                    {booking?.currency || "-"}
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Created At
-                  </p>
-                  <p className="text-[#000000] text-[15px]">
-                    {formatDate(booking?.createdAt)}
-                  </p>
+              )}
+
+              {/* Issue #11 & #12 — financial summary */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                {isAwaitingPayment ? (
+                  // For pending/awaiting payment show Amount Due
+                  <>
+                    <div className="space-y-1">
+                      <p className="font-semibold text-[#000000] text-[15px]">Amount Due</p>
+                      <p className="text-amber-600 font-semibold text-[14px]">
+                        {formatCurrency(totalPrice || amountPaid)}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {amountPaid > 0 && (
+                      <div className="space-y-1">
+                        <p className="font-semibold text-[#000000] text-[15px]">Amount Paid</p>
+                        <p className="text-emerald-600 font-semibold text-[14px]">
+                          {formatCurrency(amountPaid)}
+                        </p>
+                      </div>
+                    )}
+                    {totalPrice > 0 && (
+                      <div className="space-y-1">
+                        <p className="font-semibold text-[#000000] text-[15px]">Total Price</p>
+                        <p className="text-[#505050] text-[14px]">{formatCurrency(totalPrice)}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+                <div className="space-y-1">
+                  <p className="font-semibold text-[#000000] text-[15px]">Booked On</p>
+                  <p className="text-[#505050] text-[14px]">{formatDate(booking?.createdAt)}</p>
                 </div>
               </div>
             </div>
 
+            {/* ── Section: User Information — Issue #13 ─────────────────── */}
             <div className="mt-4">
-              <h2 className="text-[24px] font-semibold text-[#252525] mb-4">
-                User Information
+              <h2 className="text-[24px] font-semibold text-[#252525] mb-3">
+                Contact Information
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm bg-[#FFFFFF] rounded-[16px] px-6 pt-6 pb-4">
-                <div className="space-y-4">
-                  <p className="font-semibold text-[#000000] text-[18px]">
-                    Name
-                  </p>
-                  <p className="text-[#000000] text-[16px]">{userName}</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm bg-white rounded-[16px] px-6 pt-6 pb-4">
+                <div className="space-y-1">
+                  <p className="font-semibold text-[#000000] text-[16px]">Name</p>
+                  <p className="text-[#505050] text-[15px]">{contactName}</p>
                 </div>
-                <div className="space-y-4">
-                  <p className="font-semibold text-[#000000] text-[18px]">
-                    Email Address
-                  </p>
-                  <p className="text-[#000000] text-[16px] break-all">
-                    {userEmail}
-                  </p>
+                <div className="space-y-1">
+                  <p className="font-semibold text-[#000000] text-[16px]">Email Address</p>
+                  <p className="text-[#505050] text-[15px] break-all">{contactEmail}</p>
                 </div>
-                <div className="space-y-4">
-                  <p className="font-semibold text-[#000000] text-[18px]">
-                    Phone Number
-                  </p>
-                  <p className="text-[#000000] text-[16px]">{userPhone}</p>
+                <div className="space-y-1">
+                  <p className="font-semibold text-[#000000] text-[16px]">Phone Number</p>
+                  <p className="text-[#505050] text-[15px]">{contactPhone}</p>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>

@@ -20,6 +20,7 @@ const BookingDetailsModal = ({
     phone = "1 462 849 558",
     date = "26 Dec, 2024",
     time = "06:00pm",
+    endTime = "06:00pm",
     guestCount = "6 Guests",
     children = "None",
   } = bookingOverview;
@@ -77,73 +78,58 @@ const BookingDetailsModal = ({
 
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-[12px] w-[440px] pb-2 h-[640px] overflow-y-auto">
+      <div className="bg-white rounded-[12px] w-full max-w-[440px] mx-4 pb-2 h-[640px] overflow-y-auto">
         <div className="flex justify-between items-center px-8 pt-4 border-b-2 border-b-gray-300">
-          <h2 className="text-[28px] font-bold mb-4">Make Reservation</h2>
+          <h2 className="text-[28px] font-bold mb-4">Book Now</h2>
           <div onClick={onClose} className="cursor-pointer">
             <RxCross2 className="text-[28px] text-[#181818]" />
           </div>
         </div>
 
-        <div className="px-8 py-6">
+        <div className="px-8 pt-6 pb-2">
           <h3 className="text-[16px] font-bold text-[#181818] mb-3">
             Booking Overview
           </h3>
 
-          <div className="grid grid-cols-3 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2 mb-4">
-            <div>
-              <p className="font-medium text-[14px] text-[#000000] mb-1">
-                Name
-              </p>
-              <p className="text-[#000000]">{name}</p>
+          <div className="space-y-2.5 text-[14px] border-b-2 border-b-gray-300 pb-4 mb-4">
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Name</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{name}</span>
             </div>
-            <div className="border-l-2 border-b-gray-300 pl-1">
-              <p className="font-medium text-[14px] text-[#000000] mb-1">
-                Email Address
-              </p>
-              <p className="text-[#000000] break-all">{email}</p>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Email Address</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{email}</span>
             </div>
-            <div className="border-l-2 border-b-gray-300 pl-1">
-              <p className="font-medium text-[14px] text-[#000000] mb-1">
-                Phone Number
-              </p>
-              <p className="text-[#000000]">{phone}</p>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="font-medium text-[#727272] shrink-0">Phone Number</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{phone}</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6 mb-4 border-b-2 border-b-gray-300 pb-2">
-            <div>
-              <p className="text-[13px] text-[#9B9B9B] mb-1">Date</p>
-              <p className="font-semibold text-[14px] text-[#000000]">{date}</p>
+          <div className="space-y-2.5 border-b-2 border-b-gray-300 pb-4 mb-4">
+            <div className="flex justify-between gap-4 items-start">
+              <span className="text-[14px] font-medium text-[#727272] shrink-0">Date</span>
+              <span className="text-[14px] text-[#000000] font-semibold text-right break-all max-w-[65%]">{date}</span>
             </div>
-            <div>
-              <p className="text-[13px] text-[#9B9B9B] mb-1">Time</p>
-              <p className="font-semibold text-[14px] text-[#000000]">{time}</p>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="text-[14px] font-medium text-[#727272] shrink-0">Time</span>
+              <span className="text-[14px] text-[#000000] font-semibold text-right break-all max-w-[65%]">{time} – {endTime}</span>
             </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2 mb-4">
-            <div>
-              <p className="font-medium text-[14px] text-[#000000] mb-1">
-                Guest Count
-              </p>
-              <p className="text-[#000000]">{guestCount}</p>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="text-[14px] font-medium text-[#727272] shrink-0">Guest Count</span>
+              <span className="text-[14px] text-[#000000] font-semibold text-right break-all max-w-[65%]">{guestCount}</span>
             </div>
-            <div>
-              <p className="font-medium text-[14px] text-[#000000] mb-1">
-                Children (If any)
-              </p>
-              <p className="text-[#000000]">{children}</p>
+            <div className="flex justify-between gap-4 items-start">
+              <span className="text-[14px] font-medium text-[#727272] shrink-0">Children (If any)</span>
+              <span className="text-[14px] text-[#000000] font-semibold text-right break-all max-w-[65%]">{children}</span>
             </div>
-            <div>
-              <p className="font-medium text-[14px] text-[#000000] mb-1">
-                Table
-              </p>
-              <p className="text-[#000000] whitespace-pre-wrap">
+            <div className="flex justify-between gap-4 items-start">
+              <span className="text-[14px] font-medium text-[#727272] shrink-0">Table</span>
+              <span className="text-[14px] text-[#000000] font-semibold text-right break-all max-w-[65%]">
                 {bookingServiceData?.selectedSeating
                   ?.map((seat) => seat.title || seat.name)
                   .join(", ") || "-"}
-              </p>
+              </span>
             </div>
           </div>
 
@@ -151,22 +137,17 @@ const BookingDetailsModal = ({
             <p className="font-semibold text-[16px] text-[#000000] mb-3">
               Services and Packages
             </p>
-            <div className="grid grid-cols-2 gap-3 text-[12px] border-b-2 border-b-gray-300 pb-2 mb-4">
-              <div>
-                {bookingServiceData?.selectedPackage?.length > 0 &&
-                  bookingServiceData?.selectedPackage?.map((item) => (
-                    <p key={item.id} className="text-[#000000]">
-                      {item.title} - {item.price}$
-                    </p>
-                  ))}
-              </div>
-              <div className="border-l-2 border-b-gray-300 pl-1 py-2">
-                {bookingServiceData?.selectedSeating?.map((item, index) => (
-                  <p key={index} className="text-[#000000]">
-                    {item.name || item.title}
-                  </p>
-                ))}
-              </div>
+            <div className="space-y-2 text-[14px] bg-gray-50 p-3 rounded-lg border border-gray-200">
+              {bookingServiceData?.selectedPackage?.length > 0 ? (
+                bookingServiceData.selectedPackage.map((item) => (
+                  <div key={item.id} className="flex justify-between gap-4 items-start text-gray-700">
+                    <span className="break-all max-w-[65%]">{item.title}</span>
+                    <span className="font-semibold text-gray-900 shrink-0">${item.price}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400 text-sm">No services or packages selected.</p>
+              )}
             </div>
           </div>
 
@@ -176,13 +157,13 @@ const BookingDetailsModal = ({
                 Any Instruction{" "}
                 <span className="text-[#727272] text-[11px]">(optional)</span>
               </p>
-              <p className="text-[#6B6B6B] text-[12px] leading-5">
+              <p className="text-[#6B6B6B] text-[12px] leading-5 break-words max-h-[100px] overflow-y-auto">
                 {bookingServiceData.instruction}
               </p>
             </div>
           )}
 
-          <div className="space-y-3 mt-8">
+          <div className="space-y-3 mt-6">
             <Button
               text={isPending ? "Processing..." : "Confirm Booking"}
               type="button"
