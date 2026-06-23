@@ -51,10 +51,10 @@ export const useLoungeDetails = (loungeId) => {
   });
 };
 
-export const useGuestBook = () => {
+export const useGuestBook = (page, limit) => {
   return useQuery({
-    queryKey: ["guest-book"],
-    queryFn: () => getGuestBook(),
+    queryKey: ["guestbook", page, limit],
+    queryFn: () => getGuestBook(page, limit),
   });
 };
 

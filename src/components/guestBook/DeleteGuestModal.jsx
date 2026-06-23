@@ -31,11 +31,11 @@ const DeleteGuestModal = ({ onClose, guest }) => {
   return (
     <div className="fixed inset-0 bg-[#0A150F80] z-50 flex items-center justify-center">
       <div className="bg-white rounded-[12px] w-[440px] max-w-[95%] pb-4 overflow-hidden">
-        <div className="flex justify-end px-6 pt-4">
+        {/* <div className="flex justify-end px-6 pt-4">
           <div onClick={onClose} className="cursor-pointer">
             <RxCross2 className="text-[22px] text-[#181818]" />
           </div>
-        </div>
+        </div> */}
 
         <div className="flex flex-col items-center px-8 py-4 text-center">
           <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
