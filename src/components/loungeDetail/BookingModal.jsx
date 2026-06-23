@@ -336,6 +336,10 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
       startTime: formattedStartTime,
       endTime: formattedEndTime,
       guestCount: Number(formData.guestCount),
+      childrenCount: formData.children ? Number(formData.children) : 0,
+      guestName: formData.name,
+      guestEmail: formData.email,
+      guestPhone: formData.phone,
     };
 
     if (onNext) onNext({ displayData, apiPayload });

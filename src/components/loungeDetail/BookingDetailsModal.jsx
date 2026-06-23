@@ -39,16 +39,45 @@ const BookingDetailsModal = ({
       return;
     }
 
+    // Collect service/package IDs from selected services
+    const servicePackageIds = (bookingServiceData?.selectedPackage || [])
+      .map((item) => item._id || item.id)
+      .filter(Boolean);
+
     const finalPayload = {
-      ...bookingApiPayload,
-      guestCount: Number(bookingApiPayload.guestCount),
+      // Core booking fields
+      loungeId:    bookingApiPayload.loungeId,
+      bookingDate: bookingApiPayload.bookingDate,
+      startTime:   bookingApiPayload.startTime,
+      endTime:     bookingApiPayload.endTime,
+      guestCount:  Number(bookingApiPayload.guestCount),
+
+      // Tables
       tableIds: selectedTableIds,
+
+      // Guest contact info (collected in BookingModal step 1)
+      guestName:    bookingApiPayload.guestName  || undefined,
+      guestEmail:   bookingApiPayload.guestEmail || undefined,
+      guestPhone:   bookingApiPayload.guestPhone || undefined,
+      childrenCount: bookingApiPayload.childrenCount ?? 0,
+
+      // Services & packages (collected in BookingServiceModal step 2)
+      servicePackageIds: servicePackageIds.length > 0 ? servicePackageIds : undefined,
+
+      // Instructions / special request (from step 2 textarea)
+      instructions:
+        bookingServiceData?.instruction || undefined,
       specialRequest:
         bookingServiceData?.specialRequest ||
         bookingServiceData?.instruction ||
         bookingApiPayload?.specialRequest ||
         undefined,
     };
+
+    // Remove undefined keys so the API doesn't get null noise
+    Object.keys(finalPayload).forEach(
+      (key) => finalPayload[key] === undefined && delete finalPayload[key]
+    );
 
     if (
       !finalPayload.bookingDate ||
