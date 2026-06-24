@@ -56,17 +56,60 @@ const MyBooking = () => {
   const [bookingStatusFilter, setBookingStatusFilter] = useState("");
   const [eventStatusFilter, setEventStatusFilter] = useState("");
 
+  // Pagination states
+  const [bookingsPage, setBookingsPage] = useState(1);
+  const [eventsPage, setEventsPage] = useState(1);
+  const limit = 10;
+
   const { data: bookingsResponse, isLoading: isBookingsLoading } = useBookings(
-    { page: 1, limit: 100 },
+    { page: bookingsPage, limit },
     { enabled: activeTab === "bookings" }
   );
   const { data: eventsResponse, isLoading: isEventsLoading } = useEvents(
-    { page: 1, limit: 100 },
+    { page: eventsPage, limit },
     { enabled: activeTab === "events" }
   );
 
   const bookingsData = bookingsResponse?.data || [];
   const eventsData = eventsResponse?.data || [];
+
+  const bookingsPagination = bookingsResponse?.pagination || {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+  };
+
+  const eventsPagination = eventsResponse?.pagination || {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+  };
+
+  const handlePrevBookingsPage = () => {
+    if (bookingsPagination.currentPage > 1) {
+      setBookingsPage((prev) => prev - 1);
+    }
+  };
+
+  const handleNextBookingsPage = () => {
+    if (bookingsPagination.currentPage < bookingsPagination.totalPages) {
+      setBookingsPage((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevEventsPage = () => {
+    if (eventsPagination.currentPage > 1) {
+      setEventsPage((prev) => prev - 1);
+    }
+  };
+
+  const handleNextEventsPage = () => {
+    if (eventsPagination.currentPage < eventsPagination.totalPages) {
+      setEventsPage((prev) => prev + 1);
+    }
+  };
 
   // ── bookings rows ──────────────────────────────────────────────────────────
   const bookingRows = bookingsData.map((booking) => {
@@ -222,7 +265,10 @@ const MyBooking = () => {
               <div className="text-white absolute top-40 right-44 z-50 w-[180px]">
                 <StatusDropdown
                   value={bookingStatusFilter}
-                  onChange={setBookingStatusFilter}
+                  onChange={(status) => {
+                    setBookingStatusFilter(status);
+                    setBookingsPage(1);
+                  }}
                   options={["All", "Completed", "Pending", "Upcoming", "Cancelled"]}
                 />
               </div>
@@ -230,7 +276,10 @@ const MyBooking = () => {
               <div className="text-white absolute top-40 right-44 z-50 w-[180px]">
                 <StatusDropdown
                   value={eventStatusFilter}
-                  onChange={setEventStatusFilter}
+                  onChange={(status) => {
+                    setEventStatusFilter(status);
+                    setEventsPage(1);
+                  }}
                   options={["All", "Approval", "Upcoming", "Completed", "Rejected"]}
                 />
               </div>
@@ -246,17 +295,73 @@ const MyBooking = () => {
               Loading {activeTab === "bookings" ? "bookings" : "events"}...
             </div>
           ) : activeTab === "bookings" ? (
-            <BookingsTable
-              users={sortedRows}
-              onSort={requestSort}
-              sortConfig={sortConfig}
-            />
+            <>
+              <BookingsTable
+                users={sortedRows}
+                onSort={requestSort}
+                sortConfig={sortConfig}
+              />
+              {!isBookingsLoading && sortedRows.length > 0 && (
+                <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl">
+                  <div className="text-sm text-gray-500">
+                    Showing page <span className="font-semibold text-gray-800">{bookingsPagination.currentPage}</span> of{" "}
+                    <span className="font-semibold text-gray-800">{bookingsPagination.totalPages}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handlePrevBookingsPage}
+                      disabled={bookingsPagination.currentPage === 1}
+                      className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNextBookingsPage}
+                      disabled={bookingsPagination.currentPage === bookingsPagination.totalPages}
+                      className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
-            <EventBookingsTable
-              events={sortedRows}
-              onSort={requestSort}
-              sortConfig={sortConfig}
-            />
+            <>
+              <EventBookingsTable
+                events={sortedRows}
+                onSort={requestSort}
+                sortConfig={sortConfig}
+              />
+              {!isEventsLoading && sortedRows.length > 0 && (
+                <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl">
+                  <div className="text-sm text-gray-500">
+                    Showing page <span className="font-semibold text-gray-800">{eventsPagination.currentPage}</span> of{" "}
+                    <span className="font-semibold text-gray-800">{eventsPagination.totalPages}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handlePrevEventsPage}
+                      disabled={eventsPagination.currentPage === 1}
+                      className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNextEventsPage}
+                      disabled={eventsPagination.currentPage === eventsPagination.totalPages}
+                      className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -17,7 +17,7 @@ const DeleteGuestModal = ({ onClose, guest }) => {
     deleteGuestMutation(guest?._id, {
       onSuccess: () => {
         SuccessToast("Guest removed successfully!");
-                queryClient.invalidateQueries({ queryKey: ["guest-book"] });
+                queryClient.invalidateQueries({ queryKey: ["guestbook"] });
 
         onClose();
       },

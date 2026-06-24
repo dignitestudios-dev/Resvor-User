@@ -249,3 +249,18 @@ export const useCancelSubscription = () => {
     mutationFn: cancelSubscription,
   });
 };
+
+const fetchMySubscription = async () => {
+  const { data } = await axios.get(`/subscriptions/my`);
+  return data?.data || null;
+};
+ 
+export const useGetMySubscription = () => {
+  return useQuery({
+    queryKey: ["my-subscription"],
+    queryFn: fetchMySubscription,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+};

@@ -43,7 +43,8 @@ const BookingsTable = ({ users, onSort, sortConfig }) => {
                 onClick={() => onSort("name")}
                 className="px-4 py-4 text-left font-[500] cursor-pointer select-none whitespace-nowrap"
               >
-                Lounge Name <SortIcon col="name" />
+                Lounge Name
+                {/* Lounge Name <SortIcon col="name" /> */}
               </th>
               <th className="px-4 py-4 text-left font-[500] whitespace-nowrap">
                 Location

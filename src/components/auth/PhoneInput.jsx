@@ -130,6 +130,12 @@ const PhoneInput = ({
   error,
   touched,
   label,
+  labelColor = "text-white",
+  textColor = "text-white",
+  countryCodeColor = "text-[#E6E6F0]",
+  placeholderColor = "placeholder:text-[#E6E6F0]",
+  borderColor = "border-[#CACACA]",
+  bgColor = "bg-white/10",
 }) => {
   // const handlePhoneChange = (e) => {
   //   const formattedValue = e.target.value.replace(/[^0-9]/g, "");
@@ -149,13 +155,15 @@ const PhoneInput = ({
 
   return (
     <div>
-      <label htmlFor="" className="text-[14px] font-[500] text-white ">
-        {label}
-      </label>
+      {label && (
+        <label htmlFor="" className={`text-[14px] font-[500] ${labelColor} block mb-2`}>
+          {label}
+        </label>
+      )}
       <div
-        className={`flex  items-center p-0 w-full pl-2 outline-none font-[500] rounded-[15px]
-      border border-[#CACACA] placeholder:text-[12px] placeholder:font-[400]
-      placeholder:text-[#E6E6F0] text-[#E6E6F0] bg-white/10 backdrop-blur-[28.9px] h-full px-3 text-sm`}
+        className={`flex items-center p-0 w-full pl-2 outline-none font-[500] rounded-[15px]
+      border ${borderColor} placeholder:text-[12px] placeholder:font-[400]
+      ${placeholderColor} ${countryCodeColor} ${bgColor} backdrop-blur-[28.9px] h-full px-3 text-sm`}
       >
         <span className="text-xl pr-2">
           <img
@@ -165,14 +173,14 @@ const PhoneInput = ({
           />
         </span>
 
-        <span className="text-[12px] font-[400] w-[40px] text-center">+1</span>
+        <span className="text-[12px] font-[400] w-[40px] text-center">{`+1`}</span>
 
         <div className="border-l h-6 mx-2"></div>
 
         <input
           type="text"
-          className={`w-full text-white py-2 text-sm rounded-[15px] bg-transparent ring-1 ring-transparent 
-            focus:ring-2 focus:ring-transparent focus:outline-none placeholder:font-light placeholder:text-[12px] placeholder:text-[#E6E6F0]`}
+          className={`w-full ${textColor} py-2 text-sm rounded-[15px] bg-transparent ring-1 ring-transparent 
+            focus:ring-2 focus:ring-transparent focus:outline-none placeholder:font-light placeholder:text-[12px] ${placeholderColor}`}
           placeholder="123-456-7890"
           value={value}
           onChange={onChange}

@@ -46,7 +46,7 @@ const CancelSubscriptionModal = ({
               onClick={() => onConfirm && onConfirm()}
               disabled={loading}
             >
-              {loading ? "Logging out..." : "Proceed Now"}
+              {loading ? "Cancelling..." : "Proceed Now"}
             </button>
             <button
               className="bg-[#21293514] text-[#212935] text-[13px] font-bold rounded-[12px] px-10 py-3 w-[170px]"

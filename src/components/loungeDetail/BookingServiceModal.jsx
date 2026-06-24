@@ -72,7 +72,7 @@ const BookingServiceModal = ({
   };
 
   const handleRemoveService = (id) => {
-    setServiceModalData((prev) => prev.filter((item) => item.id !== id));
+    setServiceModalData((prev) => prev.filter((item) => (item.id || item._id) !== id));
   };
 
   // Clear service validation error when service is selected
@@ -159,18 +159,21 @@ const BookingServiceModal = ({
               >
                 {/* SERVICES LIST */}
                 <div className="flex flex-wrap py-1 pl-4 w-[80%] text-[#FFFFFF] font-thin text-[14px]">
-                  {serviceModalData.map((service) => (
-                    <span
-                      key={service.id}
-                      className="bg-blue-950 rounded-full px-3 py-1 mr-2 mb-1 inline-flex items-center gap-2"
-                    >
-                      {service.title} (${service.price})
-                      {/* Small bin icon inside each tag */}
-                      <button onClick={() => handleRemoveService(service.id)}>
-                        <img src={binIcon} className="w-4 h-4" alt="remove" />
-                      </button>
-                    </span>
-                  ))}
+                  {serviceModalData.map((service) => {
+                    const svcId = service.id || service._id;
+                    return (
+                      <span
+                        key={svcId}
+                        className="bg-blue-950 rounded-full px-3 py-1 mr-2 mb-1 inline-flex items-center gap-2"
+                      >
+                        {service.title} (${service.price})
+                        {/* Small bin icon inside each tag */}
+                        <button onClick={() => handleRemoveService(svcId)}>
+                          <img src={binIcon} className="w-4 h-4" alt="remove" />
+                        </button>
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -418,6 +418,7 @@ const LoungeDetail = () => {
                 typeof eventData?.endDateTime === "string"
                   ? eventData.endDateTime
                   : eventData?.endDateTime?.toISOString?.() || "",
+              ticketAtDoor: eventData?.ticketAtDoor,
             }}
             onClick={handleEventSummary}
             onClose={() => setISEventSummary(false)}

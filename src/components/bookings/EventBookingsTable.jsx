@@ -16,7 +16,7 @@ const EventBookingsTable = ({ events, onSort, sortConfig }) => {
                 className="pr-4 pl-6 py-5 text-left text-nowrap font-[500] "
               >
                 Event Name{" "}
-                {sortConfig.key === "name" ? (
+                {/* {sortConfig.key === "name" ? (
                   sortConfig.direction === "asc" ? (
                     <span className="cursor-pointer">^</span>
                   ) : (
@@ -24,7 +24,7 @@ const EventBookingsTable = ({ events, onSort, sortConfig }) => {
                   )
                 ) : (
                   ""
-                )}
+                )} */}
               </th>
               <th className="px-4 py-5 text-left text-nowrap font-[500] ">
                 Venue
@@ -53,6 +53,16 @@ const EventBookingsTable = ({ events, onSort, sortConfig }) => {
             </tr>
           </thead>
           <tbody className="mt-10">
+            {events.length === 0 && (
+              <tr>
+                <td
+                  colSpan={9}
+                  className="text-center py-20 text-[#727272] text-[15px] font-medium"
+                >
+                  No records found.
+                </td>
+              </tr>
+            )}
             {events.map((event, index) => (
               <tr
                 key={event._id || index}
@@ -85,64 +95,70 @@ const EventBookingsTable = ({ events, onSort, sortConfig }) => {
       </div>
 
       <div className="space-y-4 md:hidden">
-        {events.map((event, index) => (
-          <div
-            key={event._id || index}
-            className="border rounded-xl p-4 shadow-sm bg-gray-50 hover:bg-white transition"
-          >
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-500 text-sm font-medium">
-                Event Name
-              </span>
-              <span className="text-gray-800 font-semibold">{event.name}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-500 text-sm font-medium">Venue</span>
-              <span className="text-gray-800">{event.location}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-500 text-sm font-medium">Date</span>
-              <span className="text-gray-800">{event.date}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-500 text-sm font-medium">Time</span>
-              <span className="text-gray-800">{event.time}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-500 text-sm font-medium">
-                Guest Count
-              </span>
-              <span className="text-gray-800">{event.guestLimit}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-500 text-sm font-medium">
-                Event Type
-              </span>
-              <span className="text-gray-800">{event.eventType}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-500 text-sm font-medium">Budget</span>
-              <span className="text-gray-800">{event.budget}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-500 text-sm font-medium">Status</span>
-              <span className="text-gray-800">{event.status}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500 text-sm font-medium">Action</span>
-              <div className="flex items-center gap-2">
-                <div
-                  onClick={() =>
-                    navigate(`/app/reservationDetails/${event._id || index}`)
-                  }
-                  className="flex items-center gap-2"
-                >
-                  <IoIosArrowForward className="text-[#212935] text-[20px] ml-2" />
+        {events.length === 0 ? (
+          <div className="text-center py-10 text-[#727272] text-[15px] font-medium">
+            No records found.
+          </div>
+        ) : (
+          events.map((event, index) => (
+            <div
+              key={event._id || index}
+              className="border rounded-xl p-4 shadow-sm bg-gray-50 hover:bg-white transition"
+            >
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-500 text-sm font-medium">
+                  Event Name
+                </span>
+                <span className="text-gray-800 font-semibold">{event.name}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-500 text-sm font-medium">Venue</span>
+                <span className="text-gray-800">{event.location}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-500 text-sm font-medium">Date</span>
+                <span className="text-gray-800">{event.date}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-500 text-sm font-medium">Time</span>
+                <span className="text-gray-800">{event.time}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-500 text-sm font-medium">
+                  Guest Count
+                </span>
+                <span className="text-gray-800">{event.guestLimit}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-500 text-sm font-medium">
+                  Event Type
+                </span>
+                <span className="text-gray-800">{event.eventType}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-500 text-sm font-medium">Budget</span>
+                <span className="text-gray-800">{event.budget}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-500 text-sm font-medium">Status</span>
+                <span className="text-gray-800">{event.status}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500 text-sm font-medium">Action</span>
+                <div className="flex items-center gap-2">
+                  <div
+                    onClick={() =>
+                      navigate(`/app/reservationDetails/${event._id || index}`)
+                    }
+                    className="flex items-center gap-2"
+                  >
+                    <IoIosArrowForward className="text-[#212935] text-[20px] ml-2" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </>
   );

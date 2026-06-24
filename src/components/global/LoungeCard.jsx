@@ -52,10 +52,10 @@ const LoungeCard = ({ position = null, item, isFavorite = false }) => {
   return (
     <div
       onClick={handleNavigate}
-      className="rounded-[24px] p-4 bg-white relative cursor-pointer"
+      className="rounded-[24px] p-4 bg-white relative cursor-pointer h-[420px] flex flex-col justify-between min-w-0"
       style={{ boxShadow: "0px 0px 4px 0px rgba(0, 0, 0, 0.1)" }}
     >
-      <div>
+      <div className="flex-shrink-0">
         <img
           src={item?.images?.[0]?.location || item?.image}
           className="rounded-[12px] w-full h-[200px] object-cover"
@@ -77,31 +77,31 @@ const LoungeCard = ({ position = null, item, isFavorite = false }) => {
         />
       </div>
 
-      <div className="mt-6">
-        <p className="text-[22px] font-[600] py-2">{item?.name}</p>
+      <div className="mt-6 flex-1 flex flex-col justify-between min-w-0">
+        <p className="text-[22px] font-[600] py-2 truncate w-full">{item?.name}</p>
 
-        <ul className="space-y-2 list-none">
-          <li className="flex items-center gap-2 text-[#6E6E6E]">
-            <GoClockFill className="text-lg" />
-            <span>
+        <ul className="space-y-2 list-none flex-1 flex flex-col justify-end min-w-0">
+          <li className="flex items-center gap-2 text-[#6E6E6E] w-full min-w-0">
+            <GoClockFill className="text-lg flex-shrink-0" />
+            <span className="truncate">
               Time: {item?.operatingHours?.open || "-"} -{" "}
               {item?.operatingHours?.close || "-"}
             </span>
           </li>
 
-          <li className="flex items-center gap-2 text-[#6E6E6E]">
-            <IoLocation className="text-xl" />
-            <span>Location: {item?.location?.address || "-"}</span>
+          <li className="flex items-center gap-2 text-[#6E6E6E] w-full min-w-0">
+            <IoLocation className="text-xl flex-shrink-0" />
+            <span className="truncate">Location: {item?.location?.address || "-"}</span>
           </li>
 
-          <li className="flex items-center gap-2 text-[#6E6E6E]">
-            <BiSolidBadgeDollar className="text-xl" />
-            <span>{item?.description}</span>
+          <li className="flex items-center gap-2 text-[#6E6E6E] w-full min-w-0">
+            <BiSolidBadgeDollar className="text-xl flex-shrink-0" />
+            <span className="truncate">{item?.description}</span>
           </li>
 
-          <li className="flex items-center gap-2 text-[#6E6E6E]">
-            <HiPercentBadge className="text-xl" />
-            <span>{item?.extras || "-"}</span>
+          <li className="flex items-center gap-2 text-[#6E6E6E] w-full min-w-0">
+            <HiPercentBadge className="text-xl flex-shrink-0" />
+            <span className="truncate">{item?.extras || "-"}</span>
           </li>
         </ul>
       </div>

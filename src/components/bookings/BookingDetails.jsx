@@ -102,6 +102,7 @@ export default function BookingDetails() {
   const { mutate: cancelBooking, isPending: isCancelling } = useCancelBooking();
 
   const booking = bookingResponse?.data ?? bookingResponse;
+  console.log("🚀 ~ BookingDetails ~ booking:", booking)
   const normalizedStatus = String(booking?.status || "").toLowerCase();
   const isCancelable =
     booking && !["cancelled", "completed", "rejected"].includes(normalizedStatus);
@@ -325,9 +326,9 @@ export default function BookingDetails() {
                     </span>
                   </div>
 
-                  <p className="mt-2 text-[13px] text-[#505050] break-all">
+                  {/* <p className="mt-2 text-[13px] text-[#505050] break-all">
                     Booking ID: {booking?._id || id}
-                  </p>
+                  </p> */}
 
                   {/* Issue #5 — address */}
                   <div className="flex items-start gap-1 mt-3">

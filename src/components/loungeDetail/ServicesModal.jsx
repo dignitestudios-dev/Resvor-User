@@ -37,10 +37,11 @@ const ServicesModal = ({ isOpen, onClose, setServiceModalData, loungeServices, i
           <div className="space-y-4 text-[#6B6B6B]">
             <div className="grid grid-cols-3 gap-2">
               {loungeServices?.map((item) => {
-                const isAdded = selectedServices.some((s) => s.id === item.id);
+                const itemId = item.id || item._id;
+                const isAdded = selectedServices.some((s) => (s.id || s._id) === itemId);
                 return (
                   <div
-                    key={item.id}
+                    key={itemId}
                     className="rounded-[16px] p-3 bg-[#f6f5f5] relative"
                   >
                     <div>
@@ -76,7 +77,8 @@ const ServicesModal = ({ isOpen, onClose, setServiceModalData, loungeServices, i
                           onClick={() =>
                             !isAdded &&
                             handleAddService({
-                              id: item.id,
+                              id: itemId,
+                              _id: itemId,
                               title: item.name,
                               price: item.price,
                             })

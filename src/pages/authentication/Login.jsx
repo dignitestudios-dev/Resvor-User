@@ -60,14 +60,15 @@ const Login = () => {
       localStorage.setItem("tokenType", tokenType);
     }
 
-    localStorage.removeItem("onboarding_complete_acknowledged");
     setStoredTokenType(tokenType);
     await queryClient.invalidateQueries({ queryKey: ["auth-me"] });
 
     if (tokenType === "access_token") {
+      localStorage.setItem("onboarding_complete_acknowledged", "true");
       SuccessToast("Login successful");
       navigate("/app/home", { replace: true });
     } else {
+      localStorage.removeItem("onboarding_complete_acknowledged");
       // SuccessToast("Session token received. Continue on auth pages.");
       navigate("/auth/signup", { replace: true });
     }

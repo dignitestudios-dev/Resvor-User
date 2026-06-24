@@ -115,10 +115,6 @@ const GuestBook = () => {
               <div className="flex justify-center items-center h-[300px] text-gray-500 text-[14.82px]">
                 Loading guests...
               </div>
-            ) : sortedUsers.length === 0 ? (
-              <div className="flex justify-center items-center h-[300px] text-gray-500 text-[14.82px]">
-                No record found
-              </div>
             ) : (
               <table className="w-full">
                 <thead className="sticky top-0 z-0">
@@ -128,16 +124,12 @@ const GuestBook = () => {
                       className="pl-8 pr-4 py-5 text-left text-nowrap font-[500] cursor-pointer"
                     >
                       Lounge
-                      {sortConfig.key === "loungeId" &&
-                        (sortConfig.direction === "asc" ? " ↑" : " ↓")}
                     </th>
                     <th
                       onClick={() => requestSort("fullName")}
                       className="px-4 py-5 text-left text-nowrap font-[500] cursor-pointer"
                     >
                       Full Name
-                      {sortConfig.key === "fullName" &&
-                        (sortConfig.direction === "asc" ? " ↑" : " ↓")}
                     </th>
                      <th className="px-4 py-5 text-left text-nowrap font-[500]">
                       Email
@@ -152,48 +144,58 @@ const GuestBook = () => {
                 </thead>
 
                 <tbody>
-                  {sortedUsers.map((user) => (
-                    <tr
-                      key={user._id}
-                      className="border-b border-[#D4D4D4] text-[14.82px]"
-                    >
-                      <td className="pl-8 pr-4 py-6 font-semibold">
-                        {user.loungeId?.name || "N/A"}
-                      </td>
-                      <td className="px-4 py-6">{user.fullName}</td>
-                                            <td className="px-4 py-6">{user.email}</td>
-
-                      <td className="px-4 py-6">
-                        {user.specialDates?.length > 0
-                          ? user.specialDates[0]
-                          : new Date(user.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-6 text-nowrap">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setEditGuest(user)}
-                            type="button"
-                          >
-                            <img
-                              src={editIcon}
-                              alt="edit"
-                              className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
-                            />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setGuestToDelete(user)}
-                          >
-                            <img
-                              src={binIcon}
-                              alt="delete"
-                              className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
-                            />
-                          </button>
+                  {sortedUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={5}>
+                        <div className="flex justify-center items-center h-[240px] text-gray-500 text-[14.82px]">
+                          Nothing here yet. Add a new guest to get started
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    sortedUsers.map((user) => (
+                      <tr
+                        key={user._id}
+                        className="border-b border-[#D4D4D4] text-[14.82px]"
+                      >
+                        <td className="pl-8 pr-4 py-6 font-semibold">
+                          {user.loungeId?.name || "N/A"}
+                        </td>
+                        <td className="px-4 py-6">{user.fullName}</td>
+                        <td className="px-4 py-6">{user.email}</td>
+
+                        <td className="px-4 py-6">
+                          {user.specialDates?.length > 0
+                            ? user.specialDates[0]
+                            : new Date(user.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-6 text-nowrap">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setEditGuest(user)}
+                              type="button"
+                            >
+                              <img
+                                src={editIcon}
+                                alt="edit"
+                                className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
+                              />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setGuestToDelete(user)}
+                            >
+                              <img
+                                src={binIcon}
+                                alt="delete"
+                                className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
+                              />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             )}
@@ -204,7 +206,7 @@ const GuestBook = () => {
             {isLoading ? (
               <div className="text-center py-10">Loading guests...</div>
             ) : sortedUsers.length === 0 ? (
-              <div className="text-center py-10">No record found</div>
+              <div className="text-center py-10">Nothing here yet. Add a new guest to get started</div>
             ) : (
               sortedUsers.map((user) => (
                 <div

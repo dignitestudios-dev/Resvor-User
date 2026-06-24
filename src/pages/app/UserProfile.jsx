@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
 
 import ProfileDetail from "../../components/userProfile/ProfileDetail";
@@ -12,6 +13,25 @@ const UserProfile = () => {
   const navigate = useNavigate();
   const { data: favoritesResponse, isLoading } = useFavorites();
   const favoriteLounges = favoritesResponse?.data || [];
+  const scrollContainerRef = useRef(null);
+
+  const scroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, clientWidth } = scrollContainerRef.current;
+      const scrollAmount = clientWidth * 0.8; // Scroll 80% of container width for a smoother look
+      if (direction === "left") {
+        scrollContainerRef.current.scrollTo({
+          left: scrollLeft - scrollAmount,
+          behavior: "smooth",
+        });
+      } else {
+        scrollContainerRef.current.scrollTo({
+          left: scrollLeft + scrollAmount,
+          behavior: "smooth",
+        });
+      }
+    }
+  };
 
   return (
     <>
@@ -40,20 +60,26 @@ const UserProfile = () => {
                 Favorite Lounges
               </p>
               <div className="flex items-center gap-4">
-                <div className="p-2 rounded-full border-[1px] border-[#D1D1D1]">
+                <div
+                  onClick={() => scroll("left")}
+                  className="p-2 rounded-full border-[1px] border-[#D1D1D1] cursor-pointer hover:bg-white/50 transition duration-200 select-none"
+                >
                   <IoIosArrowBack className="text-[16px]" />
                 </div>
-                <div className="p-2 rounded-full border-[1px] border-[#D1D1D1]">
+                <div
+                  onClick={() => scroll("right")}
+                  className="p-2 rounded-full border-[1px] border-[#D1D1D1] cursor-pointer hover:bg-white/50 transition duration-200 select-none"
+                >
                   <IoIosArrowForward className="text-[16px]" />
                 </div>
               </div>
             </div>
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex gap-6 overflow-x-hidden pb-2">
                 {[...Array(3)].map((_, index) => (
                   <div
                     key={index}
-                    className="rounded-[24px] p-4 bg-white animate-pulse"
+                    className="rounded-[24px] p-4 bg-white animate-pulse min-w-[300px] w-[300px] md:min-w-[350px] md:w-[350px] flex-shrink-0"
                   >
                     <div className="w-full h-[200px] bg-gray-200 rounded-[12px]" />
                     <div className="mt-6 space-y-3">
@@ -66,14 +92,21 @@ const UserProfile = () => {
                 ))}
               </div>
             ) : favoriteLounges.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div
+                ref={scrollContainerRef}
+                className="flex gap-6 overflow-x-auto scroll-smooth pb-2 no-scrollbar"
+              >
                 {favoriteLounges.map((item) => (
-                  <LoungeCard
-                    item={item}
+                  <div
                     key={item._id}
-                    position="bottom-64 right-8"
-                    isFavorite
-                  />
+                    className="min-w-[300px] w-[300px] md:min-w-[350px] md:w-[350px] flex-shrink-0"
+                  >
+                    <LoungeCard
+                      item={item}
+                      position="bottom-44 right-8"
+                      isFavorite
+                    />
+                  </div>
                 ))}
               </div>
             ) : (

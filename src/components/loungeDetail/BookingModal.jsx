@@ -7,6 +7,8 @@ import InputField from "../auth/InputField";
 import Button from "./../global/Button";
 import SelectField from "../global/SelectField";
 import { ErrorToast } from "../global/Toaster";
+import PhoneInput from "../auth/PhoneInput";
+import { phoneFormatter, phoneToE164 } from "../../lib/helpers";
 
 const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }) => {
   const initialDisplay = bookingData?.displayData || {};
@@ -152,7 +154,7 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
   const [formData, setFormData] = useState({
     name: initialDisplay.name || "",
     email: initialDisplay.email || "",
-    phone: initialDisplay.phone || "",
+    phone: initialDisplay.phone ? initialDisplay.phone.replace(/\D/g, "").slice(-10) : "",
     guestCount: initialDisplay.guestCountRaw || "",
     children: initialDisplay.childrenRaw || "",
   });
@@ -178,7 +180,8 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
 
   const validatePhone = (val) => {
     if (!val) return "Phone number is required";
-    if (val.length !== 10) return "Phone number must be exactly 10 digits";
+    const clean = val.replace(/\D/g, "");
+    if (clean.length !== 10) return "Phone number must be exactly 10 digits";
     return "";
   };
 
@@ -320,7 +323,7 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
     const displayData = {
       name: formData.name,
       email: formData.email,
-      phone: formData.phone,
+      phone: phoneFormatter(formData.phone),
       date: startDate ? startDate.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" }) : "",
       time: startTime,
       endTime: endTime,
@@ -339,7 +342,7 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
       childrenCount: formData.children ? Number(formData.children) : 0,
       guestName: formData.name,
       guestEmail: formData.email,
-      guestPhone: formData.phone,
+      guestPhone: phoneToE164(formData.phone),
     };
 
     if (onNext) onNext({ displayData, apiPayload });
@@ -451,47 +454,60 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
               />
             </div>
             <div className="px-1 py-2">
-              <InputField
+              <PhoneInput
                 label="Phone number"
-                text="phone"
-                placeholder="Phone number"
-                type="text"
-                id={`phone`}
-                name={`phone`}
-                maxLength={10}
-                value={formData.phone}
+                id="phone"
+                name="phone"
+                value={phoneFormatter(formData.phone)}
                 onChange={handleInputChange}
+                onBlur={() => {
+                  setFormErrors((prev) => ({
+                    ...prev,
+                    phone: validatePhone(formData.phone),
+                  }));
+                }}
                 error={formErrors.phone}
                 touched={!!formErrors.phone}
+                labelColor="text-[#181818]"
+                textColor="text-black"
+                countryCodeColor="text-black"
+                placeholderColor="placeholder:text-[#727272]"
+                borderColor="border-[#CACACA]"
+                bgColor="bg-transparent"
+                autoComplete="off"
               />
             </div>
             <div className="w-full flex items-start gap-2 px-1">
-              <InputField
-                label="Guest Count"
-                text="guest"
-                placeholder="Add here"
-                type="text"
-                id={`guest`}
-                name={`guestCount`}
-                maxLength={4}
-                value={formData.guestCount}
-                onChange={handleInputChange}
-                error={formErrors.guestCount}
-                touched={!!formErrors.guestCount}
-              />
-              <InputField
-                label="Children (if any)"
-                text="children"
-                placeholder="Add here"
-                type="text"
-                id={`children`}
-                name={`children`}
-                maxLength={4}
-                value={formData.children}
-                onChange={handleInputChange}
-                error={formErrors.children}
-                touched={!!formErrors.children}
-              />
+              <div className="w-full">
+                <InputField
+                  label="Guest Count"
+                  text="guest"
+                  placeholder="Add here"
+                  type="text"
+                  id={`guest`}
+                  name={`guestCount`}
+                  maxLength={4}
+                  value={formData.guestCount}
+                  onChange={handleInputChange}
+                  error={formErrors.guestCount}
+                  touched={!!formErrors.guestCount}
+                />
+              </div>
+              <div className="w-full">
+                <InputField
+                  label="Children (if any)"
+                  text="children"
+                  placeholder="Add here"
+                  type="text"
+                  id={`children`}
+                  name={`children`}
+                  maxLength={4}
+                  value={formData.children}
+                  onChange={handleInputChange}
+                  error={formErrors.children}
+                  touched={!!formErrors.children}
+                />
+              </div>
             </div>
             
           

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router";
 import "./App.css";
 import DashboardLayout from "./layouts/DashboardLayout";
@@ -29,6 +30,16 @@ import Cookies from "js-cookie";
 const ProtectedAppRoute = () => {
   const { data: authData, isLoading, isError } = useAuthMe();
 
+  const isAuthenticated = authData?.success && authData?.data;
+  const isOnboardingCompleted = 
+    authData?.data?.onboardingStep === "completed";
+
+  useEffect(() => {
+    if (isAuthenticated && isOnboardingCompleted) {
+      localStorage.setItem("onboarding_complete_acknowledged", "true");
+    }
+  }, [isAuthenticated, isOnboardingCompleted]);
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen w-full bg-[#030e17] text-white">
@@ -43,12 +54,6 @@ const ProtectedAppRoute = () => {
     localStorage.removeItem("token");
     return <Navigate to="/auth/login" replace />;
   }
-
-  const isAuthenticated = authData?.success && authData?.data;
-  const isOnboardingCompleted = 
-    authData?.data?.onboardingStep === "completed" &&
-    (localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
-     authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed);
 
   if (isAuthenticated) {
     if (isOnboardingCompleted) {
@@ -77,11 +82,12 @@ const PublicAuthRoute = () => {
     return <Outlet />;
   }
 
+  // && (localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
+  //    authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed);
+
   const isAuthenticated = authData?.success && authData?.data;
   const isOnboardingCompleted = 
-    authData?.data?.onboardingStep === "completed" &&
-    (localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
-     authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed);
+    authData?.data?.onboardingStep === "completed";
 
   if (isAuthenticated && isOnboardingCompleted) {
     return <Navigate to="/app/home" replace />;

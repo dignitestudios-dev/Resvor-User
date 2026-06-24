@@ -32,7 +32,7 @@ const EventAcceptedModal = ({ onClick, onClose }) => {
               Request Accepted!
             </p>
             <p className="xxl:text-[26px] text-[16px] text-[#565656] capitalize ">
-              Your event request has been accepted at Highbar Roooftop - NYC.
+              Your event request has been accepted.
               We’ve reserved your spot and selected services — now it’s time to
               lock it in. To confirm your reservation, please proceed with
               payment.

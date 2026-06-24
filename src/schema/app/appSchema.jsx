@@ -143,3 +143,130 @@ export const editGuestbookSchema = Yup.object({
 
   // lounge: Yup.string().required("Please select a lounge."),
 });
+
+export const requestEventSchema = Yup.object({
+  eventType: Yup.string().required("Event type is required"),
+  eventName: Yup.string()
+    .required("Event name is required")
+    .max(30, "Event name cannot exceed 30 characters.")
+    .test(
+      "not-empty-after-trim",
+      "Event name cannot be empty or only spaces.",
+      (value) => value?.trim().length > 0,
+    )
+    .test(
+      "no-leading-space",
+      "Event name cannot start with a space.",
+      (value) => (value ? !value.startsWith(" ") : true),
+    )
+    .test(
+      "no-multiple-spaces",
+      "Event name cannot contain multiple consecutive spaces.",
+      (value) => (value ? !/ {2,}/.test(value) : true),
+    )
+    .test("no-html", "HTML or script content is not allowed.", (value) =>
+      value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true,
+    ),
+  description: Yup.string()
+    .max(100, "Description cannot exceed 100 characters.")
+    .test("no-html", "HTML or script content is not allowed.", (value) =>
+      value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true,
+    ),
+  startDate: Yup.date().required("Date is required").nullable(),
+  startTime: Yup.string().required("Start time is required"),
+  endTime: Yup.string().required("End time is required"),
+  name: Yup.string()
+    .required("Full name is required.")
+    .min(1, "Full name must be at least 1 character.")
+    .max(30, "Full name cannot exceed 30 characters.")
+    .test(
+      "not-empty-after-trim",
+      "Full name cannot be empty or only spaces.",
+      (value) => value?.trim().length > 0,
+    )
+    .test(
+      "no-leading-space",
+      "Full name cannot start with a space.",
+      (value) => (value ? !value.startsWith(" ") : true),
+    )
+    .test(
+      "no-multiple-spaces",
+      "Full name cannot contain multiple consecutive spaces.",
+      (value) => (value ? !/ {2,}/.test(value) : true),
+    )
+    .matches(
+      /^[\p{L}' -]+$/u,
+      "Full name can only contain letters, spaces, hyphens (-), and apostrophes (').",
+    )
+    .test("no-numbers", "Full name cannot contain numbers.", (value) =>
+      value ? !/\d/.test(value) : true,
+    )
+    .test("no-html", "HTML or script content is not allowed.", (value) =>
+      value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true,
+    )
+    .test(
+      "sentence-case",
+      "Each word must start with a capital letter.",
+      (value) =>
+        value
+          ? value
+              .trim()
+              .split(" ")
+              .every((word) => /^[A-ZÀ-Ÿ][\p{L}'-]*$/u.test(word))
+          : true,
+    ),
+  email: Yup.string()
+    .required("Email is required")
+    .test("no-leading-space", "Email cannot start with a space.", (value) =>
+      value ? value[0] !== " " : false
+    )
+    .test(
+      "no-internal-or-trailing-space",
+      "Email cannot contain spaces.",
+      (value) => (value ? value.trim() === value && !/\s/.test(value) : false)
+    )
+    .matches(
+      /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
+      "Invalid email format.",
+    )
+    .test("no-dot-before-at", "Email cannot have a dot before @.", (value) =>
+      value ? !/\.@/.test(value) : false
+    )
+    .test(
+      "no-dot-or-hyphen-after-at",
+      "Domain cannot start with dot or hyphen.",
+      (value) => {
+        const domain = value?.split("@")[1];
+        return domain ? !/^[.-]/.test(domain) : false;
+      }
+    ),
+  phone: Yup.string()
+    .required("Phone number is required")
+    .length(10, "Phone number must be exactly 10 digits")
+    .matches(/^\d{10}$/, "Phone number must contain only numbers"),
+  guestCount: Yup.string()
+    .required("Guest count is required")
+    .test("is-positive-number", "Enter a valid guest count", (value) => {
+      const num = Number(value);
+      return !isNaN(num) && num > 0;
+    }),
+  preferredMusic: Yup.string()
+    .max(30, "Preferred music genre cannot exceed 30 characters.")
+    .test("no-html", "HTML or script content is not allowed.", (value) =>
+      value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true,
+    ),
+  specialRequest: Yup.string()
+    .max(30, "Special request cannot exceed 30 characters.")
+    .test("no-html", "HTML or script content is not allowed.", (value) =>
+      value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true,
+    ),
+  budget: Yup.string()
+    .required("Budget is required")
+    .max(8, "Budget cannot exceed 8 digits.")
+    .matches(/^\d+$/, "Budget must be a whole number.")
+    .test("is-positive-number", "Enter a valid budget", (value) => {
+      const num = Number(value);
+      return !isNaN(num) && num > 0;
+    }),
+  ticketAtDoor: Yup.boolean(),
+});

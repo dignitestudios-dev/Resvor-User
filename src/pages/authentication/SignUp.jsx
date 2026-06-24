@@ -49,10 +49,10 @@ const navigate = useNavigate();
         }
       }
 
-      if (hasSuccessParam) {
-        setCurrentStep(5);
-        return;
-      }
+      // if (hasSuccessParam) {
+      //   setCurrentStep(5);
+      //   return;
+      // }
 
       const stepIndex = mapOnboardingStepToIndex(authData?.data?.onboardingStep);
       setCurrentStep(stepIndex);

@@ -96,7 +96,9 @@ const EventDetailsModal = ({
             </div>
             <div className="flex justify-between gap-4 items-start">
               <span className="font-medium text-[#727272] shrink-0">Ticket at Door</span>
-              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{ticketAtDoor}</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">
+                {typeof ticketAtDoor === "boolean" ? (ticketAtDoor ? "Yes" : "No") : ticketAtDoor}
+              </span>
             </div>
           </div>
 

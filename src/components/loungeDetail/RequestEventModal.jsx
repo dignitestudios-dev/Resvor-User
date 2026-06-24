@@ -1,11 +1,14 @@
 /* eslint-disable react/prop-types */
 import { RxCross2 } from "react-icons/rx";
 import DatePickerField from "../global/DatePickerField";
-import { useState } from "react";
 import InputField from "../auth/InputField";
 import Button from "./../global/Button";
 import SelectField from "../global/SelectField";
 import { ErrorToast } from "../global/Toaster";
+import { useFormik } from "formik";
+import { requestEventSchema } from "../../schema/app/appSchema";
+import PhoneInput from "../auth/PhoneInput";
+import { phoneFormatter, phoneToE164 } from "../../lib/helpers";
 
 const eventTypeOptions = [
   "Birthday Party",
@@ -20,11 +23,6 @@ const eventTypeOptions = [
 ];
 
 const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
-  const [startDate, setStartDate] = useState(
-    eventData?.startDateTime ? new Date(eventData.startDateTime) : null
-  );
-  const [startTime, setStartTime] = useState(eventData?.startTime || null);
-
   // Parse API format: "1:30 PM - 6:00 PM"  OR plain "9:00 AM" / "21:00"
   const parseTimeRange = (rangeStr) => {
     if (!rangeStr) return { start: "", end: "", openLabel: "", closeLabel: "" };
@@ -82,8 +80,87 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
     );
   };
 
+  // useFormik setup
+  const {
+    values,
+    handleBlur,
+    handleChange,
+    handleSubmit,
+    setFieldValue,
+    errors,
+    touched,
+    setFieldError,
+  } = useFormik({
+    initialValues: {
+      eventType: eventData?.eventType || "",
+      eventName: eventData?.eventName || "",
+      description: eventData?.description || "",
+      startDate: eventData?.startDateTime ? new Date(eventData.startDateTime) : null,
+      startTime: eventData?.startTime || "",
+      endTime: eventData?.endTime || "",
+      name: eventData?.name || "",
+      email: eventData?.email || "",
+      phone: eventData?.phone || "",
+      guestCount: eventData?.guestCount ? String(eventData.guestCount) : "",
+      preferredMusic: eventData?.preferredMusic === "None" ? "" : eventData?.preferredMusic || "",
+      specialRequest: eventData?.specialRequest === "None" ? "" : eventData?.specialRequest || "",
+      budget: eventData?.budget ? String(eventData.budget) : "",
+      ticketAtDoor: typeof eventData?.ticketAtDoor === "boolean" ? eventData.ticketAtDoor : false,
+    },
+    validationSchema: requestEventSchema,
+    validateOnChange: true,
+    validateOnBlur: true,
+    onSubmit: (values) => {
+      // Validate time bounds reactively
+      const minCheck = checkTimeInRange(values.startTime, "Start time");
+      const maxCheck = checkTimeInRange(values.endTime, "End time");
+
+      if (minCheck || maxCheck) {
+        if (minCheck) setFieldError("startTime", minCheck);
+        if (maxCheck) setFieldError("endTime", maxCheck);
+        ErrorToast("Please fill all the required fields correctly.");
+        return;
+      }
+
+      // Prepare startDateTime and endDateTime
+      const startDateTime = new Date(values.startDate);
+      const [startH, startM] = values.startTime.split(":");
+      startDateTime.setHours(parseInt(startH), parseInt(startM));
+
+      const endDateTime = new Date(values.startDate);
+      const [endH, endM] = values.endTime.split(":");
+      endDateTime.setHours(parseInt(endH), parseInt(endM));
+
+      const finalEventData = {
+        title: values.eventName,
+        eventName: values.eventName,
+        eventType: values.eventType,
+        description: values.description || values.eventName,
+        date: values.startDate.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+        }),
+        startTime: values.startTime,
+        endTime: values.endTime,
+        startDateTime: startDateTime.toISOString(),
+        endDateTime: endDateTime.toISOString(),
+        name: values.name,
+        email: values.email,
+        phone: phoneToE164(values.phone),
+        guestCount: Number(values.guestCount),
+        preferredMusic: values.preferredMusic || "None",
+        specialRequest: values.specialRequest || "None",
+        budget: Number(values.budget),
+        ticketAtDoor: values.ticketAtDoor,
+        instructions: values.instructions || "",
+      };
+      onNext(finalEventData);
+    },
+  });
+
   // Effective min = max(lounge open, current time + 1 hour buffer) when today; else just lounge open
-  const effectiveMinTime = isToday(startDate)
+  const effectiveMinTime = isToday(values.startDate)
     ? (() => {
         const { timeStr } = getNowWithBuffer();
         if (!minTime) return timeStr;
@@ -91,7 +168,7 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
       })()
     : minTime;
 
-  const effectiveMinLabel = isToday(startDate)
+  const effectiveMinLabel = isToday(values.startDate)
     ? (() => {
         const { timeStr, label } = getNowWithBuffer();
         if (!minTime || timeStr > minTime) return `${label} (1-hour buffer)`;
@@ -99,104 +176,7 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
       })()
     : openLabel;
 
-  const isBufferEnforced = isToday(startDate) && (!minTime || getNowWithBuffer().timeStr > minTime);
-
-  // const [selectedType, setSelectedType] = useState([]);
-
-  const [formData, setFormData] = useState({
-    eventType: eventData?.eventType || "",
-    eventName: eventData?.eventName || "",
-    name: eventData?.name || "",
-    email: eventData?.email || "",
-    phone: eventData?.phone || "",
-    guestCount: eventData?.guestCount ? String(eventData.guestCount) : "",
-    preferredMusic: eventData?.preferredMusic === "None" ? "" : eventData?.preferredMusic || "",
-    specialRequest: eventData?.specialRequest === "None" ? "" : eventData?.specialRequest || "",
-    budget: eventData?.budget ? String(eventData.budget) : "",
-    ticketAtDoor: eventData?.ticketAtDoor === "None" ? "" : eventData?.ticketAtDoor || "",
-    description: eventData?.description || "",
-  });
-
-  const [endDate, setEndDate] = useState(eventData?.endTime || "");
-  const [formErrors, setFormErrors] = useState({});
-
-  // const handleSelect = (option) => {
-  //   const name = option?.name || option;
-  //   setSelectedType([name]);
-  //   // setSelectedType((prev) => {
-  //   //   const exists = prev.some((item) => item.name === name);
-
-  //   //   if (exists) {
-  //   //     return prev.filter((item) => item.name !== name);
-  //   //   } else {
-  //   //     return [...prev, { name }];
-  //   //   }
-  //   // });
-  // };
-
-  const validateName = (val) => {
-    if (!val) return "Full name is required";
-    if (val.trim().length === 0) return "Full name cannot be empty or only spaces";
-    if (!/^[\p{L}' -]+$/u.test(val)) return "Full name can only contain letters, spaces, hyphens (-), and apostrophes (') ";
-    return "";
-  };
-
-  const validateEmail = (val) => {
-    if (!val) return "Email is required";
-    const emailRegex = /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
-    if (!emailRegex.test(val)) return "Invalid email format";
-    if (/\.@/.test(val)) return "Invalid email format"; // no dot before @
-    const parts = val.split("@");
-    if (parts.length === 2 && /^[.-]/.test(parts[1])) return "Invalid email format";
-    return "";
-  };
-
-  const validatePhone = (val) => {
-    if (!val) return "Phone number is required";
-    if (val.length !== 10) return "Phone number must be exactly 10 digits";
-    return "";
-  };
-
-  const validateGuestCount = (val) => {
-    if (!val) return "Guest count is required";
-    const num = Number(val);
-    if (isNaN(num) || num <= 0) return "Enter a valid guest count";
-    return "";
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-
-    if (name === "phone") {
-      const cleanVal = value.replace(/\D/g, "").slice(0, 10);
-      setFormData((prev) => ({ ...prev, phone: cleanVal }));
-      setFormErrors((prev) => ({ ...prev, phone: validatePhone(cleanVal) }));
-      return;
-    }
-
-    if (name === "guestCount") {
-      const cleanVal = value.replace(/\D/g, "").slice(0, 4);
-      setFormData((prev) => ({ ...prev, guestCount: cleanVal }));
-      setFormErrors((prev) => ({ ...prev, guestCount: validateGuestCount(cleanVal) }));
-      return;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    
-    if (name === "name") {
-      setFormErrors((prev) => ({ ...prev, name: validateName(value) }));
-    } else if (name === "email") {
-      setFormErrors((prev) => ({ ...prev, email: validateEmail(value) }));
-    } else if (formErrors[name]) {
-      setFormErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-  };
+  const isBufferEnforced = isToday(values.startDate) && (!minTime || getNowWithBuffer().timeStr > minTime);
 
   // Real-time operating hours + past-time check
   const checkTimeInRange = (val, field) => {
@@ -212,174 +192,71 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
 
   const handleStartTimeChange = (e) => {
     const val = e.target.value;
-    setStartTime(val);
-    setFormErrors((p) => ({ ...p, startTime: checkTimeInRange(val, "Start time") }));
+    setFieldValue("startTime", val);
+    const err = checkTimeInRange(val, "Start time");
+    if (err) {
+      setFieldError("startTime", err);
+    } else {
+      setFieldError("startTime", "");
+    }
   };
 
   const handleEndTimeChange = (e) => {
     const val = e.target.value;
-    setEndDate(val);
-    setFormErrors((p) => ({ ...p, endTime: checkTimeInRange(val, "End time") }));
+    setFieldValue("endTime", val);
+    const err = checkTimeInRange(val, "End time");
+    if (err) {
+      setFieldError("endTime", err);
+    } else {
+      setFieldError("endTime", "");
+    }
   };
 
   // Clamp to valid range on blur
-  const handleStartTimeBlur = () => {
-    if (!startTime) return;
-    if (effectiveMinTime && startTime < effectiveMinTime) {
-      setStartTime(effectiveMinTime <= "23:59" ? effectiveMinTime : "");
-      setFormErrors((p) => ({ ...p, startTime: "" }));
+  const handleStartTimeBlur = (e) => {
+    handleBlur(e);
+    const val = values.startTime;
+    if (!val) return;
+    if (effectiveMinTime && val < effectiveMinTime) {
+      const clamped = effectiveMinTime <= "23:59" ? effectiveMinTime : "";
+      setFieldValue("startTime", clamped);
+      setFieldError("startTime", "");
     }
-    if (maxTime && startTime > maxTime) { setStartTime(maxTime); setFormErrors((p) => ({ ...p, startTime: "" })); }
-  };
-
-  const handleEndTimeBlur = () => {
-    if (!endDate) return;
-    if (effectiveMinTime && endDate < effectiveMinTime) {
-      setEndDate(effectiveMinTime <= "23:59" ? effectiveMinTime : "");
-      setFormErrors((p) => ({ ...p, endTime: "" }));
-    }
-    if (maxTime && endDate > maxTime) { setEndDate(maxTime); setFormErrors((p) => ({ ...p, endTime: "" })); }
-  };
-
-  const handleEventTypeChange = (value) => {
-    setFormData((prev) => ({
-      ...prev,
-      eventType: value,
-    }));
-
-    if (formErrors.eventType) {
-      setFormErrors((prev) => ({
-        ...prev,
-        eventType: "",
-      }));
+    if (maxTime && val > maxTime) {
+      setFieldValue("startTime", maxTime);
+      setFieldError("startTime", "");
     }
   };
 
-  const normalizeEventType = (value) => {
-    const normalized = String(value || "")
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "_");
-
-    const aliasMap = {
-      birthday_party: "birthday",
-      birthday: "birthday",
-      wedding: "wedding",
-      engagement: "engagement",
-      ceremony: "ceremony",
-      meeting: "meeting",
-      private_party: "private_party",
-      "private party": "private_party",
-      maintenance: "maintenance",
-      closed: "closed",
-      other: "other",
-    };
-
-    return aliasMap[normalized] || normalized;
+  const handleEndTimeBlur = (e) => {
+    handleBlur(e);
+    const val = values.endTime;
+    if (!val) return;
+    if (effectiveMinTime && val < effectiveMinTime) {
+      const clamped = effectiveMinTime <= "23:59" ? effectiveMinTime : "";
+      setFieldValue("endTime", clamped);
+      setFieldError("endTime", "");
+    }
+    if (maxTime && val > maxTime) {
+      setFieldValue("endTime", maxTime);
+      setFieldError("endTime", "");
+    }
   };
 
-  const validate = () => {
-    const errors = {};
-    const normalizedEventType = normalizeEventType(formData.eventType);
-
-    if (!formData.eventType) {
-      errors.eventType = "Event type is required";
-    } else if (![
-      "birthday",
-      "wedding",
-      "engagement",
-      "ceremony",
-      "meeting",
-      "private_party",
-      "maintenance",
-      "closed",
-      "other",
-    ].includes(normalizedEventType)) {
-      errors.eventType = "Enter a valid event type";
-    }
-    if (!formData.eventName) errors.eventName = "Event name is required";
-    if (!startDate) errors.startDate = "Date is required";
-    if (!startTime) errors.startTime = "Start time is required";
-    if (!endDate) errors.endTime = "End time is required";
-    const nameErr = validateName(formData.name);
-    if (nameErr) errors.name = nameErr;
-
-    const emailErr = validateEmail(formData.email);
-    if (emailErr) errors.email = emailErr;
-
-    const phoneErr = validatePhone(formData.phone);
-    if (phoneErr) errors.phone = phoneErr;
-
-    const guestErr = validateGuestCount(formData.guestCount);
-    if (guestErr) errors.guestCount = guestErr;
-    if (!formData.budget) {
-      errors.budget = "Budget is required";
-    } else if (isNaN(formData.budget) || Number(formData.budget) <= 0) {
-      errors.budget = "Enter a valid budget";
-    }
-
-    // Operating hours + past-time validation
-    if (effectiveMinTime && startTime && startTime < effectiveMinTime) {
-      errors.startTime = isBufferEnforced
-        ? `Start time must be at least 1 hour in the future (after ${effectiveMinLabel})`
-        : `Start time must be at or after opening time (${openLabel})`;
-    }
-    if (maxTime && startTime && startTime > maxTime) {
-      errors.startTime = `Start time must be before closing time (${closeLabel})`;
-    }
-    if (effectiveMinTime && endDate && endDate < effectiveMinTime) {
-      errors.endTime = isBufferEnforced
-        ? `End time must be at least 1 hour in the future (after ${effectiveMinLabel})`
-        : `End time must be at or after opening time (${openLabel})`;
-    }
-    if (maxTime && endDate && endDate > maxTime) {
-      errors.endTime = `End time cannot exceed closing time (${closeLabel})`;
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+  // Form input cleaners for numeric-only inputs
+  const handlePhoneChange = (e) => {
+    const cleanVal = e.target.value.replace(/\D/g, "").slice(0, 10);
+    setFieldValue("phone", cleanVal);
   };
 
-  const handleNext = () => {
-    if (!validate()) {
-      ErrorToast("Please fill all the required fields.");
-      return;
-    }
+  const handleGuestCountChange = (e) => {
+    const cleanVal = e.target.value.replace(/\D/g, "").slice(0, 4);
+    setFieldValue("guestCount", cleanVal);
+  };
 
-    // Prepare startDateTime and endDateTime
-    const startDateTime = new Date(startDate);
-    const [startH, startM] = startTime.split(":");
-    startDateTime.setHours(parseInt(startH), parseInt(startM));
-
-    const endDateTime = new Date(startDate);
-    const [endH, endM] = endDate.split(":");
-    endDateTime.setHours(parseInt(endH), parseInt(endM));
-
-    const eventData = {
-      title: formData.eventName,
-      eventName: formData.eventName,
-      eventType: formData.eventType,
-      description: formData.description || formData.eventName,
-      date: startDate.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-      }),
-      startTime: startTime,
-      endTime: endDate,
-      startDateTime: startDateTime.toISOString(),
-      endDateTime: endDateTime.toISOString(),
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      guestCount: Number(formData.guestCount),
-      preferredMusic: formData.preferredMusic || "None",
-      specialRequest: formData.specialRequest || "None",
-      budget: Number(formData.budget),
-      ticketAtDoor: formData.ticketAtDoor || "None",
-      instructions: formData.instructions || "",
-    };
-    onNext(eventData);
+  const handleBudgetChange = (e) => {
+    const cleanVal = e.target.value.replace(/\D/g, "").slice(0, 8);
+    setFieldValue("budget", cleanVal);
   };
 
   return (
@@ -393,16 +270,16 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
             <RxCross2 className="text-[28px] text-[#181818]" />
           </div>
         </div>
-        <div className="px-8 py-4">
+        <form onSubmit={handleSubmit} className="px-8 py-4">
           <div className=" mx-1">
             <SelectField
               label="Event Type"
               name={`eventType`}
               placeholder="Select Event Type"
-              value={formData.eventType}
-              onChange={handleEventTypeChange}
-              error={formErrors.eventType}
-              touched={!!formErrors.eventType}
+              value={values.eventType}
+              onChange={(val) => setFieldValue("eventType", val)}
+              error={errors.eventType}
+              touched={touched.eventType}
               options={eventTypeOptions}
             />
           </div>
@@ -415,10 +292,11 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
               id={`eventName`}
               name={`eventName`}
               maxLength={30}
-              value={formData.eventName}
-              onChange={handleInputChange}
-              error={formErrors.eventName}
-              touched={!!formErrors.eventName}
+              value={values.eventName}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.eventName}
+              touched={touched.eventName}
             />
           </div>
           <div className=" mx-1 pt-2">
@@ -430,24 +308,26 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
               id={`description`}
               name={`description`}
               maxLength={100}
-              value={formData.description}
-              onChange={handleInputChange}
+              value={values.description}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.description}
+              touched={touched.description}
             />
           </div>
           <div className="my-2 mx-1">
             <DatePickerField
               label="Select Date"
-              value={startDate}
+              value={values.startDate}
               onChange={(date) => {
-                setStartDate(date);
-                setFormErrors((prev) => ({ ...prev, startDate: "" }));
+                setFieldValue("startDate", date);
               }}
             />
-            {formErrors.startDate && (
-              <p className="text-red-600 text-[12px] mt-1">{formErrors.startDate}</p>
+            {touched.startDate && errors.startDate && (
+              <p className="text-red-600 text-[12px] mt-1">{errors.startDate}</p>
             )}
           </div>
-          <div className="w-full flex items-center gap-2 my-2 px-1">
+          <div className="w-full flex items-start gap-2 my-2 px-1">
             <div className="w-full">
               <label className="block text-[14px] font-[500] text-[#181818] mb-2">
                 Start Time
@@ -458,9 +338,9 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
                 min={effectiveMinTime && effectiveMinTime <= "23:59" ? effectiveMinTime : undefined}
                 max={maxTime || undefined}
                 className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
-                  formErrors.startTime ? "ring-red-500" : "ring-[#CACACA]"
+                  touched.startTime && errors.startTime ? "ring-red-500" : "ring-[#CACACA]"
                 } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
-                value={startTime}
+                value={values.startTime}
                 onChange={handleStartTimeChange}
                 onBlur={handleStartTimeBlur}
               />
@@ -469,8 +349,8 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
                   Allowed: {effectiveMinLabel} – {closeLabel}
                 </p>
               )}
-              {formErrors.startTime && (
-                <p className="text-red-600 text-[12px] mt-1">{formErrors.startTime}</p>
+              {touched.startTime && errors.startTime && (
+                <p className="text-red-600 text-[12px] mt-1">{errors.startTime}</p>
               )}
             </div>
 
@@ -484,9 +364,9 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
                 min={effectiveMinTime && effectiveMinTime <= "23:59" ? effectiveMinTime : undefined}
                 max={maxTime || undefined}
                 className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
-                  formErrors.endTime ? "ring-red-500" : "ring-[#CACACA]"
+                  touched.endTime && errors.endTime ? "ring-red-500" : "ring-[#CACACA]"
                 } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
-                value={endDate}
+                value={values.endTime}
                 onChange={handleEndTimeChange}
                 onBlur={handleEndTimeBlur}
               />
@@ -495,125 +375,157 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
                   Allowed: {effectiveMinLabel} – {closeLabel}
                 </p>
               )}
-              {formErrors.endTime && (
-                <p className="text-red-600 text-[12px] mt-1">{formErrors.endTime}</p>
+              {touched.endTime && errors.endTime && (
+                <p className="text-red-600 text-[12px] mt-1">{errors.endTime}</p>
               )}
             </div>
             
           </div>
-          <div className="w-full flex items-center gap-2 my-2 px-1">
-            <InputField
-              label="Full Name"
-              text="name"
-              placeholder="Full Name"
-              type="text"
-              id={`name`}
-              name={`name`}
-              maxLength={30}
-              value={formData.name}
-              onChange={handleInputChange}
-              error={formErrors.name}
-              touched={!!formErrors.name}
-            />
-            <InputField
-              label="Email address"
-              text="email"
-              placeholder="example@gamil.com"
-              type="email"
-              id={`email`}
-              name={`email`}
-              maxLength={30}
-              value={formData.email}
-              onChange={handleInputChange}
-              error={formErrors.email}
-              touched={!!formErrors.email}
-            />
+          <div className="w-full flex items-start gap-2 my-2 px-1">
+            <div className="w-full">
+              <InputField
+                label="Full Name"
+                text="name"
+                placeholder="Full Name"
+                type="text"
+                id={`name`}
+                name={`name`}
+                maxLength={30}
+                value={values.name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.name}
+                touched={touched.name}
+              />
+            </div>
+            <div className="w-full">
+              <InputField
+                label="Email address"
+                text="email"
+                placeholder="example@gamil.com"
+                type="email"
+                id={`email`}
+                name={`email`}
+                maxLength={30}
+                value={values.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.email}
+                touched={touched.email}
+              />
+            </div>
           </div>
-          <div className="w-full flex items-center gap-2 my-2 px-1">
-            <InputField
-              label="Phone number"
-              text="phone"
-              placeholder="Phone number"
-              type="text"
-              id={`phone`}
-              name={`phone`}
-              maxLength={10}
-              value={formData.phone}
-              onChange={handleInputChange}
-              error={formErrors.phone}
-              touched={!!formErrors.phone}
-            />
-            <InputField
-              label="Guest Count"
-              text="guest"
-              placeholder="Add here"
-              type="text"
-              id={`guest`}
-              name={`guestCount`}
-              maxLength={4}
-              value={formData.guestCount}
-              onChange={handleInputChange}
-              error={formErrors.guestCount}
-              touched={!!formErrors.guestCount}
-            />
+          <div className="w-full flex items-start gap-2 my-2 px-1">
+            <div className="w-full">
+              <PhoneInput
+                label="Phone number"
+                id="phone"
+                name="phone"
+                value={phoneFormatter(values.phone)}
+                onChange={handlePhoneChange}
+                onBlur={handleBlur}
+                error={errors.phone}
+                touched={touched.phone}
+                labelColor="text-[#181818]"
+                textColor="text-black"
+                countryCodeColor="text-black"
+                placeholderColor="placeholder:text-[#727272]"
+                borderColor="border-[#CACACA]"
+                bgColor="bg-transparent"
+                autoComplete="off"
+              />
+            </div>
+            <div className="w-full">
+              <InputField
+                label="Guest Count"
+                text="guest"
+                placeholder="Add here"
+                type="text"
+                id={`guest`}
+                name={`guestCount`}
+                maxLength={4}
+                value={values.guestCount}
+                onChange={handleGuestCountChange}
+                onBlur={handleBlur}
+                error={errors.guestCount}
+                touched={touched.guestCount}
+              />
+            </div>
           </div>
-          <div className="w-full flex items-center gap-2 my-2 px-1">
-            <InputField
-              label="Preferred Music Genre"
-              text="music"
-              placeholder="Add here"
-              type="text"
-              id={`music`}
-              name={`preferredMusic`}
-              maxLength={30}
-              value={formData.preferredMusic}
-              onChange={handleInputChange}
-            />
-            <InputField
-              label="Special Requests"
-              text="special"
-              placeholder="Add here"
-              type="text"
-              id={`special`}
-              name={`specialRequest`}
-              maxLength={30}
-              value={formData.specialRequest}
-              onChange={handleInputChange}
-            />
+          <div className="w-full flex items-start gap-2 my-2 px-1">
+            <div className="w-full">
+              <InputField
+                label="Preferred Music Genre"
+                text="music"
+                placeholder="Add here"
+                type="text"
+                id={`music`}
+                name={`preferredMusic`}
+                maxLength={30}
+                value={values.preferredMusic}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.preferredMusic}
+                touched={touched.preferredMusic}
+              />
+            </div>
+            <div className="w-full">
+              <InputField
+                label="Special Requests"
+                text="special"
+                placeholder="Add here"
+                type="text"
+                id={`special`}
+                name={`specialRequest`}
+                maxLength={30}
+                value={values.specialRequest}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.specialRequest}
+                touched={touched.specialRequest}
+              />
+            </div>
           </div>
-          <div className="w-full flex items-center gap-2 my-2 px-1">
-            <InputField
-              label="Budget"
-              text="budget"
-              placeholder="Add here"
-              type="text"
-              id={`budget`}
-              name={`budget`}
-              maxLength={30}
-              value={formData.budget}
-              onChange={handleInputChange}
-              error={formErrors.budget}
-              touched={!!formErrors.budget}
-            />
-            <InputField
-              label="Ticket at door (optional)"
-              text="ticket"
-              placeholder="Add here"
-              type="text"
-              id={`ticket`}
-              name={`ticketAtDoor`}
-              maxLength={30}
-              value={formData.ticketAtDoor}
-              onChange={handleInputChange}
-            />
+          <div className="w-full flex items-start gap-2 my-2 px-1">
+            <div className="w-full">
+              <InputField
+                label="Budget"
+                text="budget"
+                placeholder="Add here"
+                type="text"
+                id={`budget`}
+                name={`budget`}
+                maxLength={5}
+                value={values.budget}
+                onChange={handleBudgetChange}
+                onBlur={handleBlur}
+                error={errors.budget}
+                touched={touched.budget}
+              />
+            </div>
+            <div className="w-full">
+              <SelectField
+                label="Ticket at door (optional)"
+                name="ticketAtDoor"
+                placeholder="Select Option"
+                value={values.ticketAtDoor}
+                onChange={(val) => setFieldValue("ticketAtDoor", val)}
+                error={errors.ticketAtDoor}
+                touched={touched.ticketAtDoor}
+                options={[
+                  { label: "Yes", value: true },
+                  { label: "No", value: false },
+                ]}
+              />
+            </div>
           </div>
 
           <div>
             <div className="mt-4 px-1">
-              <Button text="Next" type="button" onClick={handleNext} />
+              <Button text="Next" type="submit" />
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

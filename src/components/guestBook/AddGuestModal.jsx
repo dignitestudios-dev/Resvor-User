@@ -9,7 +9,7 @@ import { changePasswordSchema } from "../../schema/app/appSchema";
 import { useState } from "react";
 import TagsModal from "../onBoarding/TagsModal";
 import LoungeSelectField from "../global/LoungeSelectField";
-import { useLounges } from "../../hooks/queries/useQueries";
+import { useLounges, useAuthMe } from "../../hooks/queries/useQueries";
 import { addGuest } from "../../hooks/api/Post";
 import { useAddGuest } from "../../hooks/mutations/OnboardingMutations";
 import { ErrorToast, SuccessToast } from "../global/Toaster";
@@ -26,7 +26,8 @@ const queryClient = useQueryClient(); // <-- INITIALIZE QUERY CLIENT
 
   // Fetch lounges exactly like Home.jsx
   const { data: loungesResponse, isLoading } = useLounges();
-  
+  const { data: authData } = useAuthMe();
+  console.log("🚀 ~ AddGuestModal ~ authData:", authData)
 
   const loungeOptions =
     loungesResponse?.data?.map((lounge) => ({
@@ -42,12 +43,12 @@ const {
   touched,
   handleSubmit,
   setFieldValue,
-    setFieldTouched,
-
+  setFieldTouched,
 } = useFormik({
+  enableReinitialize: true,
   initialValues: {
-    name: "",
-    email: "",
+    name: authData?.data?.firstName + authData?.data?.lastName || authData?.data?.user?.firstName + authData?.data?.user?.lastName || "",
+    email: authData?.data?.email || authData?.data?.user?.email || "",
     lounge: "",
   },
   validationSchema: guestbookSchema,
@@ -63,7 +64,7 @@ const {
       onSuccess: (response) => {
         console.log("Guest added:", response);
         SuccessToast("Guest added successfully!");
-        queryClient.invalidateQueries({ queryKey: ["guest-book"] });
+        queryClient.invalidateQueries({ queryKey: ["guestbook"] });
         onClose();
       },
       onError: (error) => {
