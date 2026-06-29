@@ -32,7 +32,8 @@ const ProtectedAppRoute = () => {
 
   const isAuthenticated = authData?.success && authData?.data;
   const isOnboardingCompleted = 
-    authData?.data?.onboardingStep === "completed";
+    authData?.data?.onboardingStep === "completed" &&
+    (authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed);
 
   useEffect(() => {
     if (isAuthenticated && isOnboardingCompleted) {
@@ -87,7 +88,8 @@ const PublicAuthRoute = () => {
 
   const isAuthenticated = authData?.success && authData?.data;
   const isOnboardingCompleted = 
-    authData?.data?.onboardingStep === "completed";
+    authData?.data?.onboardingStep === "completed" &&
+    (authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed);
 
   if (isAuthenticated && isOnboardingCompleted) {
     return <Navigate to="/app/home" replace />;

@@ -36,8 +36,7 @@ const navigate = useNavigate();
       const queryParams = new URLSearchParams(window.location.search);
       const hasSuccessParam = queryParams.get("session_id") || queryParams.get("success") === "true";
       const onboardingCompleteAcknowledged = 
-        localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
-        authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed;
+        Boolean(authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed);
 
       if (authData?.data?.onboardingStep === "completed") {
         if (onboardingCompleteAcknowledged) {
