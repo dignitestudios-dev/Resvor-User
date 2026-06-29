@@ -42,7 +42,7 @@ const formatEventStatus = (value) => {
     confirmed: "Upcoming",
     completed: "Completed",
     rejected: "Rejected",
-    cancelled: "Rejected",
+    cancelled: "Cancelled",
   };
   return statusMap[normalized] || formatDisplayLabel(value);
 };
@@ -273,7 +273,7 @@ const MyBooking = () => {
                 />
               </div>
             ) : (
-              <div className="text-white absolute top-40 right-44 z-50 w-[180px]">
+              <div className="text-white absolute top-40 right-44 z-40 w-[180px]">
                 <StatusDropdown
                   value={eventStatusFilter}
                   onChange={(status) => {

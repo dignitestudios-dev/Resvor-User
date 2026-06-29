@@ -273,7 +273,7 @@ const Navbar = () => {
             {userPopup && (
               <div
                 ref={userPopupRef}
-                className="absolute top-20 right-4 bg-white w-[155px] text-black rounded-[8px] shadow-lg p-4 space-y-2 z-[99999]"
+                className="absolute top-20 right-4 bg-white w-[155px] text-black rounded-[8px] shadow-lg p-4 space-y-2 z-50"
               >
                 <span
                   className="block font-[400] py-1 text-sm border-b  border-[#E4E4E4] cursor-pointer"

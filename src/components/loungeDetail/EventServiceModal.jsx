@@ -7,13 +7,19 @@ import TagsInputField from "../onBoarding/TagsInputField";
 import { binIcon } from "../../assets/export";
 import ServicesModal from "./ServicesModal";
 
-const EventServiceModal = ({ onClose, onNext }) => {
-  const [serviceModalData, setServiceModalData] = useState("");
+const EventServiceModal = ({ onClose, onNext, loungeServices, eventServices, onClickBack }) => {
+  const [serviceModalData, setServiceModalData] = useState(
+    eventServices?.selectedPackage || []
+  );
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const closeModal = () => setModalIsOpen(false);
-  const [selectedSeating, setSelectedSeating] = useState([]);
+  const [selectedSeating, setSelectedSeating] = useState(
+    eventServices?.selectedSeating || []
+  );
 
-  const [instruction, setInstruction] = useState("");
+  const [instruction, setInstruction] = useState(
+    eventServices?.instruction || ""
+  );
   const handleSelectSeating = (option) => {
     const name = option?.name || option;
 
@@ -28,7 +34,7 @@ const EventServiceModal = ({ onClose, onNext }) => {
     });
   };
   const handleRemoveService = (id) => {
-    setServiceModalData((prev) => prev.filter((item) => item.id !== id));
+    setServiceModalData((prev) => prev.filter((item) => (item.id || item._id) !== id));
   };
 
   const handleNext = () => {
@@ -52,7 +58,7 @@ const EventServiceModal = ({ onClose, onNext }) => {
           </div>
         </div>
         <div className="px-8 py-4">
-          <div className="my-2 mx-1">
+          {/* <div className="my-2 mx-1">
             <FilterSelectableField
               label="Preferred Seating Area"
               placeholder={"Choose preferences"}
@@ -60,7 +66,7 @@ const EventServiceModal = ({ onClose, onNext }) => {
               value={selectedSeating}
               onChange={handleSelectSeating}
             />
-          </div>
+          </div> */}
           <div className="mx-1">
             <label className="block text-[14px] font-[500] text-[#181818] mb-1">
               Select Services & Packages
@@ -70,25 +76,28 @@ const EventServiceModal = ({ onClose, onNext }) => {
               setModalIsOpen={setModalIsOpen}
               text="Add Services and Packages"
             />
-            {serviceModalData.length > 0 && (
+            {serviceModalData && serviceModalData.length > 0 && (
               <div
                 className="flex items-end border border-gray-400 text-sm rounded-[13px] 
                overflow-hidden p-[2px] mt-1.5"
               >
                 {/* SERVICES LIST */}
                 <div className="flex flex-wrap py-1 pl-4 w-[80%] text-[#FFFFFF] font-thin text-[14px]">
-                  {serviceModalData.map((service) => (
-                    <span
-                      key={service.id}
-                      className="bg-blue-950 rounded-full px-3 py-1 mr-2 mb-1 inline-flex items-center gap-2"
-                    >
-                      {service.title} (${service.price})
-                      {/* Small bin icon inside each tag */}
-                      <button onClick={() => handleRemoveService(service.id)}>
-                        <img src={binIcon} className="w-4 h-4" alt="remove" />
-                      </button>
-                    </span>
-                  ))}
+                  {serviceModalData.map((service) => {
+                    const svcId = service.id || service._id;
+                    return (
+                      <span
+                        key={svcId}
+                        className="bg-blue-950 rounded-full px-3 py-1 mr-2 mb-1 inline-flex items-center gap-2"
+                      >
+                        {service.title} (${service.price})
+                        {/* Small bin icon inside each tag */}
+                        <button onClick={() => handleRemoveService(svcId)}>
+                          <img src={binIcon} className="w-4 h-4" alt="remove" />
+                        </button>
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -114,8 +123,17 @@ const EventServiceModal = ({ onClose, onNext }) => {
             </div>
           </div>
           <div>
-            <div className="mt-4 px-1 ">
+            <div className="mt-4 px-1 space-y-2">
               <Button text="Next" type="button" onClick={handleNext} />
+              {onClickBack && (
+                <button
+                  type="button"
+                  onClick={onClickBack}
+                  className="w-full bg-[#E8E8E8] text-[#181818] text-[14px] rounded-[8px] py-2 font-semibold hover:bg-[#D8D8D8] transition"
+                >
+                  Back
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -124,6 +142,8 @@ const EventServiceModal = ({ onClose, onNext }) => {
             isOpen={modalIsOpen}
             onClose={closeModal}
             setServiceModalData={setServiceModalData}
+            initialSelectedServices={serviceModalData}
+            loungeServices={loungeServices}
           />
         )}
       </div>

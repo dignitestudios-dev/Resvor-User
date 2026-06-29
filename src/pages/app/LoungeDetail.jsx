@@ -72,8 +72,8 @@ const LoungeDetail = () => {
   const handleEventRequestNext = (data) => {
     setEventData(data);
     setIsEventRequest(false);
-    setIsEventServices(false);
-    setIsEventDetails(true);
+    setIsEventServices(true);
+    setIsEventDetails(false);
   };
 
   const handleServiceRequestNext = (data) => {
@@ -361,8 +361,14 @@ const LoungeDetail = () => {
 
         {isEventServices && (
           <EventServiceModal
+            loungeServices={lounge?.services || []}
+            eventServices={eventServices}
             onClose={() => setIsEventServices(false)}
             onNext={handleServiceRequestNext}
+            onClickBack={() => {
+              setIsEventServices(false);
+              setIsEventRequest(true);
+            }}
           />
         )}
 
@@ -370,7 +376,7 @@ const LoungeDetail = () => {
           <EventDetailsModal
             onClickBack={() => {
               setIsEventDetails(false);
-              setIsEventRequest(true);
+              setIsEventServices(true);
             }}
             onClick={handleEventDetailsClose}
             onClose={() => setIsEventDetails(false)}
@@ -419,6 +425,9 @@ const LoungeDetail = () => {
                   ? eventData.endDateTime
                   : eventData?.endDateTime?.toISOString?.() || "",
               ticketAtDoor: eventData?.ticketAtDoor,
+              servicePackageIds: (eventServices?.selectedPackage || []).map(
+                (pkg) => pkg.id || pkg._id
+              ),
             }}
             onClick={handleEventSummary}
             onClose={() => setISEventSummary(false)}

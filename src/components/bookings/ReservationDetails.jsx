@@ -177,7 +177,7 @@ export default function ReservationDetails() {
 
             <div className="flex items-center gap-2">
               <button
-                className="px-6 py-2 rounded-[12px] text-[12px] font-semibold bg-purple-50 text-[#181818]"
+                className="px-6 py-3 rounded-[12px] text-[12px] font-semibold bg-purple-50 text-[#181818]"
                 type="button"
                 onClick={() => setSendInvitation(true)}
               >
@@ -187,7 +187,7 @@ export default function ReservationDetails() {
                 type="button"
                 onClick={handleCancelEvent}
                 disabled={!isCancelable || isCancelling}
-                className={`px-6 py-2 rounded-[12px] text-[12px] font-semibold border transition ${
+                className={`px-8 py-3 rounded-[12px] text-[12px] font-semibold border transition ${
                   isCancelable && !isCancelling
                     ? "border-rose-200 bg-white text-rose-600 hover:bg-rose-50"
                     : "border-gray-200 bg-white text-gray-400 cursor-not-allowed"
@@ -312,71 +312,95 @@ export default function ReservationDetails() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-[#0000001A] text-sm">
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Preferred Music
-                  </p>
-                  <p className="text-[#000000] text-[15px]">
-                    {formatLabel(event?.preferredMusic)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-[#0000001A] text-sm">
+                <div>
+                  <p className="text-black font-semibold mb-2">Preferred Music</p>
+                  <p className="text-gray-600 text-sm font-semibold">
+                    {event?.preferredMusic || "N/A"}
                   </p>
                 </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Special Request
-                  </p>
-                  <p className="text-[#000000] text-[15px]">
-                    {formatLabel(event?.specialRequest)}
+                <div>
+                  <p className="text-black font-semibold mb-2">Special Request</p>
+                  <p className="text-gray-600 text-sm font-semibold">
+                    {event?.specialRequest || "None"}
                   </p>
                 </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Payment Status
-                  </p>
-                  <p className="text-[#000000] text-[15px]">
-                    {paymentStatus}
+                <div>
+                  <p className="text-black font-semibold mb-2">Budget</p>
+                  <p className="text-gray-600 text-sm font-semibold">
+                    {formatCurrency(event?.budget, event?.currency)}
                   </p>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-[#0000001A] text-sm">
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Amount Paid
+                <div>
+                  <p className="text-black font-semibold mb-2">
+                    Ticket at Door{" "}
+                    <span className="text-gray-400 font-normal">(optional)</span>
                   </p>
-                  <p className="text-[#000000] text-[15px]">
-                    {formatCurrency(event?.amountPaid, event?.currency)}
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Status
-                  </p>
-                  <p className="text-[#000000] text-[15px]">{eventStatus}</p>
-                </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    Created At
-                  </p>
-                  <p className="text-[#000000] text-[15px]">
-                    {formatDate(event?.createdAt)}
+                  <p className="text-gray-600 text-sm font-semibold">
+                    {typeof event?.ticketAtDoor === "boolean"
+                      ? event.ticketAtDoor
+                        ? "Yes"
+                        : "No"
+                      : event?.ticketAtDoor || "None"}
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-[#0000001A] text-sm">
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    User Name
-                  </p>
-                  <p className="text-[#000000] text-[15px]">{organizerName}</p>
+              <div className="border-t pt-6 mb-8">
+                <p className="text-black font-semibold mb-2">
+                  Services and Packages
+                </p>
+                <div className="flex gap-12">
+                  {event?.servicePackageIds?.length > 0 ? (
+                    event?.servicePackageIds?.map((service, index) => (
+                      <div key={service?._id || service?.id || index}>
+                        <p className="text-gray-600 text-sm font-semibold">
+                          {service.name}
+                        </p>
+                        <p className="text-gray-600 text-sm font-semibold">
+                          {service.description}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-600 text-sm font-semibold">
+                      No services selected
+                    </p>
+                  )}
                 </div>
-                <div className="space-y-3">
-                  <p className="font-semibold text-[#000000] text-[16px]">
-                    User Email
+              </div>
+
+              <div className="border-t pt-6">
+                <p className="font-semibold mb-3">
+                  Any Instructions{" "}
+                  <span className="text-gray-400 font-normal">(Optional)</span>
+                </p>
+                <p className="text-gray-700 leading-relaxed text-sm">
+                  {event?.description || "No instructions provided"}
+                </p>
+              </div>
+            </div>
+
+            <h2 className="text-lg font-bold mb-3 mt-6 text-gray-800">User Information</h2>
+
+            <div className="bg-white rounded-2xl p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div>
+                  <p className="text-black font-semibold mb-2">Name</p>
+                  <p className="text-gray-600 text-sm font-semibold">
+                    {organizerName && organizerName !== "-" ? organizerName : event?.guestName || "N/A"}
                   </p>
-                  <p className="text-[#000000] text-[15px] break-all">
-                    {event?.userId?.email || "-"}
+                </div>
+                <div>
+                  <p className="text-black font-semibold mb-2">Email Address</p>
+                  <p className="text-gray-600 text-sm font-semibold break-all">
+                    {event?.userId?.email || event?.guestEmail || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-black font-semibold mb-2">Phone Number</p>
+                  <p className="text-gray-600 text-sm font-semibold">
+                    {event?.userId?.phone || event?.userId?.phoneNumber || event?.guestPhone || "N/A"}
                   </p>
                 </div>
               </div>
