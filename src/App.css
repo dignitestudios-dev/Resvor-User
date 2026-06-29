@@ -75,6 +75,23 @@ input:-webkit-autofill:focus {
   border-radius: 15px;
 }
 
+/* Autofill override for dark theme / auth pages inputs */
+.backgroundImage input:-webkit-autofill,
+.backgroundImage input:-webkit-autofill:hover,
+.backgroundImage input:-webkit-autofill:active,
+input.text-white:-webkit-autofill,
+input.text-white:-webkit-autofill:hover,
+input.text-white:-webkit-autofill:active {
+  -webkit-text-fill-color: #FFFFFF !important;
+  caret-color: #FFFFFF !important;
+}
+
+.backgroundImage input:-webkit-autofill:focus,
+input.text-white:-webkit-autofill:focus {
+  -webkit-text-fill-color: #FFFFFF !important;
+  caret-color: #FFFFFF !important;
+}
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
