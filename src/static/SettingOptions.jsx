@@ -5,7 +5,7 @@ export const settingOptions = [
   // },
   {
     key: "subscription",
-    label: "Subscription Plan",
+    label: "Subscription Plan And Payments",
   },
   {
     key: "password",

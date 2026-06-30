@@ -264,3 +264,50 @@ export const useGetMySubscription = () => {
     refetchOnReconnect: false,
   });
 };
+
+const fetchCampaignContacts = async ({ channel = "email", page = 1, limit = 10 } = {}) => {
+  const { data } = await axios.get("/campaigns/contacts", {
+    params: { channel, page, limit },
+  });
+  return data;
+};
+
+export const useCampaignContacts = (params = {}, options = {}) => {
+  return useQuery({
+    queryKey: ["campaign-contacts", params],
+    queryFn: () => fetchCampaignContacts(params),
+    retry: false,
+    ...options,
+  });
+};
+
+// ── Wallet ──────────────────────────────────────────────────
+const fetchWalletMe = async () => {
+  const { data } = await axios.get("/wallet/me");
+  return data;
+};
+
+export const useWalletMe = () => {
+  return useQuery({
+    queryKey: ["wallet-me"],
+    queryFn: fetchWalletMe,
+    retry: false,
+  });
+};
+
+const fetchWalletTransactions = async ({ page = 1, limit = 10 } = {}) => {
+  const { data } = await axios.get("/wallet/transactions", {
+    params: { page, limit },
+  });
+  return data;
+};
+
+export const useWalletTransactions = (params = {}, options = {}) => {
+  return useQuery({
+    queryKey: ["wallet-transactions", params],
+    queryFn: () => fetchWalletTransactions(params),
+    retry: false,
+    ...options,
+  });
+};
+

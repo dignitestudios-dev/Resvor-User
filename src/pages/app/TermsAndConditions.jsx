@@ -1,3 +1,4 @@
+import { BsFillArrowLeftCircleFill } from "react-icons/bs";
 import { useNavigate } from "react-router";
 
 const TermsAndConditions = () => {

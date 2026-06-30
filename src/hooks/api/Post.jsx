@@ -95,3 +95,19 @@ export const updateGuest = async ({ entryId, payload }) => {
 
   return data;
 };
+
+// Campaign / Flyer
+export const submitCampaign = async (payload) => {
+  const { data } = await axios.post("/campaigns", payload, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return data;
+};
+
+// Wallet top-up (amount must be in cents)
+export const submitWalletTopup = async (payload) => {
+  const { data } = await axios.post("/wallet/topup/intent", payload);
+  return data;
+};

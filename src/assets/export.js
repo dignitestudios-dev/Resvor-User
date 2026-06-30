@@ -44,11 +44,13 @@ import dangerBlue from "./dangerBlue.png";
 import flyerTwo from "./flyerTwo.png";
 import flyerThree from "./flyerThree.png";
 import loungeTwo from "./loungeTwo.jpg";
+import FlayerOne from "./flayer.png";
 // export {
 //     FILENAME(PASCALCASE)
 // }
 
 export {
+  FlayerOne,
   Logo,
   logoBlack,
   heroSectionImg,

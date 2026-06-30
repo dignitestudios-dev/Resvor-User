@@ -3,15 +3,16 @@ import { FaArrowLeftLong } from "react-icons/fa6";
 import { useNavigate } from "react-router";
 import Billing from "./Billing";
 import UpdatePlan from "./UpdatePlan";
+import Wallet from "./Wallet";
 
 const SubscriptionBilling = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("billing");
-  // const [subscriptionModal, setSubscriptionModal] = useState(false);
 
   const tabs = [
     { key: "billing", label: "Billing" },
     { key: "plan", label: "Plans" },
+    { key: "wallet", label: "Wallet" },
   ];
 
   return (
@@ -53,7 +54,13 @@ const SubscriptionBilling = () => {
             </nav>
           </div>
 
-          {activeTab === "billing" ? <Billing /> : <UpdatePlan />}
+          {activeTab === "billing" ? (
+            <Billing />
+          ) : activeTab === "plan" ? (
+            <UpdatePlan />
+          ) : (
+            <Wallet />
+          )}
         </div>
       </div>
     </>

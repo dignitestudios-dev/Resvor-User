@@ -19,13 +19,12 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
   const [startTime, setStartTime] = useState(initialDisplay.time || "");
   const [endTime, setEndTime] = useState(initialDisplay.endTime || "");
 
-  // Parse API format: "1:30 PM - 6:00 PM"  OR plain "9:00 AM" / "21:00"
-  const parseTimeRange = (rangeStr) => {
-    if (!rangeStr) return { start: "", end: "", label: "" };
+  // Parse format: can be string ("1:30 PM - 6:00 PM") or object ({ open: "11:30 AM", close: "2:30 AM" })
+  const parseTimeRange = (hours) => {
+    if (!hours) return { start: "", end: "", openLabel: "", closeLabel: "" };
 
     const toHHMM = (t) => {
       const s = (t || "").trim();
-      // 12-hour: "1:30 PM", "09:00 AM"
       const m12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
       if (m12) {
         let h = parseInt(m12[1], 10);
@@ -35,23 +34,33 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
         if (p === "PM" && h !== 12) h += 12;
         return `${String(h).padStart(2, "0")}:${min}`;
       }
-      // 24-hour: "21:00"
       const m24 = s.match(/^(\d{1,2}):(\d{2})$/);
       if (m24) return `${String(parseInt(m24[1], 10)).padStart(2, "0")}:${m24[2]}`;
       return "";
     };
 
-    // Split "1:30 PM - 6:00 PM" on " - " (space-dash-space)
-    const parts = rangeStr.split(/\s+-\s+/);
-    const startLabel = parts[0]?.trim() || "";
-    const endLabel   = parts[1]?.trim() || "";
+    if (typeof hours === "object" && hours.open && hours.close) {
+      return {
+        start: toHHMM(hours.open),
+        end: toHHMM(hours.close),
+        openLabel: hours.open,
+        closeLabel: hours.close,
+      };
+    }
 
-    return {
-      start: toHHMM(startLabel),
-      end:   toHHMM(endLabel || startLabel),   // fallback if no range
-      openLabel:  startLabel || rangeStr,
-      closeLabel: endLabel   || startLabel || rangeStr,
-    };
+    if (typeof hours === "string") {
+      const parts = hours.split(/\s+-\s+/);
+      const startLabel = parts[0]?.trim() || "";
+      const endLabel   = parts[1]?.trim() || "";
+      return {
+        start: toHHMM(startLabel),
+        end:   toHHMM(endLabel || startLabel),
+        openLabel:  startLabel || hours,
+        closeLabel: endLabel   || startLabel || hours,
+      };
+    }
+
+    return { start: "", end: "", openLabel: "", closeLabel: "" };
   };
 
   // ── Overnight-aware time helpers ──────────────────────────────────────────
@@ -88,7 +97,7 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
     return val >= open && val <= close;
   };
 
-  const { start: minTime, end: maxTime, openLabel, closeLabel } = parseTimeRange(operatingHours?.open);
+  const { start: minTime, end: maxTime, openLabel, closeLabel } = parseTimeRange(operatingHours);
 
   // If today is selected, enforce a 1-hour grace period / buffer from current time
   const getNowWithBuffer = () => {
@@ -255,30 +264,71 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
     return "";
   };
 
+  // Validates that end time is strictly after start time (overnight-aware)
+ const checkEndAfterStart = (start, end) => {
+    if (!start || !end) return "";
+    if (isOvernightRange(minTime, maxTime)) {
+      // Both in evening portion: end must be > start
+      // Both in early-morning portion: end must be > start
+      // start in evening, end in early-morning: always valid (crosses midnight)
+      const startIsEvening = start >= minTime; // e.g. >= "11:30"
+      const endIsEvening   = end   >= minTime;
+      const startIsMorning = start <= maxTime; // e.g. <= "02:30"
+      const endIsMorning   = end   <= maxTime;
+
+      if (startIsEvening && endIsEvening && end <= start)
+        return "End time must be after start time";
+      if (startIsMorning && endIsMorning && end <= start)
+        return "End time must be after start time";
+      // start evening, end morning = valid (crosses midnight)
+      // start morning, end evening = invalid (going backwards)
+      if (startIsMorning && endIsEvening)
+        return "End time must be after start time";
+    } else {
+      if (end <= start) return "End time must be after start time";
+    }
+    return "";
+  };
+
   const handleStartTimeChange = (e) => {
     const val = e.target.value;
     setStartTime(val);
-    setFormErrors((p) => ({ ...p, startTime: checkTimeInRange(val, "Start time") }));
+    const err = checkTimeInRange(val, "Start time");
+    setFormErrors((p) => {
+      const nextErrors = { ...p, startTime: err || "" };
+      if (endTime) {
+        const endErr = checkTimeInRange(endTime, "End time") || checkEndAfterStart(val, endTime);
+        nextErrors.endTime = endErr || "";
+      }
+      return nextErrors;
+    });
   };
 
   const handleEndTimeChange = (e) => {
     const val = e.target.value;
     setEndTime(val);
-    setFormErrors((p) => ({ ...p, endTime: checkTimeInRange(val, "End time") }));
+    const rangeErr = checkTimeInRange(val, "End time");
+    const orderErr = !rangeErr ? checkEndAfterStart(startTime, val) : "";
+    setFormErrors((p) => ({ ...p, endTime: rangeErr || orderErr || "" }));
   };
 
   // Blur: clear error only — don't clamp for overnight ranges to avoid wrong auto-correction
   const handleStartTimeBlur = () => {
     if (!startTime) return;
-    if (isTimeInRange(startTime, effectiveMinTime || minTime, maxTime)) {
+    const err = checkTimeInRange(startTime, "Start time");
+    if (!err) {
       setFormErrors((p) => ({ ...p, startTime: "" }));
     }
   };
 
   const handleEndTimeBlur = () => {
     if (!endTime) return;
-    if (isTimeInRange(endTime, effectiveMinTime || minTime, maxTime)) {
+    const rangeErr = checkTimeInRange(endTime, "End time");
+    const orderErr = !rangeErr ? checkEndAfterStart(startTime, endTime) : "";
+    if (!rangeErr && !orderErr) {
       setFormErrors((p) => ({ ...p, endTime: "" }));
+    } else {
+      setFormErrors((p) => ({ ...p, endTime: rangeErr || orderErr }));
     }
   };
 
@@ -307,7 +357,7 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
     const startErr = checkTimeInRange(startTime, "Start time");
     if (startErr) errors.startTime = startErr;
 
-    const endErr = checkTimeInRange(endTime, "End time");
+    const endErr = checkTimeInRange(endTime, "End time") || checkEndAfterStart(startTime, endTime);
     if (endErr) errors.endTime = endErr;
 
     setFormErrors(errors);
@@ -381,9 +431,6 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
               <input
                 type="time"
                 data-slot="input"
-                // Don't set min/max when range is overnight — browser can't handle cross-midnight ranges
-                min={!isOvernightRange(minTime, maxTime) && effectiveMinTime ? effectiveMinTime : undefined}
-                max={!isOvernightRange(minTime, maxTime) && maxTime ? maxTime : undefined}
                 className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
                   formErrors.startTime ? "ring-red-600" : "ring-[#CACACA]"
                 } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
@@ -391,7 +438,7 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
                 onChange={handleStartTimeChange}
                 onBlur={handleStartTimeBlur}
               />
-              {effectiveMinTime && maxTime && (
+              {minTime && maxTime && (
                 <p className="text-[11px] text-[#727272] mt-1">
                   Allowed: {effectiveMinLabel} – {closeLabel}
                 </p>
@@ -405,8 +452,7 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
               <input
                 type="time"
                 data-slot="input"
-                min={!isOvernightRange(minTime, maxTime) && effectiveMinTime ? effectiveMinTime : undefined}
-                max={!isOvernightRange(minTime, maxTime) && maxTime ? maxTime : undefined}
+                min={!isOvernightRange(minTime, maxTime) && startTime ? startTime : undefined}
                 className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
                   formErrors.endTime ? "ring-red-600" : "ring-[#CACACA]"
                 } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
@@ -414,7 +460,7 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
                 onChange={handleEndTimeChange}
                 onBlur={handleEndTimeBlur}
               />
-              {effectiveMinTime && maxTime && (
+              {minTime && maxTime && (
                 <p className="text-[11px] text-[#727272] mt-1">
                   Allowed: {effectiveMinLabel} – {closeLabel}
                 </p>

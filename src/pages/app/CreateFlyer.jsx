@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
@@ -16,9 +16,151 @@ import FlayerFeeModal from "../../components/flayer/FlayerFeeModal";
 import ProceedFlayerModal from "../../components/flayer/ProceedFlayerModal";
 import SendInvitationModal from "../../components/flayer/SendInvitationModal";
 import AuthSuccessModal from "../../components/auth/AuthSuccessModal";
+import html2canvas from "html2canvas";
+import { useCreateCampaign } from "../../hooks/mutations/OnboardingMutations";
+import { SuccessToast, ErrorToast } from "../../components/global/Toaster";
 
+/* ─────────────────────────────────────────────────────────────
+   Utilities
+───────────────────────────────────────────────────────────── */
+const formatDate = (date) => {
+  if (!date) return "";
+  try {
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+  } catch {
+    return String(date);
+  }
+};
+
+const formatTime = (time) => {
+  if (!time) return "";
+  if (typeof time === "string") return time;
+  try {
+    const d = new Date(time);
+    return d.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } catch {
+    return String(time);
+  }
+};
+
+/* ─────────────────────────────────────────────────────────────
+   FlyerCard — portrait card: full-bleed background + overlay
+───────────────────────────────────────────────────────────── */
+const FlyerCard = ({ formData, selectedCard, flyerRef }) => {
+  const timeStr = [formatTime(formData.startTime), formatTime(formData.endTime)]
+    .filter(Boolean)
+    .join(" – ");
+
+  const locationStr = [formData.address, formData.city].filter(Boolean).join(", ");
+
+  const hasAnyData =
+    !!formData.eventTitle ||
+    !!formData.eventDate ||
+    !!formData.startTime ||
+    !!formData.endTime ||
+    !!formData.address ||
+    !!formData.city;
+
+  const titleIsLong = formData.eventTitle && formData.eventTitle.length > 30;
+
+  return (
+    <div
+      ref={flyerRef}
+      className="relative w-[380px] h-[520px] rounded-[20px] overflow-hidden shadow-2xl shrink-0 select-none font-serif"
+    >
+      {/* ── Full-bleed background image ── */}
+      <img
+        src={selectedCard.image}
+        alt={selectedCard.name}
+        crossOrigin="anonymous"
+        className="absolute inset-0 w-full h-full object-cover object-center block"
+      />
+
+      {/* ── Gradient + content: only when user has entered something ── */}
+      {hasAnyData && (
+        <>
+          {/* Darkening gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-black/0 to-black/75 pointer-events-none" />
+
+          {/* Content panel */}
+          <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 bg-black/50 backdrop-blur-sm rounded-2xl border border-white/10 px-7 py-7 flex flex-col items-center shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+
+            {/* Gold top accent bar */}
+            <div className="w-12 h-[3px] rounded-full bg-gradient-to-r from-[#c9a84c] via-[#f0d080] to-[#c9a84c] mb-5" />
+
+            {/* Event Title */}
+            <h1
+              className={`text-white font-bold leading-snug text-center mb-5 tracking-wide break-words drop-shadow-lg w-full ${
+                titleIsLong ? "text-lg" : "text-[22px]"
+              }`}
+            >
+              {formData.eventTitle ||
+                "Share operational announcements, policy updates, reminders, and promotions."}
+            </h1>
+
+            {/* Thin divider */}
+            <div className="w-full h-px bg-white/20 mb-5" />
+
+            {/* Details rows */}
+            <div className="flex flex-col gap-2.5 w-full">
+              {/* Date */}
+              <div className="flex items-center gap-2.5">
+                <span className="text-[13px] text-white/60 font-semibold font-sans min-w-[60px]">
+                  Date:
+                </span>
+                <span className="text-[13px] text-white/90 font-sans">
+                  {formData.eventDate ? formatDate(formData.eventDate) : "—"}
+                </span>
+              </div>
+
+              {/* Time */}
+              <div className="flex items-center gap-2.5">
+                <span className="text-[13px] text-white/60 font-semibold font-sans min-w-[60px]">
+                  Time:
+                </span>
+                <span className="text-[13px] text-white/90 font-sans">
+                  {timeStr || "—"}
+                </span>
+              </div>
+
+              {/* Location */}
+              <div className="flex items-start gap-2.5">
+                <span className="text-[13px] text-white/60 font-semibold font-sans min-w-[60px] shrink-0">
+                  Location:
+                </span>
+                <span className="text-[13px] text-white/90 font-sans leading-snug break-words">
+                  {locationStr || "—"}
+                </span>
+              </div>
+            </div>
+
+            {/* Gold bottom accent bar */}
+            <div className="w-12 h-[3px] rounded-full bg-gradient-to-r from-[#c9a84c] via-[#f0d080] to-[#c9a84c] mt-5" />
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+/* ─────────────────────────────────────────────────────────────
+   Main Page
+───────────────────────────────────────────────────────────── */
 const CreateFlyer = () => {
   const navigate = useNavigate();
+  const flyerRef = useRef(null);
+  const flyerBlobRef = useRef(null); // stores captured flyer PNG blob for API
+
+  const { mutate: createCampaign, isPending: isSendingCampaign } = useCreateCampaign();
 
   const [formData, setFormData] = useState({
     eventTitle: "",
@@ -36,9 +178,10 @@ const CreateFlyer = () => {
   const [isFlayerFee, setIsFlayerFee] = useState(false);
   const [sendInvitationModal, setSendInvitationModal] = useState(false);
   const [openField, setOpenField] = useState(null);
-
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
+  /* ── Form handlers ── */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -46,20 +189,6 @@ const CreateFlyer = () => {
 
   const handleEventTypeChange = (option) => {
     setFormData((prev) => ({ ...prev, eventType: [option] }));
-    // setFormData((prev) => {
-    //   const exists = prev.eventType.some((item) => item.id === option._id);
-    //   if (exists) {
-    //     return {
-    //       ...prev,
-    //       eventType: prev.eventType.filter((item) => item.id !== option._id),
-    //     };
-    //   } else {
-    //     return {
-    //       ...prev,
-    //       eventType: [...prev.eventType, { name: option.name, id: option._id }],
-    //     };
-    //   }
-    // });
   };
 
   const handleDateChange = (date) => {
@@ -78,6 +207,7 @@ const CreateFlyer = () => {
     setFormData((prev) => ({ ...prev, additionalInfo: value }));
   };
 
+  /* ── Modal flow ── */
   const handleProceedInvitation = () => {
     setSendProceed(false);
     setIsFlayerFee(true);
@@ -88,82 +218,158 @@ const CreateFlyer = () => {
     setSendInvitationModal(true);
   };
 
-  //   const handleSaveFlyer = () => {
-  //     console.log(
-  //       "Saving flyer with data:",
-  //       formData,
-  //       "Selected card:",
-  //       selectedCard
-  //     );
-  //     // Add API call or action here
-  //   };
+  /* ── Capture flyer → store blob → open Proceed modal ── */
+  const handleSend = async () => {
+    if (!flyerRef.current) { setSendProceed(true); return; }
+    try {
+      setIsGenerating(true);
+      const canvas = await html2canvas(flyerRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        logging: false,
+      });
+      canvas.toBlob(
+        (blob) => {
+          flyerBlobRef.current = blob; // keep for API payload
+          setIsGenerating(false);
+          setSendProceed(true);
+        },
+        "image/png",
+        1.0
+      );
+    } catch (err) {
+      console.error("Flyer export failed:", err);
+      setIsGenerating(false);
+      setSendProceed(true);
+    }
+  };
+
+  /* ── Build FormData & POST /campaigns ── */
+  const handleSubmitCampaign = (recipients) => {
+    const payload = new FormData();
+
+    // required fields
+    payload.append("channel", "email");
+
+    // recipients array: recipients[0], recipients[1] …
+    recipients.forEach((email, index) => {
+      payload.append(`recipients[${index}]`, email);
+    });
+
+    // // strip HTML tags from rich-text editor output
+    // const plainText = formData.additionalInfo
+    //   ? formData.additionalInfo.replace(/(<([^>]+)>)/gi, "")
+    //   : "";
+    payload.append("additionalInfo", formData.additionalInfo);
+
+    // attach the captured flyer PNG
+    if (flyerBlobRef.current) {
+      const flyerFile = new File(
+        [flyerBlobRef.current],
+        "event-flyer.png",
+        { type: "image/png" }
+      );
+      payload.append("image", flyerFile);
+    }
+
+    createCampaign(payload, {
+      onSuccess: () => {
+        SuccessToast("Campaign sent successfully!");
+        setSendInvitationModal(false);
+        setIsSuccess(true);
+      },
+      onError: (error) => {
+        const message =
+          error?.response?.data?.message ||
+          "Failed to send campaign. Please try again.";
+        ErrorToast(message);
+      },
+    });
+  };
+
+  /* ── Download flyer ── */
+  const handleDownloadFlyer = async () => {
+    if (!flyerRef.current) return;
+    try {
+      setIsGenerating(true);
+      const canvas = await html2canvas(flyerRef.current, {
+        scale: 3,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        logging: false,
+      });
+      const link = document.createElement("a");
+      link.download = `${formData.eventTitle || "event"}-flyer.png`;
+      link.href = canvas.toDataURL("image/png", 1.0);
+      link.click();
+    } catch (err) {
+      console.error("Download failed:", err);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <>
+      {/* ── Page Header ── */}
       <div className="flex items-center pt-[16px] pb-[18em] homeSectionImage">
         <div className="flex items-center px-5 lg:px-40 gap-3">
           <button type="button" onClick={() => navigate(-1)}>
             <FaArrowLeftLong color="white" size={20} />
           </button>
           <h2 className="text-white text-[30px] mt-0 font-bold leading-[48px] capitalize">
-            Profile
+            Campaign and Flyers
           </h2>
         </div>
       </div>
+
       <div className="px-5 lg:px-40">
-        <div className=" mx-auto px-10 py-10 bg-[#F5F5F5] rounded-xl -mt-[16em] shadow-sm">
-          <div className="grid grid-cols-2 justify-items-end gap-8">
-            {/* Left Column: Event Details Form */}
-            <div className="space-y-6 w-[420px] justify-self-start">
-              <div className="w-[300px]">
-                <h2 className="text-[22px] font-bold text-[#333333] mb-2">
-                  Event Details
-                </h2>
-                <p className="text-[14px] text-[#333333] mb-6">
-                  Select text on the invitation to customize the font, size, and
-                  color.
+        <div className="mx-auto px-10 py-10 bg-[#F5F5F5] rounded-xl -mt-[16em] shadow-sm">
+
+          <div className="flex gap-10 items-start">
+
+            {/* ── LEFT: Form ── */}
+            <div className="flex-1 space-y-6 min-w-0">
+              <div>
+                <h2 className="text-[22px] font-bold text-[#333333] mb-1">Event Details</h2>
+                <p className="text-[13px] text-[#777]">
+                  Fill in the fields below — the flyer updates in real time.
                 </p>
               </div>
 
               {/* Event Title */}
-              <div>
-                <InputField
-                  label="Event Title"
-                  text="eventTitle"
-                  placeholder="Enter event title"
-                  type="text"
-                  id="eventTitle"
-                  name="eventTitle"
-                  maxLength={100}
-                  value={formData.eventTitle}
-                  onChange={handleInputChange}
-                />
-              </div>
+              <InputField
+                label="Event Title"
+                text="eventTitle"
+                placeholder="Enter event title"
+                type="text"
+                id="eventTitle"
+                name="eventTitle"
+                maxLength={100}
+                value={formData.eventTitle}
+                onChange={handleInputChange}
+              />
 
               {/* Event Type & Date */}
               <div className="grid grid-cols-2 gap-4">
                 <FilterSelectableField
                   label="Event Type"
                   placeholder="Select event type"
-                  options={[
-                    "Birthday Party",
-                    "Wedding",
-                    "Corporate Event",
-                    "Festival",
-                  ]}
+                  options={["Birthday Party", "Wedding", "Corporate Event", "Festival"]}
                   value={formData.eventType}
                   onChange={handleEventTypeChange}
                 />
-                <div>
-                  <DatePickerField
-                    label="Event Date"
-                    value={formData.eventDate}
-                    onChange={handleDateChange}
-                  />
-                </div>
+                <DatePickerField
+                  label="Event Date"
+                  value={formData.eventDate}
+                  onChange={handleDateChange}
+                />
               </div>
 
-              {/* Start Time & End Time */}
+              {/* Start & End Time */}
               <div className="grid grid-cols-2 gap-4">
                 <TimePickerField
                   text="Start Time"
@@ -171,9 +377,7 @@ const CreateFlyer = () => {
                   value={formData.startTime}
                   onChange={handleStartTimeChange}
                   open={openField === "start"}
-                  onOpen={() =>
-                    setOpenField(openField === "start" ? null : "start")
-                  }
+                  onOpen={() => setOpenField(openField === "start" ? null : "start")}
                   position={"-left-4"}
                 />
                 <TimePickerField
@@ -182,19 +386,14 @@ const CreateFlyer = () => {
                   value={formData.endTime}
                   onChange={handleEndTimeChange}
                   open={openField === "end"}
-                  onOpen={() =>
-                    setOpenField(openField === "end" ? null : "end")
-                  }
+                  onOpen={() => setOpenField(openField === "end" ? null : "end")}
                   position={"-right-6"}
                 />
               </div>
 
-              {/* Location Section */}
+              {/* Location */}
               <div>
-                <h3 className="text-[16px] font-bold text-[#181818] mb-3">
-                  Location
-                </h3>
-
+                <h3 className="text-[16px] font-bold text-[#181818] mb-3">Location</h3>
                 <div className="space-y-4">
                   <InputField
                     label="Address"
@@ -207,7 +406,6 @@ const CreateFlyer = () => {
                     value={formData.address}
                     onChange={handleInputChange}
                   />
-
                   <InputField
                     label="City"
                     text="city"
@@ -221,26 +419,10 @@ const CreateFlyer = () => {
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Right Column: Card Preview */}
-            <div className="space-y-6 w-[385px] justify-self-end ">
-              <h2 className="text-[28px] font-bold text-[#181818] mb-2">
-                Card Preview
-              </h2>
-
-              {/* Card Display */}
-              <div className="border-2 border-gray-200 rounded-lg p-6 flex items-center justify-center h-[360px] bg-[#F9F9F9]">
-                <img
-                  src={selectedCard.image}
-                  alt={selectedCard.name}
-                  className="w-full h-auto max-h-[350px] object-contain rounded-lg"
-                />
-              </div>
-
-              {/* Card Template Carousel */}
+              {/* Card Template Picker */}
               <div>
-                <h3 className="text-[14px] font-semibold text-[#181818] mb-2">
+                <h3 className="text-[16px] font-bold text-[#181818] mb-3">
                   Select Card Template
                 </h3>
                 <div className="relative">
@@ -274,56 +456,111 @@ const CreateFlyer = () => {
                     ))}
                   </Swiper>
 
-                  {/* Custom Navigation Buttons */}
                   <button className="swiper-button-prev-custom absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow hover:shadow-lg transition">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 19l-7-7 7-7"
-                      />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                   <button className="swiper-button-next-custom absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow hover:shadow-lg transition">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 </div>
               </div>
+
+              {/* Additional Info */}
+              <div>
+                <RichTextEditor
+                  value={formData.additionalInfo}
+                  onChange={handleAdditionalInfoChange}
+                />
+              </div>
+
+              {/* Send Button */}
+              <div className="w-[320px]">
+                <Button
+                  text={isGenerating || isSendingCampaign ? "Please wait…" : "Send"}
+                  type="button"
+                  onClick={handleSend}
+                  disabled={isGenerating || isSendingCampaign}
+                />
+              </div>
+            </div>
+
+            {/* ── RIGHT: Flyer Preview ── */}
+            <div className="shrink-0 w-[430px] sticky top-6">
+
+              {/* Preview header */}
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-[22px] font-bold text-[#181818]">Card Preview</h2>
+                  <p className="text-[12px] text-[#888] mt-0.5">Updates as you type</p>
+                </div>
+
+                {/* Download button */}
+                <button
+                  type="button"
+                  onClick={handleDownloadFlyer}
+                  disabled={isGenerating}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white border-none transition-opacity ${
+                    isGenerating
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-gradient-to-br from-[#0B0E52] to-[#1a1f7a] cursor-pointer hover:opacity-90"
+                  }`}
+                >
+                  {isGenerating ? (
+                    <>
+                      <svg
+                        className="w-3.5 h-3.5 animate-spin"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          cx="12" cy="12" r="10"
+                          stroke="currentColor" strokeWidth="4"
+                          className="opacity-25"
+                        />
+                        <path
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                          className="opacity-75"
+                        />
+                      </svg>
+                      Generating…
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                        />
+                      </svg>
+                      Download
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Flyer stage */}
+              <div className=" rounded-[20px] px-6 py-8 flex justify-center items-center min-h-[590px] shadow-inner">
+                <FlyerCard
+                  formData={formData}
+                  selectedCard={selectedCard}
+                  flyerRef={flyerRef}
+                />
+              </div>
+
+              {/* Template label */}
+              <p className="text-center mt-2.5 text-[12px] text-[#888] italic">
+                Template: {selectedCard.name}
+              </p>
             </div>
           </div>
-          {/* Rich Text Editor */}
-          <div className="mt-8">
-            <RichTextEditor
-              value={formData.additionalInfo}
-              onChange={handleAdditionalInfoChange}
-            />
-          </div>
-          <div className="w-[320px] mt-4">
-            <Button
-              text="Send"
-              type="button"
-              onClick={() => setSendProceed(true)}
-            />
-          </div>
         </div>
+
+        {/* ── Modals ── */}
         {sendProceed && (
           <ProceedFlayerModal
             onClose={() => setSendProceed(false)}
@@ -338,19 +575,18 @@ const CreateFlyer = () => {
         )}
         {sendInvitationModal && (
           <SendInvitationModal
-            onClick={() => setSendInvitationModal(false)}
+            onClick={handleSubmitCampaign}
             onClose={() => setSendInvitationModal(false)}
             handleSuccess={() => {
               setSendInvitationModal(false);
               setIsSuccess(true);
             }}
+            isLoading={isSendingCampaign}
           />
         )}
         {isSuccess && (
           <AuthSuccessModal
-            onClick={() => {
-              navigate("/app/flyers");
-            }}
+            onClick={() => navigate("/app/flyers")}
             title="Invitation sent"
             description="your invitation sent to all guests"
           />

@@ -168,11 +168,14 @@ export const requestEventSchema = Yup.object({
       value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true,
     ),
   description: Yup.string()
+    .required("Description is required")
     .max(100, "Description cannot exceed 100 characters.")
     .test("no-html", "HTML or script content is not allowed.", (value) =>
       value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true,
     ),
-  startDate: Yup.date().required("Date is required").nullable(),
+  startDate: Yup.date()
+    .typeError("Date is required")
+    .required("Date is required"),
   startTime: Yup.string().required("Start time is required"),
   endTime: Yup.string().required("End time is required"),
   name: Yup.string()

@@ -4,6 +4,7 @@ import {
   flyerThree,
   flyerTwo,
   loungeTwo,
+  FlayerOne
 } from "../assets/export";
 
 export const loungeData = [
@@ -37,7 +38,7 @@ export const loungeData = [
 ];
 
 export const flyerData = [
-  { id: 1, name: "Summer Sale Flyer", image: flyer },
+  { id: 1, name: "Summer Sale Flyer", image: FlayerOne },
   { id: 2, name: "New Arrivals Flyer", image: flyerThree },
   { id: 3, name: "Holiday Deals Flyer", image: flyerTwo },
   { id: 4, name: "Back to School Flyer", image: flyer },
@@ -69,7 +70,7 @@ export const cardTemplates = [
   {
     id: 1,
     name: "Pool Party",
-    image: flyer,
+    image: FlayerOne,
   },
   {
     id: 2,
