@@ -20,6 +20,7 @@ import BookingDetails from "./components/bookings/BookingDetails";
 import ReservationDetails from "./components/bookings/ReservationDetails";
 import Flyers from "./pages/app/Flyers";
 import CreateFlyer from "./pages/app/CreateFlyer";
+import CampaignDetail from "./components/flayer/CampaignDetail";
 import Chat from "./pages/app/Chat";
 import TermsAndConditions from "./pages/app/TermsAndConditions";
 import PrivacyPolicy from "./pages/app/PrivacyPolicy";
@@ -127,6 +128,7 @@ function App() {
           <Route path="reservationDetails/:id" element={<ReservationDetails />} />
           <Route path="flyers" element={<Flyers />} />
           <Route path="create-flyer" element={<CreateFlyer />} />
+          <Route path="campaign-detail/:id" element={<CampaignDetail />} />
           <Route path="chat" element={<Chat />} />
           <Route path="user-profile" element={<UserProfile />} />
           <Route path="settings" element={<Settings />} />

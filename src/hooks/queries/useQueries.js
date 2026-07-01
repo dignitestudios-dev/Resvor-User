@@ -311,3 +311,45 @@ export const useWalletTransactions = (params = {}, options = {}) => {
   });
 };
 
+// ── Campaign History ─────────────────────────────────────────
+const fetchFlyerHistory = async ({ page = 1, limit = 10 } = {}) => {
+  const { data } = await axios.get("/campaigns/", {
+    params: { page, limit },
+  });
+  return data;
+};
+
+export const useFlyerHistory = (params = {}, options = {}) => {
+  return useQuery({
+    queryKey: ["flyer-history", params],
+    queryFn: () => fetchFlyerHistory(params),
+    retry: false,
+    ...options,
+  });
+};
+
+const fetchCampaignDetail = async (campaignId) => {
+  const { data } = await axios.get(`/campaigns/${campaignId}`);
+  return data;
+};
+
+export const useCampaignDetail = (campaignId) => {
+  return useQuery({
+    queryKey: ["campaign-detail", campaignId],
+    queryFn: () => fetchCampaignDetail(campaignId),
+    enabled: !!campaignId,
+    retry: false,
+  });
+};
+
+const retryCampaign = async (campaignId) => {
+  const { data } = await axios.post(`/campaigns/${campaignId}/retry`);
+  return data;
+};
+
+export const useRetryCampaign = () => {
+  return useMutation({
+    mutationFn: retryCampaign,
+  });
+};
+
