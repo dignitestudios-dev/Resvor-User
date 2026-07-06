@@ -6,7 +6,7 @@ import TextCountDown from "./TextCountDown";
 import AuthSuccessModal from "../auth/AuthSuccessModal";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { ErrorToast, SuccessToast } from "../global/Toaster";
-import { useVerifyEmail,useResendEmailOtp } from './../../hooks/mutations/OnboardingMutations';
+import { useVerifyEmail, useResendEmailOtp } from './../../hooks/mutations/OnboardingMutations';
 
 const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
   const inputs = useRef([]);
@@ -14,12 +14,11 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
   const resendOtpMutation = useResendEmailOtp();
   const [otp, setOtp] = useState(Array(5).fill(""));
   const isOtpComplete = otp.every((digit) => digit !== "");
-const isValidOtp = otp.join("").length === 5;
+  const isValidOtp = otp.join("").length === 5;
 
   const [isActive, setIsActive] = useState(true);
   const [seconds, setSeconds] = useState(30);
   const [requestSendModal, setRequestSendModal] = useState(false);
-
 
 
   const handleChange = (e, index) => {
@@ -80,8 +79,8 @@ const isValidOtp = otp.join("").length === 5;
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await verifyEmailMutation.mutateAsync({otp:otp.join("")});
-      
+      const response = await verifyEmailMutation.mutateAsync({ otp: otp.join("") });
+
       if (response?.success) {
         setRequestSendModal(true);
       } else {
@@ -94,43 +93,43 @@ const isValidOtp = otp.join("").length === 5;
   };
 
   const handleRestart = () => {
-  // Reset countdown
-  setSeconds(30);
-  setIsActive(true);
+    // Reset countdown
+    setSeconds(30);
+    setIsActive(true);
 
-  // Clear OTP fields
-  setOtp(Array(5).fill(""));
+    // Clear OTP fields
+    setOtp(Array(5).fill(""));
 
-  // Focus first input
-  setTimeout(() => {
-    inputs.current[0]?.focus();
-  }, 0);
-};
+    // Focus first input
+    setTimeout(() => {
+      inputs.current[0]?.focus();
+    }, 0);
+  };
 
   const handleResendOtp = async () => {
-  try {
-    const response = await resendOtpMutation.mutateAsync({
-      email,
-      role: "user",
-    });
+    try {
+      const response = await resendOtpMutation.mutateAsync({
+        email,
+        role: "user",
+      });
 
-    if (response?.success) {
-      SuccessToast("OTP resent successfully");
-      setOtp(Array(5).fill(""));
-      handleRestart();
-      inputs.current[0]?.focus();
-    } else {
-      ErrorToast(response?.message || "Failed to resend OTP");
-    }
-  } catch (err) {
-    console.error("Resend OTP error:", err);
+      if (response?.success) {
+        SuccessToast("OTP resent successfully");
+        setOtp(Array(5).fill(""));
+        handleRestart();
+        inputs.current[0]?.focus();
+      } else {
+        ErrorToast(response?.message || "Failed to resend OTP");
+      }
+    } catch (err) {
+      console.error("Resend OTP error:", err);
 
-    ErrorToast(
-      err?.response?.data?.message ||
+      ErrorToast(
+        err?.response?.data?.message ||
         "Something went wrong. Please try again."
-    );
-  }
-};
+      );
+    }
+  };
 
   return (
     <div className="grid lg:grid-cols-1 grid-cols-1 w-full text-white">
@@ -185,15 +184,14 @@ const isValidOtp = otp.join("").length === 5;
                   />
                 ) : (
                   <span
-  onClick={!resendOtpMutation.isPending ? handleResendOtp : undefined}
-  className={`font-[600] pl-1 ${
-    resendOtpMutation.isPending
-      ? "opacity-50 cursor-not-allowed"
-      : "cursor-pointer"
-  }`}
->
-  {resendOtpMutation.isPending ? "Resending..." : "Resend"}
-</span>
+                    onClick={!resendOtpMutation.isPending ? handleResendOtp : undefined}
+                    className={`font-[600] pl-1 ${resendOtpMutation.isPending
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer"
+                      }`}
+                  >
+                    {resendOtpMutation.isPending ? "Resending..." : "Resend"}
+                  </span>
                 )}
               </p>
             </div>
@@ -202,7 +200,7 @@ const isValidOtp = otp.join("").length === 5;
                 <AuthButton text="Verify" loading={verifyEmailMutation.isPending}
                   disabled={!isOtpComplete || !isValidOtp || verifyEmailMutation.isPending}
 
-                
+
                 />
               </div>
             </div>

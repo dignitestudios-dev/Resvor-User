@@ -21,8 +21,8 @@ export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0);
 
   const { data: authData, isLoading, refetch } = useAuthMe(); // 👈 fetch current step
-console.log("🚀 ~ SignUp ~ authData:", authData);
-const navigate = useNavigate();
+  console.log("🚀 ~ SignUp ~ authData:", authData);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -35,7 +35,7 @@ const navigate = useNavigate();
     if (authData?.success) {
       const queryParams = new URLSearchParams(window.location.search);
       const hasSuccessParam = queryParams.get("session_id") || queryParams.get("success") === "true";
-      const onboardingCompleteAcknowledged = 
+      const onboardingCompleteAcknowledged =
         localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
         authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed;
 
@@ -65,7 +65,7 @@ const navigate = useNavigate();
     { icon: IoMdPerson, title: "Your Details" },
     { icon: IoMail, title: "Verify Email" },
     { icon: FaIdCard, title: "Personal details" },
-        { icon: IoCall, title: "Verify Number" },
+    { icon: IoCall, title: "Verify Number" },
 
     { icon: HiCalendarDateRange, title: "Preferences" },
     { icon: FaClipboardList, title: "Subscription" },
@@ -102,17 +102,17 @@ const navigate = useNavigate();
             <CreateAccount setEmail={setEmail} handleNext={handleNext} />
           ) : currentStep === 1 ? (
             <VerifyEmail
-              email={email}
+              email={email || authData?.data?.user?.email}
               handleNext={handleNext}
               handlePrevious={handlePrevious}
             />
-         
+
           ) : currentStep === 2 ? (
             <PersonalDetails
               handleNext={handleNext}
               handlePrevious={handlePrevious}
             />
-             ) : currentStep === 3 ? (
+          ) : currentStep === 3 ? (
             <VerifyPhone
               email={email}
               handleNext={handleNext}
