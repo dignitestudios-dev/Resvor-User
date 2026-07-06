@@ -1,14 +1,17 @@
 export const musicPreferences = [
   "House",
   "Jazz",
+  "R&B",
   "Live Bands",
   "EDM",
   "Classical",
   "Lounge Instrumental",
+  "Afrobeats",
   "Reggaeton",
 ];
 
 export const loungePreferences = [
+  "Rooftop",
   "Speakeasy",
   "Themed Lounge",
   "Wine Bar",
@@ -24,11 +27,10 @@ export const experiencePreferences = [
   "Bottle Service",
   "Private Events",
   "Birthday Packages",
-  "Subscription",
   "Anniversary Celebrations",
   "Group Reservations",
   "Live DJ Nights",
   "Live Music",
-  "Calm AmbiencE",
+  "Calm Ambience",
   "Brunch Events",
 ];
