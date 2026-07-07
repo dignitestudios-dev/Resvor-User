@@ -27,9 +27,10 @@ export const logInSchema = Yup.object({
       }
     ),
   password: Yup.string()
-    .min(8, "Password must contain at least 8 alphanumeric characters.")
-    .max(64, "Password must not exceed 64 characters.")
-    .required("Please enter your password"),
+  .required("Please enter your password")
+  .min(8, "Password must contain at least 8 alphanumeric characters.")
+  .max(64, "Password must not exceed 64 characters.")
+  .matches(/^\S+$/, "Password cannot contain spaces."),
 });
 
 export const forgotPasswordSchema = Yup.object({
@@ -60,22 +61,42 @@ export const forgotPasswordSchema = Yup.object({
     ),
 });
 
+// export const updatePasswordSchema = Yup.object({
+//     password: Yup.string()
+//     .min(8, "Password must be at least 8 characters long.")
+//     .max(50, "Password must not exceed 50 characters.")
+//     .matches(/[A-Z]/, "Password must contain at least one uppercase letter.")
+//     .matches(/\d/, "Password must contain at least one number.")
+//     .matches(
+//       /[!@#$%^&*(),.?":{}|<>]/,
+//       "Password must contain at least one special character.",
+//     )
+//     .matches(/^[^\s]*$/, "Password should not contain spaces.")
+//     .trim()
+//     .required("Please enter your password"),
+
+//   confPassword: Yup.string()
+//     .required("Please confirm your password")
+//     .oneOf([Yup.ref("password")], "Password does not match"),
+// });
+
+
 export const updatePasswordSchema = Yup.object({
-    password: Yup.string()
+  password: Yup.string()
+    .required("Please enter your password")
     .min(8, "Password must be at least 8 characters long.")
     .max(50, "Password must not exceed 50 characters.")
+    .matches(/^\S+$/, "Password cannot contain spaces.")
     .matches(/[A-Z]/, "Password must contain at least one uppercase letter.")
     .matches(/\d/, "Password must contain at least one number.")
     .matches(
       /[!@#$%^&*(),.?":{}|<>]/,
-      "Password must contain at least one special character.",
-    )
-    .matches(/^[^\s]*$/, "Password should not contain spaces.")
-    .trim()
-    .required("Please enter your password"),
+      "Password must contain at least one special character."
+    ),
 
   confPassword: Yup.string()
     .required("Please confirm your password")
+    .matches(/^\S+$/, "Confirm password cannot contain spaces.")
     .oneOf([Yup.ref("password")], "Password does not match"),
 });
 

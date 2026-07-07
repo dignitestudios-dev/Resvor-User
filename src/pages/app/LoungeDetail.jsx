@@ -216,30 +216,31 @@ const LoungeDetail = () => {
             </div>
 
             <div className="px-6 mt-10">
-              <div className="flex justify-between items-center">
-                <p className="text-[24px] font-[600]">
-                  {lounge?.name || "-"}
-                </p>
+              <div className="flex items-center justify-between gap-4">
+  <p className="text-[24px] font-[600] flex-1 min-w-0 truncate">
+    {lounge?.name || "-"}
+  </p>
 
-                <div className="flex gap-2">
-                  <div
-                    className="cursor-pointer"
-                    onClick={() => navigate("/app/chat")}
-                  >
-                    <img src={msgIcon} alt="msg" className="w-10" />
-                  </div>
+  <div className="flex gap-2 shrink-0">
+    <div
+      className="cursor-pointer"
+      onClick={() => navigate("/app/chat")}
+    >
+      <img src={msgIcon} alt="msg" className="w-10 h-10" />
+    </div>
 
-                  <div
-                    onClick={handleFavoriteClick}
-                    className={`cursor-pointer ${isTogglingFavorite ? "opacity-70 pointer-events-none" : ""}`}
-                  >
-                    <img
-                      src={liked ? likedIcon : likeIcon}
-                      alt="like"
-                      className="w-10"
-                    />
-                  </div>
-                </div>
+    <div
+      onClick={handleFavoriteClick}
+      className={`cursor-pointer ${isTogglingFavorite ? "opacity-70 pointer-events-none" : ""}`}
+    >
+      <img
+        src={liked ? likedIcon : likeIcon}
+        alt="like"
+        className="w-10 h-10"
+      />
+    </div>
+  </div>
+
               </div>
 
               <p className="py-1">
