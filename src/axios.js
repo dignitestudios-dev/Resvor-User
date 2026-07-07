@@ -62,22 +62,7 @@ instance.interceptors.request.use(
 
     request.withCredentials = true;
 
-<<<<<<< HEAD
-  // Get device fingerprint and add to headers
-  const fingerprint = await getDeviceFingerprint();
-
-  const isFormData = request.data instanceof FormData;
-
-  // Set headers directly on request.headers to preserve AxiosHeaders methods
-  request.headers["devicemodel"] = fingerprint;
-  request.headers["deviceuniqueid"] = fingerprint;
-
-  if (!isFormData) {
-    request.headers["Content-Type"] = "application/json";
-  }
-=======
     const fingerprint = await getDeviceFingerprint();
->>>>>>> 53ff5204faad64c6555fb18e020b9713924f6224
 
     const isFormData = request.data instanceof FormData;
 
@@ -122,7 +107,6 @@ instance.interceptors.response.use(
       message: error.message,
     });
 
-<<<<<<< HEAD
     if (error.response?.data) {
       const data = error.response.data;
       if (Array.isArray(data.error)) {
@@ -139,14 +123,6 @@ instance.interceptors.response.use(
 
     if (error.code === "ECONNABORTED") {
       ErrorToast("Your internet connection is slow. Please try again.");
-=======
-    // ====================
-    // No Internet / Network Error
-    // ====================
-    if (!error.response && error.code === "ERR_NETWORK") {
-      showOfflineToast();
-      return Promise.reject(error);
->>>>>>> 53ff5204faad64c6555fb18e020b9713924f6224
     }
 
     // ====================
@@ -175,15 +151,10 @@ instance.interceptors.response.use(
         localStorage.removeItem("tokenType");
         localStorage.removeItem("resvor_auth_token_type");
 
-<<<<<<< HEAD
-        // Force redirect to login if not already on an auth page
-        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
-=======
         if (
           typeof window !== "undefined" &&
           !window.location.pathname.startsWith("/auth")
         ) {
->>>>>>> 53ff5204faad64c6555fb18e020b9713924f6224
           window.location.href = "/auth/login";
         }
       }
