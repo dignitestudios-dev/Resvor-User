@@ -137,7 +137,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
               id={"password"}
               name={"password"}
               showToggle={true}
-              maxLength={250}
+              maxLength={64}
               value={values.password}
               onChange={handleChange}
               onBlur={handleBlur}

@@ -77,11 +77,11 @@ const ForgotPassword = () => {
           </p>
         </div>
 
-        {apiError && (
+        {/* {apiError && (
   <p className="text-red-500 text-sm mt-2 text-center">
     {apiError}
   </p>
-)}
+)} */}
 
         <form onSubmit={handleSubmit}>
           <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[360px] md:w-[550px] w-[320px] mt-4">

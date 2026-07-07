@@ -135,7 +135,7 @@ const Login = () => {
                 id="password"
                 name="password"
                 showToggle={true}
-                maxLength={250}
+                maxLength={64}
                 value={values.password}
                 onChange={(e) => {
                   handleChange(e);

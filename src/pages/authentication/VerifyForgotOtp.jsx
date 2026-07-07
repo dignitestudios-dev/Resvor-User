@@ -12,6 +12,7 @@ import { useForgotPassword } from "../../hooks/mutations/OnboardingMutations"; /
 const VerifyForgotOtp = () => {
   const location = useLocation();
   const email = location?.state?.email;
+  
 
   const forgotPasswordMutation = useForgotPassword();
 
@@ -105,14 +106,17 @@ if (!isOtpComplete) {
           response?.message || "Something went wrong. Please try again."
         );
       }
-    } catch (err) {
-      console.error("OTP verification error:", err);
+    }  catch (err) {
+  const errorData = err?.response?.data;
 
-      ErrorToast(
-        err?.response?.data?.message ||
-          "Something went wrong. Please try again."
-      );
-    }
+  ErrorToast(
+    errorData?.error?.[0]?.message ||
+    errorData?.message ||
+    "Something went wrong"
+  );
+
+  console.log(err, "error forgot otp");
+}
   };
 
 
@@ -136,9 +140,16 @@ const handleResendOtp = async () => {
       ErrorToast(response?.message || "Failed to resend OTP");
     }
   } catch (err) {
-    ErrorToast(err?.response?.data?.message || "Something went wrong");
-    console.log(err,"error forgot otp");
-  }
+  const errorData = err?.response?.data;
+
+  ErrorToast(
+    errorData?.error?.[0]?.message ||
+    errorData?.message ||
+    "Something went wrong"
+  );
+
+  console.log(err, "error forgot otp");
+}
 };
 
   return (
