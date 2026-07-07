@@ -40,8 +40,12 @@ export default function AuthInput({
           required={required}
           className={`${
             textColor ? "text-black" : "text-white"
-          }  w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ring-[#CACACA]
-  focus:ring-2 focus:ring-gray-200 focus:outline-none pr-12 placeholder:font-light placeholder:text-[12px] placeholder:text-[#E6E6F0] ${
+          }  w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
+            error && touched ? "ring-red-500" : "ring-[#CACACA]"
+          }
+  focus:ring-2 ${
+    error && touched ? "focus:ring-red-500" : "focus:ring-gray-200"
+  } focus:outline-none pr-12 placeholder:font-light placeholder:text-[12px] placeholder:text-[#E6E6F0] ${
     className || ""
   }`}
         />

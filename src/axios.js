@@ -3,7 +3,9 @@ import { ErrorToast } from "./components/global/Toaster"; // Import your toaster
 import Cookies from "js-cookie";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
-export const baseUrl = "https://api-staging.resvor.com";
+// export const baseUrl = "https://api-staging.resvor.com"
+export const baseUrl = "https://api-dev.resvor.com";
+
 
 async function getDeviceFingerprint() {
   const fp = await FingerprintJS.load();
@@ -35,13 +37,13 @@ instance.interceptors.request.use(async (request) => {
 
   // Get device fingerprint and add to headers
   const fingerprint = await getDeviceFingerprint();
-  
+
   const isFormData = request.data instanceof FormData;
-  
+
   // Set headers directly on request.headers to preserve AxiosHeaders methods
   request.headers["devicemodel"] = fingerprint;
   request.headers["deviceuniqueid"] = fingerprint;
-  
+
   if (!isFormData) {
     request.headers["Content-Type"] = "application/json";
   }
@@ -75,6 +77,20 @@ instance.interceptors.response.use(
       message: error.message,
     });
 
+    if (error.response?.data) {
+      const data = error.response.data;
+      if (Array.isArray(data.error)) {
+        const messages = data.error.map((err) => err.message).filter(Boolean);
+        if (messages.length > 0) {
+          data.message = messages.join(", ");
+        }
+      } else if (data.error && typeof data.error === "object" && data.error.message) {
+        data.message = data.error.message;
+      } else if (data.error && typeof data.error === "string") {
+        data.message = data.error;
+      }
+    }
+
     if (error.code === "ECONNABORTED") {
       ErrorToast("Your internet connection is slow. Please try again.");
     }
@@ -89,7 +105,7 @@ instance.interceptors.response.use(
         localStorage.removeItem("token");
         localStorage.removeItem("tokenType");
         localStorage.removeItem("resvor_auth_token_type");
-        
+
         // Force redirect to login if not already on an auth page
         if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
           window.location.href = "/auth/login";

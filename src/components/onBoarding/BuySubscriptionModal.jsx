@@ -15,9 +15,8 @@ const BuySubscriptionModal = ({ onClick, setCompleted, isVip, plan }) => {
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
       <div className="bg-white rounded-[12px] w-[440px]">
         <div
-          className={`flex justify-between items-center  px-8 pt-4 ${
-            !success ? "border-b-2 border-b-gray-300" : ""
-          }`}
+          className={`flex justify-between items-center  px-8 pt-4 ${!success ? "border-b-2 border-b-gray-300" : ""
+            }`}
         >
           {!success ? (
             <p className=" xxl:text-[48px] text-[28px] text-[#181818] font-[600] capitalize">
@@ -46,7 +45,7 @@ const BuySubscriptionModal = ({ onClick, setCompleted, isVip, plan }) => {
                     <p className="text-[16px] text-[#18181880] ">
                       {plan?.label || "Gold Plan"}
                     </p>
-                    <p className="text-[16px] text-[#4B4B4B] ">${plan?.displayPrice}</p> 
+                    <p className="text-[16px] text-[#4B4B4B] ">${plan?.displayPrice}</p>
                   </div>
                 </div>
               </div>

@@ -9,6 +9,7 @@ const DateInput = ({
   id,
   name,
   maxLength,
+  hasError,
 }) => {
   // helper to forward a synthetic event so parent handlers expecting e.target.value still work
   const forwardChange = useCallback(
@@ -129,8 +130,11 @@ const DateInput = ({
       placeholder={placeholder}
       maxLength={maxLength}
       required={true}
-      className={`w-full px-4 py-2.5 text-sm rounded-[14px] bg-transparent ring-1 ring-[#CACACA] 
-            focus:ring-2 focus:ring-gray-200 focus:outline-none pr-12 placeholder:font-light placeholder:text-[12px] placeholder:text-[#CACACA]`}
+      className={`w-full px-4 py-2.5 text-sm rounded-[14px] bg-transparent ring-1 ${
+        hasError ? "ring-red-500" : "ring-[#CACACA]"
+      } focus:ring-2 ${
+        hasError ? "focus:ring-red-500" : "focus:ring-gray-200"
+      } focus:outline-none pr-12 placeholder:font-light placeholder:text-[12px] placeholder:text-[#CACACA]`}
     />
   );
 };

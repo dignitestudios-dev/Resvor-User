@@ -50,7 +50,7 @@ const Subscription = ({ handlePrevious }) => {
         planId: plan._id,
         payload: {}
       });
-      const redirectUrl = res?.data?.checkoutUrl ;
+      const redirectUrl = res?.data?.checkoutUrl;
       if (redirectUrl) {
         queryClient.invalidateQueries({ queryKey: ["auth-me"] });
         window.location.href = redirectUrl;
@@ -135,9 +135,8 @@ const Subscription = ({ handlePrevious }) => {
                   <div>
                     <div className="text-sm text-gray-300 mb-1">Plan {index + 1}</div>
                     <h2 className="text-3xl sm:text-4xl font-bold mb-3 capitalize">{plan.label}</h2>
-                    <div className={`text-3xl sm:text-4xl font-bold mb-4 ${
-                      plan.key === "gold" ? "text-orange-400" : plan.key === "bronze" ? "text-orange-500" : ""
-                    }`}>
+                    <div className={`text-3xl sm:text-4xl font-bold mb-4 ${plan.key === "gold" ? "text-orange-400" : plan.key === "bronze" ? "text-orange-500" : ""
+                      }`}>
                       ${plan.displayPrice}
                     </div>
 
@@ -207,19 +206,19 @@ const Subscription = ({ handlePrevious }) => {
         </>
       )}
       {
-        !completed&&(
+        !completed && (
           <div className="w-full mt-6">
-         <button 
-           onClick={() => {
-             localStorage.setItem("onboarding_complete_acknowledged", "true");
-             queryClient.invalidateQueries({ queryKey: ["auth-me"] });
-             navigate("/app/home");
-           }}
-           className="w-full bg-[#EFEFEF1A] border border-[#CACACA] text-white py-2.5 rounded-xl text-[13px] font-semibold mt-auto"
-           >
-           Skip                  
-         </button>
-      </div>
+            <button
+              onClick={() => {
+                localStorage.setItem("onboarding_complete_acknowledged", "true");
+                queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+                navigate("/app/home");
+              }}
+              className="w-full bg-[#EFEFEF1A] border border-[#CACACA] text-white py-2.5 rounded-xl text-[13px] font-semibold mt-auto"
+            >
+              Skip
+            </button>
+          </div>
         )
       }
     </div>

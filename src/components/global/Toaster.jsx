@@ -5,9 +5,9 @@ export const ToasterContainer = () => {
   return (
     <Toaster
       position="bottom-right"
-                  toastOptions={{
-                    duration: 3000,
-                  }}
+      toastOptions={{
+        duration: 3000,
+      }}
     />
   );
 };
@@ -63,9 +63,8 @@ export const NotificationToast = ({ title, message, route }) => {
     (t) => (
       <NavLink
         to={route}
-        className={`${
-          t.visible ? "animate-enter" : "animate-leave"
-        } max-w-md w-full bg-white shadow-lg rounded-lg flex ring-1 ring-black ring-opacity-5 p-4`}
+        className={`${t.visible ? "animate-enter" : "animate-leave"
+          } max-w-md w-full bg-white shadow-lg rounded-lg flex ring-1 ring-black ring-opacity-5 p-4`}
       >
         <div className="flex-shrink-0 pt-0.5">
           <img

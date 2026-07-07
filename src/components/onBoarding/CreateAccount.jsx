@@ -38,7 +38,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
           };
 
           const response = await signupMutation.mutateAsync(data);
-          
+
           if (response?.success) {
             const token = response?.data?.token || response?.token || response?.data?.accessToken || response?.accessToken || (response?.data?.data && (response.data.data.token || response.data.data.accessToken));
             const tokenType = response?.data?.tokenType || response?.tokenType || (response?.data?.data && response.data.data.tokenType) || "session_token";
@@ -200,9 +200,9 @@ const CreateAccount = ({ handleNext, setEmail }) => {
         </div>
         <div className="mt-1 ">
           <div className="xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-1 mb-4">
-            <AuthButton 
-              text={"Sign Up"} 
-              disabled={!isValid} 
+            <AuthButton
+              text={"Sign Up"}
+              disabled={!isValid}
               loading={signupMutation.isPending}
             />
           </div>

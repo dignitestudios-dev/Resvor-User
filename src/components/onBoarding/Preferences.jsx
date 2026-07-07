@@ -81,8 +81,8 @@ const Preferences = ({ handleNext, handlePrevious }) => {
 
   return (
     <div className="flex flex-col justify-center items-center h-auto">
-              <p className="font-bold text-white justify-center text-2xl">Tell Us What You’re Into</p>
-              <p className="text-white text-center">We’ll personalize your lounge suggestions, event invites, and offers based on your vibe.</p>
+      <p className="font-bold text-white justify-center text-2xl">Tell Us What You’re Into</p>
+      <p className="text-white text-center">We’ll personalize your lounge suggestions, event invites, and offers based on your vibe.</p>
 
       <form onSubmit={handleSubmit}>
 
@@ -96,19 +96,18 @@ const Preferences = ({ handleNext, handlePrevious }) => {
                 type="button"
                 key={index}
                 onClick={() => toggleItem(music, activeMusicGenres, setActiveMusicGenres, "musicGenres")} // 👈
-                className={`h-[28px] px-2 text-[12px] rounded-full font-medium transition-all duration-200 ${
-                  activeMusicGenres.includes(music) // 👈
-                    ? "bg-white text-[#181818]"
-                    : "bg-[#99999926] text-white hover:bg-[#8a898926]"
-                }`}
+                className={`h-[28px] px-2 text-[12px] rounded-full font-medium transition-all duration-200 ${activeMusicGenres.includes(music) // 👈
+                  ? "bg-white text-[#181818]"
+                  : "bg-[#99999926] text-white hover:bg-[#8a898926]"
+                  }`}
               >
                 {music}
               </button>
             ))}
           </div>
           {touched.musicGenres && errors.musicGenres && (
-  <p className="text-red-600 text-xs mt-1">{errors.musicGenres}</p>
-)}
+            <p className="text-red-600 text-xs mt-1">{errors.musicGenres}</p>
+          )}
         </div>
 
         {/* Lounge Types */}
@@ -121,19 +120,18 @@ const Preferences = ({ handleNext, handlePrevious }) => {
                 type="button"
                 key={index}
                 onClick={() => toggleItem(lounge, activeLoungeTypes, setActiveLoungeTypes, "loungeTypes")} // 👈
-                className={`h-[28px] px-2 text-[12px] rounded-full font-medium transition-all duration-200 ${
-                  activeLoungeTypes.includes(lounge) // 👈
-                    ? "bg-white text-[#181818]"
-                    : "bg-[#99999926] text-white hover:bg-[#8a898926]"
-                }`}
+                className={`h-[28px] px-2 text-[12px] rounded-full font-medium transition-all duration-200 ${activeLoungeTypes.includes(lounge) // 👈
+                  ? "bg-white text-[#181818]"
+                  : "bg-[#99999926] text-white hover:bg-[#8a898926]"
+                  }`}
               >
                 {lounge}
               </button>
             ))}
           </div>
           {touched.loungeTypes && errors.loungeTypes && (
-  <p className="text-red-600 text-xs mt-1">{errors.loungeTypes}</p>
-)}
+            <p className="text-red-600 text-xs mt-1">{errors.loungeTypes}</p>
+          )}
 
         </div>
 
@@ -147,19 +145,18 @@ const Preferences = ({ handleNext, handlePrevious }) => {
                 type="button"
                 key={index}
                 onClick={() => toggleItem(exp, activeExperiences, setActiveExperiences, "preferredExperiences")} // 👈
-                className={`h-[28px] px-2 rounded-full font-medium transition-all duration-200 ${
-                  activeExperiences.includes(exp) // 👈
-                    ? "bg-white text-[#181818]"
-                    : "bg-[#99999926] text-white hover:bg-[#8a898926]"
-                }`}
+                className={`h-[28px] px-2 rounded-full font-medium transition-all duration-200 ${activeExperiences.includes(exp) // 👈
+                  ? "bg-white text-[#181818]"
+                  : "bg-[#99999926] text-white hover:bg-[#8a898926]"
+                  }`}
               >
                 {exp}
               </button>
             ))}
           </div>
           {touched.preferredExperiences && errors.preferredExperiences && (
-  <p className="text-red-600 text-xs mt-1">{errors.preferredExperiences}</p>
-)}
+            <p className="text-red-600 text-xs mt-1">{errors.preferredExperiences}</p>
+          )}
         </div>
 
         {touched.preferences && errors.preferences && (
