@@ -223,8 +223,8 @@ const BookingServiceModal = ({
           />
         )}
         {floorPlanModal && (
-          <FloorPlanModal 
-            onClose={() => setFloorPlanModal(false)} 
+          <FloorPlanModal
+            onClose={() => setFloorPlanModal(false)}
             floorPlan={floorPlan}
             availableTables={availableTables}
           />
