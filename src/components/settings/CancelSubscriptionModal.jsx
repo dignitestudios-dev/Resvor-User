@@ -36,7 +36,7 @@ const CancelSubscriptionModal = ({
           <h2 className="text-[#181818] font-bold text-[20px]">
             Cancel Subscription
           </h2>
-          <p className="text-[#565656] text-[16px]">
+          <p className="text-[#565656] text-[13px]">
             Are you sure you want to cancel this subscription plan?
           </p>
 

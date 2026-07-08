@@ -75,6 +75,10 @@ export const guestbookSchema = Yup.object({
     .required("Email address is required.")
     .email("Please enter a valid email address.")
     .max(100, "Email address cannot exceed 100 characters.")
+    .matches(
+    /^[A-Za-z0-9][A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+    "Please enter a valid email address."
+  )
     .test(
       "no-leading-space",
       "Email cannot start with a space.",

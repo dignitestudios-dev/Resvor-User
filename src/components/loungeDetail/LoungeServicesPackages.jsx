@@ -163,7 +163,7 @@ const LoungeServicesPackages = ({ lounge }) => {
             <div className="my-2">
               <p className="text-indigo-950 text-[18px] font-[700]">
                 {/* Price: {currency} {service?.price} */}
-                                Price: $ {service?.price}
+                                Price: ${service?.price}
 
               </p>
             </div>

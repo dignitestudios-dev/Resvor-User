@@ -136,13 +136,14 @@ export default function BookingDetails() {
       : "") ||
     "-";
 
-  const contactEmail =
-    booking?.contactEmail ||
-    booking?.email ||
-    (booking?.userId && typeof booking.userId === "object"
-      ? booking.userId.email
-      : "") ||
-    "-";
+ const contactEmail =
+  booking?.contactEmail ||
+  booking?.guestEmail ||
+  booking?.email ||
+  (booking?.userId && typeof booking.userId === "object"
+    ? booking.userId.email
+    : "") ||
+  "-";
 
   const contactPhone =
     booking?.contactPhone ||
@@ -193,6 +194,10 @@ export default function BookingDetails() {
     booking?.package ||
     booking?.packageId ||
     null;
+
+    const servicePackages = Array.isArray(booking?.servicePackageIds)
+  ? booking.servicePackageIds
+  : [];
 
   // ── Issue #11 — payment amounts ──────────────────────────────────────────
   const isAwaitingPayment =
@@ -439,6 +444,38 @@ export default function BookingDetails() {
                 </div>
               )}
 
+          {servicePackages.length > 0 && (
+  <div className="space-y-3 pb-5 border-b border-[#0000001A]">
+    <p className="font-semibold text-[#000000] text-[15px]">
+      Service Packages
+    </p>
+
+    <div className="flex flex-wrap gap-4">
+      {servicePackages.map((pkg) => (
+        <div
+          key={pkg._id}
+          className="flex-1 min-w-[260px] max-w-[340px] rounded-lg "
+        >
+          <div className="flex items-center gap-2 flex-wrap">
+            <h4 className="font-semibold text-[#181818] text-[15px]">
+              {pkg.name}
+            </h4>
+
+            <span className="text-[#010067] font-semibold text-[14px]">
+              ({formatCurrency(pkg.price)})
+            </span>
+          </div>
+
+          {pkg.description && (
+            <p className="mt-1 text-[13px] leading-5 text-[#505050] break-words">
+              {pkg.description}
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
               {/* Issue #11 & #12 — financial summary */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
                 {isAwaitingPayment ? (

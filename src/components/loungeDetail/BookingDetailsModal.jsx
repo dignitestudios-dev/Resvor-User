@@ -152,14 +152,26 @@ const BookingDetailsModal = ({
               <span className="text-[14px] font-medium text-[#727272] shrink-0">Children (If any)</span>
               <span className="text-[14px] text-[#000000] font-semibold text-right break-all max-w-[65%]">{children}</span>
             </div>
-            <div className="flex justify-between gap-4 items-start">
-              <span className="text-[14px] font-medium text-[#727272] shrink-0">Table</span>
-              <span className="text-[14px] text-[#000000] font-semibold text-right break-all max-w-[65%]">
-                {bookingServiceData?.selectedSeating
-                  ?.map((seat) => seat.title || seat.name)
-                  .join(", ") || "-"}
-              </span>
-            </div>
+            <div className="space-y-2">
+  <span className="text-[14px] font-medium text-[#727272]">
+    Tables
+  </span>
+
+  {bookingServiceData?.selectedSeating?.length ? (
+    <div className="flex flex-wrap gap-2">
+      {bookingServiceData.selectedSeating.map((seat, index) => (
+        <span
+          key={seat._id || index}
+          className="px-2.5 py-1 rounded-full bg-[#F3F4F6] text-[#181818] text-[12px] font-medium"
+        >
+          {seat.title || seat.name}
+        </span>
+      ))}
+    </div>
+  ) : (
+    <p className="text-[14px] font-semibold text-[#000000]">-</p>
+  )}
+</div>
           </div>
 
           <div className="mb-4">
