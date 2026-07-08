@@ -89,6 +89,14 @@ export const personalDetailSchema = Yup.object({
           : true,
     ),
 
+  number: Yup.string()
+    .required("Phone number is required.")
+    .test("len", "Phone number must be exactly 10 digits.", (val) => {
+      if (!val) return false;
+      const digits = val.replace(/\D/g, "");
+      return digits.length === 10;
+    }),
+
   // location: Yup.string()
   //   .required("Location is required")
   //   .min(3, "Location must be at least 3 characters long")

@@ -12,8 +12,8 @@ import { setStoredTokenType } from "../../lib/authSession";
 
 const VerifyPhone = ({ handleNext, handlePrevious }) => {
   const inputs = useRef([]);
-    const verifyPhoneMutation = useVerifyPhone();
-  
+  const verifyPhoneMutation = useVerifyPhone();
+
   const [otp, setOtp] = useState(Array(6).fill(""));
 
   const [isActive, setIsActive] = useState(true);
@@ -75,33 +75,33 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
     }
   };
 
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      try {
-        const response = await verifyPhoneMutation.mutateAsync({otp:otp.join("")});
-        
-        if (response?.success) {
-          // Persist any token returned by this step
-          const token = response?.data?.token || response?.data?.accessToken;
-          const tokenType = response?.data?.tokenType;
-          if (token) {
-            Cookies.set("token", token, { expires: 7 });
-            localStorage.setItem("token", token);
-          }
-          if (tokenType) {
-            Cookies.set("tokenType", tokenType, { expires: 7 });
-            localStorage.setItem("tokenType", tokenType);
-            setStoredTokenType(tokenType);
-          }
-          setRequestSendModal(true);
-        } else {
-          ErrorToast(response?.message || "Something went wrong. Please try again.");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await verifyPhoneMutation.mutateAsync({ otp: otp.join("") });
+
+      if (response?.success) {
+        // Persist any token returned by this step
+        const token = response?.data?.token || response?.data?.accessToken;
+        const tokenType = response?.data?.tokenType;
+        if (token) {
+          Cookies.set("token", token, { expires: 7 });
+          localStorage.setItem("token", token);
         }
-      } catch (err) {
-        console.error("Phone verification error:", err);
-        ErrorToast(err?.response?.data?.message || "Something went wrong. Please try again.");
+        if (tokenType) {
+          Cookies.set("tokenType", tokenType, { expires: 7 });
+          localStorage.setItem("tokenType", tokenType);
+          setStoredTokenType(tokenType);
+        }
+        setRequestSendModal(true);
+      } else {
+        ErrorToast(response?.message || "Something went wrong. Please try again.");
       }
-    };
+    } catch (err) {
+      console.error("Phone verification error:", err);
+      ErrorToast(err?.response?.data?.message || "Something went wrong. Please try again.");
+    }
+  };
 
   const handleResendOtp = async () => {
     try {
@@ -130,7 +130,7 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
         </div>
         <div className="mt-4 py-4 space-y-3 xxl:w-[400px] xxl:ml-12 text-center">
           <p className=" xxl:text-[48px] text-[32px] font-[600] capitalize">
-             verification
+            verification
           </p>
           <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] w-[384px] ">
             Please enter OTP sent to your phone.
@@ -182,7 +182,7 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
             </div>
             <div className="w-full flex justify-center pl-4 mt-3 space-y-4 ">
               <div className="w-[360px] ">
-                                <AuthButton text="Verify" loading={verifyPhoneMutation.isPending} />
+                <AuthButton text="Verify" loading={verifyPhoneMutation.isPending} />
 
               </div>
             </div>

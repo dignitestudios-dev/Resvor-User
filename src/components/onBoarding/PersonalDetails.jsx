@@ -20,11 +20,11 @@ import { setStoredTokenType } from "../../lib/authSession";
 const PersonalDetails = ({ handleNext, handlePrevious }) => {
   // const [dateModalData, setDateModalData] = useState("");
   const [fieldError, setFieldError] = useState("");
-  
+
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [imageError, setImageError] = useState("");
   const closeModal = () => setModalIsOpen(false);
-  
+
   const personalDetailsMutation = usePersonalDetails();
 
   const {
@@ -51,29 +51,29 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
       try {
         const formData = new FormData();
 
-// Basic fields
-formData.append("fullName", values.fullName);
-formData.append("phoneNumber", phoneToE164(values.number) || "");
+        // Basic fields
+        formData.append("fullName", values.fullName);
+        formData.append("phoneNumber", phoneToE164(values.number) || "");
 
-// specialDates — DOB always at index[0], then loop specialDates
-if (values.specialDatesData?.dobDate) {
-  const dob = values.specialDatesData.dobDate;
-  formData.append(`specialDates[0][occasion]`, "DOB");
-  formData.append(`specialDates[0][date]`, `${dob.month}-${dob.day}-${dob.year}`);
-}
+        // specialDates — DOB always at index[0], then loop specialDates
+        if (values.specialDatesData?.dobDate) {
+          const dob = values.specialDatesData.dobDate;
+          formData.append(`specialDates[0][occasion]`, "DOB");
+          formData.append(`specialDates[0][date]`, `${dob.month}-${dob.day}-${dob.year}`);
+        }
 
-if (Array.isArray(values.specialDatesData?.specialDates) && values.specialDatesData.specialDates.length > 0) {
-  values.specialDatesData.specialDates.forEach((date, index) => {
-    const i = index + 1; // 👈 offset by 1 since DOB occupies index[0]
-    formData.append(`specialDates[${i}][occasion]`, date.title);
-    formData.append(`specialDates[${i}][date]`, `${date.month}-${date.day}-${date.year}`);
-  });
-}
+        if (Array.isArray(values.specialDatesData?.specialDates) && values.specialDatesData.specialDates.length > 0) {
+          values.specialDatesData.specialDates.forEach((date, index) => {
+            const i = index + 1; // 👈 offset by 1 since DOB occupies index[0]
+            formData.append(`specialDates[${i}][occasion]`, date.title);
+            formData.append(`specialDates[${i}][date]`, `${date.month}-${date.day}-${date.year}`);
+          });
+        }
 
-// Profile picture — values.profile is a File object set via setFieldValue("profile", file)
-if (values.profile instanceof File) { // 👈 instanceof File ensures it's an actual file not a string/null
-  formData.append("profilePicture", values.profile);
-}
+        // Profile picture — values.profile is a File object set via setFieldValue("profile", file)
+        if (values.profile instanceof File) { // 👈 instanceof File ensures it's an actual file not a string/null
+          formData.append("profilePicture", values.profile);
+        }
 
 
 
@@ -207,7 +207,7 @@ if (values.profile instanceof File) { // 👈 instanceof File ensures it's an ac
               {touched.profile && errors.profile && !imageError && (
                 <p className="text-red-600 text-xs mt-1">{errors.profile}</p>
               )}
-            </div> 
+            </div>
           </div>
           <div className=" w-full">
             <AuthInput
@@ -226,68 +226,69 @@ if (values.profile instanceof File) { // 👈 instanceof File ensures it's an ac
             />
           </div>
           <PhoneInput
-              label={"Phone Number"}
-              value={phoneFormatter(values.number)}
-              id={"number"}
-              name={"number"}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.number}
-              touched={touched.number}
-              autoComplete="off"
-            />
-          <div>``
+            label={"Phone Number"}
+            value={phoneFormatter(values.number)}
+            id={"number"}
+            name={"number"}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={errors.number}
+            touched={touched.number}
+            autoComplete="off"
+          />
+          <div>
             <label className="block text-[14px] font-[500] text-white mb-2">
-  Add Birthday and Special Dates
-</label>
+              Add Birthday and Special Dates
+            </label>
 
-<TagsInputField setModalIsOpen={setModalIsOpen} />
+            <TagsInputField setModalIsOpen={setModalIsOpen} />
 
-{values?.specialDatesData && (
-  <div className="border border-gray-400 rounded-[13px] overflow-hidden mt-2 divide-y divide-gray-700">
+            {values?.specialDatesData && (
+              <div className="border border-gray-400 rounded-[13px] overflow-hidden mt-2 divide-y divide-gray-700">
 
-    {/* DOB Row */}
-    {values.specialDatesData?.dobDate && (
-      <div className="flex items-center justify-between px-4 py-2.5">
-        <div className="text-[#FFFFFF] text-[14px] font-thin">
-          <span className=" mr-2"> Birthday</span>
-         {values.specialDatesData.dobDate.day}-
-{values.specialDatesData.dobDate.month}-
-{values.specialDatesData.dobDate.year}
-        </div>
-        {/* DOB is required so no delete button, or add one if needed */}
-      </div>
-    )}
+                {/* DOB Row */}
+                {values.specialDatesData?.dobDate && (
+                  <div className="flex items-center justify-between px-4 py-2.5">
+                    <div className="text-[#FFFFFF] text-[14px] font-thin">
+                      <span className=" mr-2"> Birthday</span>
+                      {values.specialDatesData.dobDate.day}-
+                      {values.specialDatesData.dobDate.month}
+                      {values.specialDatesData.dobDate.year ? `-${values.specialDatesData.dobDate.year}` : ""}
+                    </div>
+                    {/* DOB is required so no delete button, or add one if needed */}
+                  </div>
+                )}
 
-    {/* Special Dates Rows */}
-    {Array.isArray(values.specialDatesData?.specialDates) &&
-      values.specialDatesData.specialDates.map((date, index) => (
-        <div key={index} className="flex items-center justify-between px-4 py-2.5">
-          <div className="text-[#FFFFFF] text-[14px] font-thin">
-            <span className=" mr-2">{date.title}</span>
-            {date.day} - {date.month} -{date.year}
-          </div>
+                {/* Special Dates Rows */}
+                {Array.isArray(values.specialDatesData?.specialDates) &&
+                  values.specialDatesData.specialDates.map((date, index) => (
+                    <div key={index} className="flex items-center justify-between px-4 py-2.5">
+                      <div className="text-[#FFFFFF] text-[14px] font-thin">
+                        <span className=" mr-2">{date.title}</span>
+                        {date.day} - {date.month}
+                        {date.year ? ` - ${date.year}` : ""}
+                      </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              const updated = values.specialDatesData.specialDates.filter((_, i) => i !== index);
-              setFieldValue("specialDatesData", {
-                ...values.specialDatesData,
-                specialDates: updated,
-              });
-            }}
-          >
-            <img src={binIcon} alt="bin" className="w-5" />
-          </button>
-        </div>
-      ))}
-  </div>
-)}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = values.specialDatesData.specialDates.filter((_, i) => i !== index);
+                          setFieldValue("specialDatesData", {
+                            ...values.specialDatesData,
+                            specialDates: updated,
+                          });
+                        }}
+                      >
+                        <img src={binIcon} alt="bin" className="w-5" />
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
 
-{errors.specialDatesData && (
-  <p className="text-red-600 text-[12px] mt-1">{errors.specialDatesData}</p>
-)}
+            {errors.specialDatesData && (
+              <p className="text-red-600 text-[12px] mt-1">{errors.specialDatesData}</p>
+            )}
             {/* {dateModalData && (
               <div
                 className={`flex items-end border border-gray-400 text-sm rounded-[13px] overflow-hidden p-[2px] mt-1.5`}
@@ -335,8 +336,8 @@ if (values.profile instanceof File) { // 👈 instanceof File ensures it's an ac
         </div>
         <div className="mt-6 ">
           <div className="xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-1 mb-4">
-            <AuthButton 
-              text={"Next"} 
+            <AuthButton
+              text={"Next"}
               loading={personalDetailsMutation.isPending}
             />
           </div>
@@ -344,12 +345,12 @@ if (values.profile instanceof File) { // 👈 instanceof File ensures it's an ac
       </form>
       {modalIsOpen && (
         <TagsModal
-  isOpen={modalIsOpen}
-  onClose={closeModal}
-  setFieldValue={setFieldValue}
-  setFieldError={setFieldError}
-  initialData={values.specialDatesData}
-/>
+          isOpen={modalIsOpen}
+          onClose={closeModal}
+          setFieldValue={setFieldValue}
+          setFieldError={setFieldError}
+          initialData={values.specialDatesData}
+        />
       )}
     </div>
   );

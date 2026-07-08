@@ -186,8 +186,8 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
                   <span
                     onClick={!resendOtpMutation.isPending ? handleResendOtp : undefined}
                     className={`font-[600] pl-1 ${resendOtpMutation.isPending
-                        ? "opacity-50 cursor-not-allowed"
-                        : "cursor-pointer"
+                      ? "opacity-50 cursor-not-allowed"
+                      : "cursor-pointer"
                       }`}
                   >
                     {resendOtpMutation.isPending ? "Resending..." : "Resend"}
