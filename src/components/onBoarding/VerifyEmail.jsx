@@ -4,7 +4,7 @@ import AuthButton from "../auth/AuthButton";
 import { forgotLogo } from "../../assets/export";
 import TextCountDown from "./TextCountDown";
 import AuthSuccessModal from "../auth/AuthSuccessModal";
-import { FaArrowLeftLong } from "react-icons/fa6";
+import { CiLogout } from "react-icons/ci";
 import { ErrorToast, SuccessToast } from "../global/Toaster";
 import { useVerifyEmail, useResendEmailOtp } from './../../hooks/mutations/OnboardingMutations';
 
@@ -133,11 +133,20 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
 
   return (
     <div className="grid lg:grid-cols-1 grid-cols-1 w-full text-white">
-      {/* <div className="flex justify-start items-center">
-        <button type="button" onClick={() => handlePrevious()}>
-          <FaArrowLeftLong color="white" size={24} />
+      <div className=" absolute top-4 right-4">
+        <button
+          className="group relative bg-white rounded-md p-2 cursor-pointer"
+          type="button"
+          onClick={() => handlePrevious()}
+        >
+          {/* Tooltip text */}
+          <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 scale-0 rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 transition-all group-hover:scale-100 group-hover:opacity-100">
+            Logout
+          </span>
+
+          <CiLogout color="black" size={24} />
         </button>
-      </div> */}
+      </div>
       <div className="flex flex-col justify-center items-center h-auto ">
         <div>
           <img src={forgotLogo} alt="logo" className="w-[220px]" />
@@ -224,7 +233,7 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
           isOpen={requestSendModal}
           onClick={() => {
             setRequestSendModal(false);
-            handleNext();
+            handleNext("complete_profile");
           }}
           title="Email verified"
           description="Your email has been verified successfully."

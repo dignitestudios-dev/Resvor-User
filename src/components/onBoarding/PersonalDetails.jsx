@@ -6,7 +6,7 @@ import AuthInput from "../auth/AuthInput";
 import { binIcon, mapImg, uploadIcon } from "../../assets/export";
 import { useState } from "react";
 import TagsInputField from "./TagsInputField";
-import { FaArrowLeftLong } from "react-icons/fa6";
+import { CiLogout } from "react-icons/ci";
 import TagsModal from "./TagsModal";
 import { personalDetailValues } from "../../init/onBoarding/onBoardValues";
 import { personalDetailSchema } from "../../schema/onBoarding/onBoardSchema";
@@ -20,6 +20,7 @@ import { setStoredTokenType } from "../../lib/authSession";
 const PersonalDetails = ({ handleNext, handlePrevious }) => {
   // const [dateModalData, setDateModalData] = useState("");
   const [fieldError, setFieldError] = useState("");
+  console.log("🚀 ~ PersonalDetails ~ fieldError:", fieldError)
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [imageError, setImageError] = useState("");
@@ -92,7 +93,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
             localStorage.setItem("tokenType", tokenType);
             setStoredTokenType(tokenType);
           }
-          handleNext();
+          handleNext("verify_mobile");
         } else {
           ErrorToast(response?.message || "Something went wrong. Please try again.");
         }
@@ -102,8 +103,6 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
       }
     },
   });
-
-
 
   const validateImageResolution = (file) => {
     return new Promise((resolve) => {
@@ -165,11 +164,20 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
   };
   return (
     <div className="flex flex-col justify-center items-center h-auto ">
-      {/* <div className="flex justify-start items-center absolute top-12 left-0">
-        <button type="button" onClick={() => handlePrevious()}>
-          <FaArrowLeftLong color="white" size={24} />
+      <div className=" absolute top-4 right-4">
+        <button
+          className="group relative bg-white rounded-md p-2 cursor-pointer"
+          type="button"
+          onClick={() => handlePrevious()}
+        >
+          {/* Tooltip text */}
+          <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 scale-0 rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 transition-all group-hover:scale-100 group-hover:opacity-100">
+            Logout
+          </span>
+
+          <CiLogout color="black" size={24} />
         </button>
-      </div> */}
+      </div>
       <div className="mt-4 xxl:w-[400px] xxl:ml-12 text-center space-y-4">
         <p className="xxl:text-[48px] text-[32px] text-[#E6E6E6] font-[600] capitalize">
           Personal Details

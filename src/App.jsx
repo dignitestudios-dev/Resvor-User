@@ -27,12 +27,13 @@ import PrivacyPolicy from "./pages/app/PrivacyPolicy";
 import Notifications from "./pages/app/Notifications";
 import { useAuthMe } from "./hooks/queries/useQueries";
 import Cookies from "js-cookie";
+import ScrollToTop from "./components/global/ScrollToTop";
 
 const ProtectedAppRoute = () => {
   const { data: authData, isLoading, isError } = useAuthMe();
 
   const isAuthenticated = authData?.success && authData?.data;
-  const isOnboardingCompleted = 
+  const isOnboardingCompleted =
     authData?.data?.onboardingStep === "completed";
 
   useEffect(() => {
@@ -87,9 +88,9 @@ const PublicAuthRoute = () => {
   //    authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed);
 
   const isAuthenticated = authData?.success && authData?.data;
-  const isOnboardingCompleted = 
+  const isOnboardingCompleted =
     authData?.data?.onboardingStep === "completed";
-  const onboardingCompleteAcknowledged = 
+  const onboardingCompleteAcknowledged =
     localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
     authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed;
 
@@ -106,8 +107,10 @@ function App() {
   const hasToken = !!(Cookies.get("token") || localStorage.getItem("token"));
 
   return (
-    <Routes>
-      <Route
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route
         path="/"
         element={
           hasToken ? (
@@ -156,6 +159,7 @@ function App() {
         element={<div className="text-7xl">Page Not Found</div>}
       />
     </Routes>
+    </>
   );
 }
 

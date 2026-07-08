@@ -15,39 +15,38 @@ const CountDown = ({ isActive, setIsActive, seconds, setSeconds, onResend, isLoa
     return () => clearInterval(timer); // clear timer on cleanup
   }, [isActive, seconds]);
 
- const handleRestart = async () => {
-  if (seconds > 0) return;
+  const handleRestart = async () => {
+    if (seconds > 0) return;
 
-  if (onResend) {
-    await onResend(); // 👈 call forgot password API
-  }else{
-setSeconds(30);
-  setIsActive(true);
-  }
+    if (onResend) {
+      await onResend(); // 👈 call forgot password API
+    } else {
+      setSeconds(30);
+      setIsActive(true);
+    }
 
-  
-};
+
+  };
 
   return (
     <button
       type="button"
       onClick={() => handleRestart()}
       className={`w-full py-3 text-sm font-[700] rounded-[12px] transition
-    ${
-      seconds > 0
-        ? "bg-gray-500 border-gray-400 text-gray-300 cursor-not-allowed opacity-70"
-        : "bg-transparent border-[1px] border-[#CACACA] text-white hover:opacity-90"
-    }
+    ${seconds > 0
+          ? "bg-gray-500 border-gray-400 text-gray-300 cursor-not-allowed opacity-70"
+          : "bg-transparent border-[1px] border-[#CACACA] text-white hover:opacity-90"
+        }
   `}
       disabled={seconds > 0}
     >
       <div className="flex justify-center items-center">
         <span className="mr-1">
           {seconds > 0
-            ? `Resend in 00:${seconds}s`
+            ? `Resend in 0:${seconds}s`
             : isLoading
-            ? "Resending..."
-            : "Didn’t receive the OTP? Resend"}
+              ? "Resending..."
+              : "Didn’t receive the OTP? Resend"}
         </span>
       </div>
     </button>

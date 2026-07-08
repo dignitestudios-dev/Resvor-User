@@ -15,14 +15,22 @@ import Subscription from "../../components/onBoarding/Subscription";
 import { mapOnboardingStepToIndex } from "../../static/onboardingStepMapper";
 import { useAuthMe } from "../../hooks/queries/useQueries";
 import { useNavigate } from "react-router";
-import { getStoredTokenType } from "../../lib/authSession";
+import { clearStoredAuthSession } from "../../lib/authSession";
+import { useLogout } from "../../hooks/mutations/OnboardingMutations";
+import { useQueryClient } from "@tanstack/react-query";
+import { ErrorToast } from "../../components/global/Toaster";
+import useApp from "../../context/AppContext";
 
 export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0);
 
   const { data: authData, isLoading, refetch } = useAuthMe(); // 👈 fetch current step
-  console.log("🚀 ~ SignUp ~ authData:", authData);
+  console.log("🚀 ~ SignUp ~ authData:", authData?.data?.onboardingStep);
+  const { stepName, setStepName } = useApp();
+  console.log("🚀 ~ SignUp ~ stepName:", stepName)
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const logoutMutation = useLogout();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -33,8 +41,8 @@ export default function SignUp() {
   // 👇 once API responds, set the correct step
   useEffect(() => {
     if (authData?.success) {
-      const queryParams = new URLSearchParams(window.location.search);
-      const hasSuccessParam = queryParams.get("session_id") || queryParams.get("success") === "true";
+      // const queryParams = new URLSearchParams(window.location.search);
+      // const hasSuccessParam = queryParams.get("session_id") || queryParams.get("success") === "true";
       const onboardingCompleteAcknowledged =
         localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
         authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed;
@@ -54,12 +62,12 @@ export default function SignUp() {
       //   return;
       // }
 
-      const stepIndex = mapOnboardingStepToIndex(authData?.data?.onboardingStep);
+      const stepIndex = mapOnboardingStepToIndex(stepName || authData?.data?.onboardingStep);
       setCurrentStep(stepIndex);
     } else if (!isLoading) {
       setCurrentStep(0); // fallback if API fails
     }
-  }, [authData, isLoading]);
+  }, [authData, isLoading, navigate, stepName]);
 
   const providerSteps = [
     { icon: IoMdPerson, title: "Your Details" },
@@ -78,16 +86,39 @@ export default function SignUp() {
     active: index === currentStep,
   }));
 
-  const handleNext = () => {
+  const handleNext = (stepName) => {
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
+      if (stepName) {
+        setStepName(stepName)
+      }
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+      queryClient.setQueryData(["auth-me"], null);
+      queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+      queryClient.clear();
+      clearStoredAuthSession();
+      setStepName("");
+
+      navigate("/auth/signup", { replace: true });
+    } catch (error) {
+      if (error?.code === "NO_INTERNET") {
+        ErrorToast(error.message);
+      } else {
+        ErrorToast(
+          error?.response?.data?.message ||
+          "An error occurred during logout. Please try again.",
+        );
+      }
     }
   };
 
   const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
+    handleLogout();
   };
 
   return (

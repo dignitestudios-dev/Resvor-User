@@ -4,7 +4,7 @@ import AuthButton from "../auth/AuthButton";
 import { forgotLogo } from "../../assets/export";
 import TextCountDown from "./TextCountDown";
 import AuthSuccessModal from "../auth/AuthSuccessModal";
-import { FaArrowLeftLong } from "react-icons/fa6";
+import { CiLogout } from "react-icons/ci";
 import { useVerifyPhone } from "../../hooks/mutations/OnboardingMutations";
 import { ErrorToast } from "../global/Toaster";
 import Cookies from "js-cookie";
@@ -15,6 +15,8 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
   const verifyPhoneMutation = useVerifyPhone();
 
   const [otp, setOtp] = useState(Array(6).fill(""));
+  const isOtpComplete = otp.every((digit) => digit !== "");
+  const isValidOtp = otp.join("").length === 6;
 
   const [isActive, setIsActive] = useState(true);
   const [seconds, setSeconds] = useState(30);
@@ -77,6 +79,7 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isOtpComplete || !isValidOtp) return;
     try {
       const response = await verifyPhoneMutation.mutateAsync({ otp: otp.join("") });
 
@@ -119,9 +122,18 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
 
   return (
     <div className="grid lg:grid-cols-1 grid-cols-1 w-full text-white">
-      <div className="flex justify-start items-center">
-        <button type="button" onClick={() => handlePrevious()}>
-          <FaArrowLeftLong color="white" size={24} />
+      <div className=" absolute top-4 right-4">
+        <button
+          className="group relative bg-white rounded-md p-2 cursor-pointer"
+          type="button"
+          onClick={() => handlePrevious()}
+        >
+          {/* Tooltip text */}
+          <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 scale-0 rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 transition-all group-hover:scale-100 group-hover:opacity-100">
+            Logout
+          </span>
+
+          <CiLogout color="black" size={24} />
         </button>
       </div>
       <div className="flex flex-col justify-center items-center h-auto ">
@@ -182,7 +194,11 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
             </div>
             <div className="w-full flex justify-center pl-4 mt-3 space-y-4 ">
               <div className="w-[360px] ">
-                <AuthButton text="Verify" loading={verifyPhoneMutation.isPending} />
+                <AuthButton
+                  text="Verify"
+                  loading={verifyPhoneMutation.isPending}
+                  disabled={!isOtpComplete || !isValidOtp || verifyPhoneMutation.isPending}
+                />
 
               </div>
             </div>
@@ -194,7 +210,7 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
           isOpen={requestSendModal}
           onClick={() => {
             setRequestSendModal(false);
-            handleNext();
+            handleNext("complete_preferences");
           }}
           title="Number verified"
           description="Your number has been verified successfully."

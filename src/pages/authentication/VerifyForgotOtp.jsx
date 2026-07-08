@@ -135,6 +135,8 @@ const handleResendOtp = async () => {
     if (response?.success) {
       SuccessToast("OTP resent successfully");
       setOtp(Array(5).fill(""));
+      setSeconds(30);
+      setIsActive(true);
       inputs.current[0]?.focus();
     } else {
       ErrorToast(response?.message || "Failed to resend OTP");
