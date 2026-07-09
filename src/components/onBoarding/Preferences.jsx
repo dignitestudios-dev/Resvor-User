@@ -6,7 +6,7 @@ import {
   musicPreferences,
 } from "../../static/PreferenceCategories";
 import AuthButton from "../auth/AuthButton";
-import { CiLogout } from "react-icons/ci";
+import { LogOutIcon } from "lucide-react";
 import { useFormik } from "formik";
 import { preferencesSchema } from "../../schema/onBoarding/onBoardSchema";
 import { preferencesValues } from "../../init/onBoarding/onBoardValues";
@@ -92,7 +92,7 @@ const Preferences = ({ handleNext, handlePrevious }) => {
             Logout
           </span>
 
-          <CiLogout color="black" size={24} />
+          <LogOutIcon color="black" size={24} />
         </button>
       </div>
       <p className="font-bold text-white justify-center text-2xl">Tell Us What You’re Into</p>

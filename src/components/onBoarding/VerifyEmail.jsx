@@ -4,7 +4,7 @@ import AuthButton from "../auth/AuthButton";
 import { forgotLogo } from "../../assets/export";
 import TextCountDown from "./TextCountDown";
 import AuthSuccessModal from "../auth/AuthSuccessModal";
-import { CiLogout } from "react-icons/ci";
+import { LogOutIcon } from "lucide-react";
 import { ErrorToast, SuccessToast } from "../global/Toaster";
 import { useVerifyEmail, useResendEmailOtp } from './../../hooks/mutations/OnboardingMutations';
 
@@ -144,7 +144,7 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
             Logout
           </span>
 
-          <CiLogout color="black" size={24} />
+          <LogOutIcon color="black" size={24} />
         </button>
       </div>
       <div className="flex flex-col justify-center items-center h-auto ">

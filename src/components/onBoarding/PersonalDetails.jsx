@@ -6,7 +6,7 @@ import AuthInput from "../auth/AuthInput";
 import { binIcon, mapImg, uploadIcon } from "../../assets/export";
 import { useState } from "react";
 import TagsInputField from "./TagsInputField";
-import { CiLogout } from "react-icons/ci";
+import { LogOutIcon } from "lucide-react";
 import TagsModal from "./TagsModal";
 import { personalDetailValues } from "../../init/onBoarding/onBoardValues";
 import { personalDetailSchema } from "../../schema/onBoarding/onBoardSchema";
@@ -44,7 +44,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
     onSubmit: async (values) => {
 
       if (!values?.specialDatesData || values.specialDatesData.length === 0) {
-        setFieldError("specialDatesData", "Birthday is required");
+        setFieldError("special date is required");
         return;
       }
 
@@ -102,6 +102,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
       }
     },
   });
+  console.log("🚀 ~ PersonalDetails ~ errors:", errors)
 
   const validateImageResolution = (file) => {
     return new Promise((resolve) => {
@@ -174,7 +175,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
             Logout
           </span>
 
-          <CiLogout color="black" size={24} />
+          <LogOutIcon color="black" size={24} />
         </button>
       </div>
       <div className="mt-4 xxl:w-[400px] xxl:ml-12 text-center space-y-4">
@@ -293,8 +294,8 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
               </div>
             )}
 
-            {errors.specialDatesData && (
-              <p className="text-red-600 text-[12px] mt-1">{errors.specialDatesData}</p>
+            {fieldError && (
+              <p className="text-red-600 text-[12px] mt-1">{fieldError}</p>
             )}
             {/* {dateModalData && (
               <div

@@ -4,7 +4,7 @@ import AuthButton from "../auth/AuthButton";
 import { forgotLogo } from "../../assets/export";
 import TextCountDown from "./TextCountDown";
 import AuthSuccessModal from "../auth/AuthSuccessModal";
-import { CiLogout } from "react-icons/ci";
+import { LogOutIcon } from "lucide-react";
 import { useVerifyPhone } from "../../hooks/mutations/OnboardingMutations";
 import { ErrorToast } from "../global/Toaster";
 import Cookies from "js-cookie";
@@ -133,7 +133,7 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
             Logout
           </span>
 
-          <CiLogout color="black" size={24} />
+          <LogOutIcon color="black" size={24} />
         </button>
       </div>
       <div className="flex flex-col justify-center items-center h-auto ">
