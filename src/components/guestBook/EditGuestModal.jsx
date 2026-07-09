@@ -16,9 +16,9 @@ import { useQueryClient } from "@tanstack/react-query"; // <-- IMPORT THIS
 const EditGuestModal = ({ onClose, guestData }) => {
   const [dateModalData, setDateModalData] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  
+
   const queryClient = useQueryClient(); // <-- INITIALIZE QUERY CLIENT
-  
+
   const closeModal = () => setModalIsOpen(false);
 
   const { data: loungesResponse, isLoading } = useLounges();
@@ -63,8 +63,8 @@ const EditGuestModal = ({ onClose, guestData }) => {
           onSuccess: () => {
             // INVALIDATE THE GUESTBOOK QUERY KEY
             // Note: Verify if your hook uses a string key like "guestbook" or an array like ["guestbook"]
-            queryClient.invalidateQueries({ queryKey: ["guest-book"] }); 
-            
+            queryClient.invalidateQueries({ queryKey: ["guest-book"] });
+
             SuccessToast("Guest updated successfully!");
             onClose();
           },
@@ -101,7 +101,7 @@ const EditGuestModal = ({ onClose, guestData }) => {
               onBlur={handleBlur}
               error={errors.name}
               touched={touched.name}
-              maxLength={50}
+              maxLength={100}
             />
 
             <InputField

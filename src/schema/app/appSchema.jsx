@@ -30,16 +30,11 @@ export const changePasswordSchema = Yup.object().shape({
     .oneOf([Yup.ref("newPassword")], "Password does not match"),
 });
 
-
-
-
-
-
 export const guestbookSchema = Yup.object({
   name: Yup.string()
     .required("Full name is required.")
     .min(2, "Full name must be at least 2 characters.")
-    .max(50, "Full name cannot exceed 50 characters.")
+    .max(100, "Full name cannot exceed 100 characters.")
     .trim()
     .test(
       "not-empty-after-trim",
@@ -76,9 +71,9 @@ export const guestbookSchema = Yup.object({
     .email("Please enter a valid email address.")
     .max(100, "Email address cannot exceed 100 characters.")
     .matches(
-    /^[A-Za-z0-9][A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-    "Please enter a valid email address."
-  )
+      /^[A-Za-z0-9][A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+      "Please enter a valid email address."
+    )
     .test(
       "no-leading-space",
       "Email cannot start with a space.",
@@ -93,12 +88,11 @@ export const guestbookSchema = Yup.object({
   lounge: Yup.string().required("Please select a lounge."),
 });
 
-
 export const editGuestbookSchema = Yup.object({
   name: Yup.string()
     .required("Full name is required.")
     .min(2, "Full name must be at least 2 characters.")
-    .max(50, "Full name cannot exceed 50 characters.")
+    .max(100, "Full name cannot exceed 100 characters.")
     .trim()
     .test(
       "not-empty-after-trim",
@@ -152,7 +146,7 @@ export const requestEventSchema = Yup.object({
   eventType: Yup.string().required("Event type is required"),
   eventName: Yup.string()
     .required("Event name is required")
-    .max(30, "Event name cannot exceed 30 characters.")
+    .max(100, "Event name cannot exceed 100 characters.")
     .test(
       "not-empty-after-trim",
       "Event name cannot be empty or only spaces.",
@@ -217,9 +211,9 @@ export const requestEventSchema = Yup.object({
       (value) =>
         value
           ? value
-              .trim()
-              .split(" ")
-              .every((word) => /^[A-ZÀ-Ÿ][\p{L}'-]*$/u.test(word))
+            .trim()
+            .split(" ")
+            .every((word) => /^[A-ZÀ-Ÿ][\p{L}'-]*$/u.test(word))
           : true,
     ),
   email: Yup.string()

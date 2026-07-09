@@ -41,10 +41,10 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
   };
 
   // New format: operatingHours = { open: '11:30 AM', close: '2:30 AM' }
-  const openLabel  = operatingHours?.open  || "";
+  const openLabel = operatingHours?.open || "";
   const closeLabel = operatingHours?.close || "";
-  const minTime    = toHHMM(openLabel);   // e.g. "11:30"
-  const maxTime    = toHHMM(closeLabel);  // e.g. "02:30"
+  const minTime = toHHMM(openLabel);   // e.g. "11:30"
+  const maxTime = toHHMM(closeLabel);  // e.g. "02:30"
 
   // Detect overnight range: close time is numerically earlier than open time (e.g. 11:30 AM → 2:30 AM next day)
   const isOvernightRange = minTime && maxTime && maxTime < minTime;
@@ -166,9 +166,9 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
       // Both in early-morning portion: end must be > start
       // start in evening, end in early-morning: always valid (crosses midnight)
       const startIsEvening = start >= minTime; // e.g. >= "11:30"
-      const endIsEvening   = end   >= minTime;
+      const endIsEvening = end >= minTime;
       const startIsMorning = start <= maxTime; // e.g. <= "02:30"
-      const endIsMorning   = end   <= maxTime;
+      const endIsMorning = end <= maxTime;
 
       if (startIsEvening && endIsEvening && end <= start)
         return "End time must be after start time";
@@ -192,7 +192,7 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
     // Re-validate existing end time against new start time
     if (values.endTime) {
       const endErr = checkTimeInRange(values.endTime, "End time") ||
-                     checkEndAfterStart(val, values.endTime);
+        checkEndAfterStart(val, values.endTime);
       setFieldError("endTime", endErr || "");
     }
   };
@@ -272,7 +272,7 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
               type="text"
               id={`eventName`}
               name={`eventName`}
-              maxLength={30}
+              maxLength={100}
               value={values.eventName}
               onChange={handleChange}
               onBlur={handleBlur}
@@ -318,9 +318,8 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
               <input
                 type="time"
                 data-slot="input"
-                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
-                  touched.startTime && errors.startTime ? "ring-red-500" : "ring-[#CACACA]"
-                } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
+                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${touched.startTime && errors.startTime ? "ring-red-500" : "ring-[#CACACA]"
+                  } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
                 value={values.startTime}
                 onChange={handleStartTimeChange}
                 onBlur={handleStartTimeBlur}
@@ -345,9 +344,8 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
                 {...(!isOvernightRange && values.startTime
                   ? { min: values.startTime }
                   : {})}
-                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
-                  touched.endTime && errors.endTime ? "ring-red-500" : "ring-[#CACACA]"
-                } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
+                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${touched.endTime && errors.endTime ? "ring-red-500" : "ring-[#CACACA]"
+                  } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
                 value={values.endTime}
                 onChange={handleEndTimeChange}
                 onBlur={handleEndTimeBlur}
@@ -361,7 +359,7 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
                 <p className="text-red-600 text-[12px] mt-1">{errors.endTime}</p>
               )}
             </div>
-            
+
           </div>
           <div className="w-full flex items-start gap-2 my-2 px-1">
             <div className="w-full">

@@ -41,8 +41,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
     validationSchema: personalDetailSchema,
     validateOnChange: true,
     validateOnBlur: true,
-    onSubmit: async (values, action) => {
-      console.log("values----------> 42424242424 ", values)
+    onSubmit: async (values) => {
 
       if (!values?.specialDatesData || values.specialDatesData.length === 0) {
         setFieldError("specialDatesData", "Birthday is required");
@@ -225,7 +224,7 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
               type={"text"}
               id={"fullName"}
               name={"fullName"}
-              maxLength={30}
+              maxLength={100}
               value={values.fullName}
               onChange={handleChange}
               onBlur={handleBlur}

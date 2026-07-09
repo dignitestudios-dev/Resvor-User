@@ -20,7 +20,7 @@ import { useQueryClient } from "@tanstack/react-query"; // <-- IMPORT THIS
 const AddGuestModal = ({ onClose }) => {
   const [dateModalData, setDateModalData] = useState("");
   const [modalIsOpen, setModalIsOpen] = useState(false);
-const queryClient = useQueryClient(); // <-- INITIALIZE QUERY CLIENT
+  const queryClient = useQueryClient(); // <-- INITIALIZE QUERY CLIENT
   const closeModal = () => setModalIsOpen(false);
   const { mutate: addGuestMutation, isPending } = useAddGuest();
 
@@ -35,45 +35,45 @@ const queryClient = useQueryClient(); // <-- INITIALIZE QUERY CLIENT
       value: lounge._id,
     })) || [];
 
-const {
-  values,
-  handleBlur,
-  handleChange,
-  errors,
-  touched,
-  handleSubmit,
-  setFieldValue,
-  setFieldTouched,
-} = useFormik({
-  enableReinitialize: true,
-  initialValues: {
-    name: authData?.data?.firstName + authData?.data?.lastName || authData?.data?.user?.firstName + authData?.data?.user?.lastName || "",
-    email: authData?.data?.email || authData?.data?.user?.email || "",
-    lounge: "",
-  },
-  validationSchema: guestbookSchema,
+  const {
+    values,
+    handleBlur,
+    handleChange,
+    errors,
+    touched,
+    handleSubmit,
+    setFieldValue,
+    setFieldTouched,
+  } = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      name: authData?.data?.firstName + authData?.data?.lastName || authData?.data?.user?.firstName + authData?.data?.user?.lastName || "",
+      email: authData?.data?.email || authData?.data?.user?.email || "",
+      lounge: "",
+    },
+    validationSchema: guestbookSchema,
 
-  onSubmit: (values) => {
-    const payload = {
-      loungeId: values.lounge,
-      fullName: values.name.trim(),
-      email: values.email.trim(),
-    };
+    onSubmit: (values) => {
+      const payload = {
+        loungeId: values.lounge,
+        fullName: values.name.trim(),
+        email: values.email.trim(),
+      };
 
-    addGuestMutation(payload, {
-      onSuccess: (response) => {
-        console.log("Guest added:", response);
-        SuccessToast("Guest added successfully!");
-        queryClient.invalidateQueries({ queryKey: ["guestbook"] });
-        onClose();
-      },
-      onError: (error) => {
-        console.log("Add guest failed:", error);
-        ErrorToast("Failed to add guest.");
-      },
-    });
-  },
-});
+      addGuestMutation(payload, {
+        onSuccess: (response) => {
+          console.log("Guest added:", response);
+          SuccessToast("Guest added successfully!");
+          queryClient.invalidateQueries({ queryKey: ["guestbook"] });
+          onClose();
+        },
+        onError: (error) => {
+          console.log("Add guest failed:", error);
+          ErrorToast("Failed to add guest.");
+        },
+      });
+    },
+  });
 
   return (
     <div className="fixed inset-0 bg-[#0A150F80] z-50 flex items-center justify-center">
@@ -98,7 +98,7 @@ const {
               onBlur={handleBlur}
               error={errors.name}
               touched={touched.name}
-              maxLength={50}
+              maxLength={100}
             />
 
             <InputField
@@ -114,29 +114,29 @@ const {
               maxLength={50}
             />
 
-         <LoungeSelectField
-  label="Lounge Name"
-  placeholder={isLoading ? "Loading lounges..." : "Search lounge..."}
-  name="lounge"
-  value={values.lounge}
-  onChange={(value) => {
-    setFieldValue("lounge", value);
-    setFieldTouched("lounge", true, false); // Marks it touched safely without firing immediate error rules
-  }}
-  error={errors.lounge}
-  touched={touched.lounge}
-  options={loungeOptions}
-/>
+            <LoungeSelectField
+              label="Lounge Name"
+              placeholder={isLoading ? "Loading lounges..." : "Search lounge..."}
+              name="lounge"
+              value={values.lounge}
+              onChange={(value) => {
+                setFieldValue("lounge", value);
+                setFieldTouched("lounge", true, false); // Marks it touched safely without firing immediate error rules
+              }}
+              error={errors.lounge}
+              touched={touched.lounge}
+              options={loungeOptions}
+            />
           </div>
-            <div className="mt-8 mx-8">
-<Button
-  text={isPending ? "Adding..." : "Confirm"}
-  type="submit"
-  disabled={isPending}
-/>        </div>
+          <div className="mt-8 mx-8">
+            <Button
+              text={isPending ? "Adding..." : "Confirm"}
+              type="submit"
+              disabled={isPending}
+            />        </div>
         </form>
 
-      
+
       </div>
 
       {modalIsOpen && (

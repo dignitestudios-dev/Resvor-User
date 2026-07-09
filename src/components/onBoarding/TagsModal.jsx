@@ -256,7 +256,7 @@ const TagsModal = ({
                   type="text"
                   id={`specialDate-${index}`}
                   name={`specialDate-${index}`}
-                  maxLength={30}
+                  maxLength={100}
                   value={date.title}
                   onChange={(e) =>
                     handleChange(index, "title", e.target.value)

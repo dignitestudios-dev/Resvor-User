@@ -115,7 +115,7 @@ const EventServiceModal = ({ onClose, onNext, loungeServices, eventServices, onC
                   value={instruction}
                   onChange={(e) => setInstruction(e.target.value)}
                   placeholder="Add text here"
-                  maxLength={30}
+                  maxLength={250}
                   className={`w-full px-4 py-2 text-sm rounded-[15px] bg-transparent ring-1 ring-[#CACACA] 
                           focus:ring-2 focus:ring-gray-200 focus:outline-none pr-12 placeholder:font-light placeholder:text-[12px] placeholder:text-[#727272] `}
                 ></textarea>
