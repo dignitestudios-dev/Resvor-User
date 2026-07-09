@@ -8,9 +8,11 @@ import DatePickerField from "../../components/global/DatePickerField";
 import TimePickerField from "../../components/global/TimePickerField";
 import FilterSelectableField from "../../components/global/FilterSelectableField";
 import RichTextEditor from "../../components/global/RichTextEditor";
-import { cardTemplates } from "../../static/MockData";
+import { cardTemplates, flyerData } from "../../static/MockData";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
+import { useFormik } from "formik";
+import { createFlyerSchema } from "../../schema/app/appSchema";
 import Button from "../../components/global/Button";
 import FlayerFeeModal from "../../components/flayer/FlayerFeeModal";
 import ProceedFlayerModal from "../../components/flayer/ProceedFlayerModal";
@@ -99,9 +101,8 @@ const FlyerCard = ({ formData, selectedCard, flyerRef }) => {
 
             {/* Event Title */}
             <h1
-              className={`text-white font-bold leading-snug text-center mb-5 tracking-wide break-words drop-shadow-lg w-full ${
-                titleIsLong ? "text-lg" : "text-[22px]"
-              }`}
+              className={`text-white font-bold leading-snug text-center mb-5 tracking-wide break-words drop-shadow-lg w-full ${titleIsLong ? "text-lg" : "text-[22px]"
+                }`}
             >
               {formData.eventTitle ||
                 "Share operational announcements, policy updates, reminders, and promotions."}
@@ -157,23 +158,22 @@ const FlyerCard = ({ formData, selectedCard, flyerRef }) => {
 ───────────────────────────────────────────────────────────── */
 const CreateFlyer = () => {
   const navigate = useNavigate();
+  const { flyerId } = useParams();
   const flyerRef = useRef(null);
   const flyerBlobRef = useRef(null); // stores captured flyer PNG blob for API
 
   const { mutate: createCampaign, isPending: isSendingCampaign } = useCreateCampaign();
 
-  const [formData, setFormData] = useState({
-    eventTitle: "",
-    eventType: [],
-    eventDate: null,
-    startTime: null,
-    endTime: null,
-    address: "",
-    city: "",
-    additionalInfo: "",
-  });
+  // Resolve the clicked flyer from Flyers page (if any) to use as initial preview
+  const initialCard = flyerId
+    ? flyerData.find((f) => String(f.id) === String(flyerId)) || cardTemplates[0]
+    : cardTemplates[0];
 
-  const [selectedCard, setSelectedCard] = useState(cardTemplates[0]);
+  const [selectedCard, setSelectedCard] = useState(initialCard);
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+
   const [sendProceed, setSendProceed] = useState(false);
   const [isFlayerFee, setIsFlayerFee] = useState(false);
   const [sendInvitationModal, setSendInvitationModal] = useState(false);
@@ -181,31 +181,32 @@ const CreateFlyer = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  /* ── Form handlers ── */
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleEventTypeChange = (option) => {
-    setFormData((prev) => ({ ...prev, eventType: [option] }));
-  };
-
-  const handleDateChange = (date) => {
-    setFormData((prev) => ({ ...prev, eventDate: date }));
-  };
-
-  const handleStartTimeChange = (time) => {
-    setFormData((prev) => ({ ...prev, startTime: time }));
-  };
-
-  const handleEndTimeChange = (time) => {
-    setFormData((prev) => ({ ...prev, endTime: time }));
-  };
-
-  const handleAdditionalInfoChange = (value) => {
-    setFormData((prev) => ({ ...prev, additionalInfo: value }));
-  };
+  /* ── useFormik Setup ── */
+  const {
+    values,
+    handleBlur,
+    handleChange,
+    handleSubmit,
+    setFieldValue,
+    setFieldTouched,
+    errors,
+    touched,
+  } = useFormik({
+    initialValues: {
+      eventTitle: "",
+      eventType: [],
+      eventDate: null,
+      startTime: null,
+      endTime: null,
+      address: "",
+      city: "",
+      additionalInfo: "",
+    },
+    validationSchema: createFlyerSchema,
+    onSubmit: () => {
+      handleSend();
+    },
+  });
 
   /* ── Modal flow ── */
   const handleProceedInvitation = () => {
@@ -258,11 +259,7 @@ const CreateFlyer = () => {
       payload.append(`recipients[${index}]`, email);
     });
 
-    // // strip HTML tags from rich-text editor output
-    // const plainText = formData.additionalInfo
-    //   ? formData.additionalInfo.replace(/(<([^>]+)>)/gi, "")
-    //   : "";
-    payload.append("additionalInfo", formData.additionalInfo);
+    payload.append("additionalInfo", values.additionalInfo);
 
     // attach the captured flyer PNG
     if (flyerBlobRef.current) {
@@ -302,7 +299,7 @@ const CreateFlyer = () => {
         logging: false,
       });
       const link = document.createElement("a");
-      link.download = `${formData.eventTitle || "event"}-flyer.png`;
+      link.download = `${values.eventTitle || "event"}-flyer.png`;
       link.href = canvas.toDataURL("image/png", 1.0);
       link.click();
     } catch (err) {
@@ -349,46 +346,84 @@ const CreateFlyer = () => {
                 id="eventTitle"
                 name="eventTitle"
                 maxLength={100}
-                value={formData.eventTitle}
-                onChange={handleInputChange}
+                value={values.eventTitle}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.eventTitle}
+                touched={touched.eventTitle}
               />
 
               {/* Event Type & Date */}
               <div className="grid grid-cols-2 gap-4">
-                <FilterSelectableField
-                  label="Event Type"
-                  placeholder="Select event type"
-                  options={["Birthday Party", "Wedding", "Corporate Event", "Festival"]}
-                  value={formData.eventType}
-                  onChange={handleEventTypeChange}
-                />
-                <DatePickerField
-                  label="Event Date"
-                  value={formData.eventDate}
-                  onChange={handleDateChange}
-                />
+                <div>
+                  <FilterSelectableField
+                    label="Event Type"
+                    placeholder="Select event type"
+                    options={["Birthday Party", "Wedding", "Corporate Event", "Festival"]}
+                    value={values.eventType}
+                    onChange={(option) => {
+                      setFieldValue("eventType", [option]);
+                      setFieldTouched("eventType", true, false);
+                    }}
+                  />
+                  {touched.eventType && errors.eventType && (
+                    <p className="text-red-600 text-[12px] mt-1">{errors.eventType}</p>
+                  )}
+                </div>
+                <div>
+                  <DatePickerField
+                    label="Event Date"
+                    value={values.eventDate}
+                    minDate={tomorrow}
+                    onChange={(date) => {
+                      setFieldValue("eventDate", date);
+                      setFieldTouched("eventDate", true, false);
+                    }}
+                  />
+                  {touched.eventDate && errors.eventDate && (
+                    <p className="text-red-600 text-[12px] mt-1">{errors.eventDate}</p>
+                  )}
+                </div>
               </div>
 
               {/* Start & End Time */}
               <div className="grid grid-cols-2 gap-4">
-                <TimePickerField
-                  text="Start Time"
-                  label="Select Time"
-                  value={formData.startTime}
-                  onChange={handleStartTimeChange}
-                  open={openField === "start"}
-                  onOpen={() => setOpenField(openField === "start" ? null : "start")}
-                  position={"-left-4"}
-                />
-                <TimePickerField
-                  text="End Time"
-                  label="Select time"
-                  value={formData.endTime}
-                  onChange={handleEndTimeChange}
-                  open={openField === "end"}
-                  onOpen={() => setOpenField(openField === "end" ? null : "end")}
-                  position={"-right-6"}
-                />
+                <div>
+                  <TimePickerField
+                    text="Start Time"
+                    label="Select Time"
+                    value={values.startTime}
+                    onChange={(time) => {
+                      setFieldValue("startTime", time);
+                      setFieldTouched("startTime", true, false);
+                      setOpenField(null);
+                    }}
+                    open={openField === "start"}
+                    onOpen={() => setOpenField(openField === "start" ? null : "start")}
+                    position={"-left-4"}
+                  />
+                  {touched.startTime && errors.startTime && (
+                    <p className="text-red-600 text-[12px] mt-1">{errors.startTime}</p>
+                  )}
+                </div>
+                <div>
+                  <TimePickerField
+                    text="End Time"
+                    label="Select time"
+                    value={values.endTime}
+                    onChange={(time) => {
+                      setFieldValue("endTime", time);
+                      setFieldTouched("endTime", true, false);
+                      setOpenField(null);
+                    }}
+                    open={openField === "end"}
+                    onOpen={() => setOpenField(openField === "end" ? null : "end")}
+                    position={"-right-6"}
+                  />
+                  {touched.endTime && errors.endTime && (
+                    <p className="text-red-600 text-[12px] mt-1">{errors.endTime}</p>
+                  )}
+                </div>
               </div>
 
               {/* Location */}
@@ -403,8 +438,11 @@ const CreateFlyer = () => {
                     id="address"
                     name="address"
                     maxLength={120}
-                    value={formData.address}
-                    onChange={handleInputChange}
+                    value={values.address}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={errors.address}
+                    touched={touched.address}
                   />
                   <InputField
                     label="City"
@@ -414,14 +452,17 @@ const CreateFlyer = () => {
                     id="city"
                     name="city"
                     maxLength={50}
-                    value={formData.city}
-                    onChange={handleInputChange}
+                    value={values.city}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={errors.city}
+                    touched={touched.city}
                   />
                 </div>
               </div>
 
               {/* Card Template Picker */}
-              <div>
+              {/* <div>
                 <h3 className="text-[16px] font-bold text-[#181818] mb-3">
                   Select Card Template
                 </h3>
@@ -467,13 +508,15 @@ const CreateFlyer = () => {
                     </svg>
                   </button>
                 </div>
-              </div>
+              </div> */}
 
               {/* Additional Info */}
               <div>
                 <RichTextEditor
-                  value={formData.additionalInfo}
-                  onChange={handleAdditionalInfoChange}
+                  value={values.additionalInfo}
+                  onChange={(val) => {
+                    setFieldValue("additionalInfo", val);
+                  }}
                 />
               </div>
 
@@ -482,7 +525,7 @@ const CreateFlyer = () => {
                 <Button
                   text={isGenerating || isSendingCampaign ? "Please wait…" : "Send"}
                   type="button"
-                  onClick={handleSend}
+                  onClick={handleSubmit}
                   disabled={isGenerating || isSendingCampaign}
                 />
               </div>
@@ -499,15 +542,14 @@ const CreateFlyer = () => {
                 </div>
 
                 {/* Download button */}
-                <button
+                {/* <button
                   type="button"
                   onClick={handleDownloadFlyer}
                   disabled={isGenerating}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white border-none transition-opacity ${
-                    isGenerating
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-br from-[#0B0E52] to-[#1a1f7a] cursor-pointer hover:opacity-90"
-                  }`}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white border-none transition-opacity ${isGenerating
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-br from-[#0B0E52] to-[#1a1f7a] cursor-pointer hover:opacity-90"
+                    }`}
                 >
                   {isGenerating ? (
                     <>
@@ -540,13 +582,13 @@ const CreateFlyer = () => {
                       Download
                     </>
                   )}
-                </button>
+                </button> */}
               </div>
 
               {/* Flyer stage */}
               <div className=" rounded-[20px] px-6 py-8 flex justify-center items-center min-h-[590px] shadow-inner">
                 <FlyerCard
-                  formData={formData}
+                  formData={values}
                   selectedCard={selectedCard}
                   flyerRef={flyerRef}
                 />

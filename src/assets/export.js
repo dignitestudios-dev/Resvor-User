@@ -45,6 +45,7 @@ import flyerTwo from "./flyerTwo.png";
 import flyerThree from "./flyerThree.png";
 import loungeTwo from "./loungeTwo.jpg";
 import FlayerOne from "./flayer.png";
+import flyerImage from "./flyerImage.jpg";
 // export {
 //     FILENAME(PASCALCASE)
 // }
@@ -89,6 +90,7 @@ export {
   flyer,
   flyerTwo,
   flyerThree,
+  flyerImage,
   danger,
   dangerBlue,
   loungeTwo,

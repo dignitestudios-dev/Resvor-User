@@ -130,7 +130,7 @@ function App() {
           <Route path="bookingDetails/:id" element={<BookingDetails />} />
           <Route path="reservationDetails/:id" element={<ReservationDetails />} />
           <Route path="flyers" element={<Flyers />} />
-          <Route path="create-flyer" element={<CreateFlyer />} />
+          <Route path="create-flyer/:flyerId?" element={<CreateFlyer />} />
           <Route path="campaign-detail/:id" element={<CampaignDetail />} />
           <Route path="chat" element={<Chat />} />
           <Route path="user-profile" element={<UserProfile />} />

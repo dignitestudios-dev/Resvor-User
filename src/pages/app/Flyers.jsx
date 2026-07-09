@@ -22,13 +22,25 @@ const formatTimeLabel = (isoValue) => {
   const d = new Date(isoValue);
   if (Number.isNaN(d.getTime())) return "";
   return d
-    .toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })
+    .toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
     .replace(" ", "");
 };
 
 // ── History Table ─────────────────────────────────────────────────────────────
 
-const FlyerHistoryTable = ({ rows, isLoading, page, totalPages, onPrev, onNext, onRowClick }) => {
+const FlyerHistoryTable = ({
+  rows,
+  isLoading,
+  page,
+  totalPages,
+  onPrev,
+  onNext,
+  onRowClick,
+}) => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-20 text-gray-500 font-medium">
@@ -123,7 +135,9 @@ const FlyerHistoryTable = ({ rows, isLoading, page, totalPages, onPrev, onNext, 
                   {/* Sent At */}
                   <td className="px-6 py-4 text-[13px] text-[#374151] whitespace-nowrap">
                     <div>{row.sentDate}</div>
-                    <div className="text-[11px] text-[#9CA3AF]">{row.sentTime}</div>
+                    <div className="text-[11px] text-[#9CA3AF]">
+                      {row.sentTime}
+                    </div>
                   </td>
 
                   {/* Recipients */}
@@ -190,10 +204,11 @@ const Flyers = () => {
   const [historyPage, setHistoryPage] = useState(1);
   const limit = 10;
 
-  const { data: historyResponse, isLoading: isHistoryLoading } = useFlyerHistory(
-    { page: historyPage, limit },
-    { enabled: activeTab === "history" }
-  );
+  const { data: historyResponse, isLoading: isHistoryLoading } =
+    useFlyerHistory(
+      { page: historyPage, limit },
+      { enabled: activeTab === "history" },
+    );
 
   const historyData = historyResponse?.data || [];
   const historyPagination = historyResponse?.pagination || {
@@ -276,8 +291,8 @@ const Flyers = () => {
             <div className="grid grid-cols-5 p-4 gap-4">
               {flyerData.map((item) => (
                 <div
-                  onClick={() => navigate("/app/create-flyer")}
-                  key={item}
+                  onClick={() => navigate(`/app/create-flyer/${item.id}`)}
+                  key={item.id}
                   className="space-y-2 cursor-pointer"
                 >
                   <div className="border border-[#F4F4F4] rounded-[10px]">

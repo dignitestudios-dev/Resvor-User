@@ -277,3 +277,65 @@ export const requestEventSchema = Yup.object({
     }),
   ticketAtDoor: Yup.boolean(),
 });
+
+const parseTimeToMinutes = (timeStr) => {
+  if (!timeStr) return 0;
+  const match = timeStr.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+  if (!match) return 0;
+  let [_, hours, minutes, ampm] = match;
+  hours = parseInt(hours, 10);
+  minutes = parseInt(minutes, 10);
+  ampm = ampm.toUpperCase();
+  if (ampm === "PM" && hours !== 12) {
+    hours += 12;
+  } else if (ampm === "AM" && hours === 12) {
+    hours = 0;
+  }
+  return hours * 60 + minutes;
+};
+
+export const createFlyerSchema = Yup.object({
+  eventTitle: Yup.string()
+    .required("Event title is required")
+    .max(100, "Event title cannot exceed 100 characters.")
+    .test(
+      "not-empty-after-trim",
+      "Event title cannot be empty or only spaces.",
+      (value) => value?.trim().length > 0
+    )
+    .test(
+      "no-leading-space",
+      "Event title cannot start with a space.",
+      (value) => (value ? !value.startsWith(" ") : true)
+    ),
+  eventType: Yup.array()
+    .min(1, "Event type is required")
+    .required("Event type is required"),
+  eventDate: Yup.date()
+    .typeError("Event date is required")
+    .required("Event date is required"),
+  startTime: Yup.string().required("Start time is required"),
+  endTime: Yup.string()
+    .required("End time is required")
+    .test("is-after-start", "End time must be after start time", function (value) {
+      const { startTime } = this.parent;
+      if (!startTime || !value) return true;
+      return parseTimeToMinutes(value) > parseTimeToMinutes(startTime);
+    }),
+  address: Yup.string()
+    .required("Address is required")
+    .max(120, "Address cannot exceed 120 characters.")
+    .test(
+      "not-empty-after-trim",
+      "Address cannot be empty or only spaces.",
+      (value) => value?.trim().length > 0
+    )
+    .test(
+      "no-leading-space",
+      "Address cannot start with a space.",
+      (value) => (value ? !value.startsWith(" ") : true)
+    ),
+  city: Yup.string()
+    .max(50, "City cannot exceed 50 characters."),
+  additionalInfo: Yup.string(),
+});

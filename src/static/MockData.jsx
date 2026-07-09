@@ -4,7 +4,8 @@ import {
   flyerThree,
   flyerTwo,
   loungeTwo,
-  FlayerOne
+  FlayerOne,
+  flyerImage,
 } from "../assets/export";
 
 export const loungeData = [
@@ -38,31 +39,31 @@ export const loungeData = [
 ];
 
 export const flyerData = [
-  { id: 1, name: "Summer Sale Flyer", image: FlayerOne },
-  { id: 2, name: "New Arrivals Flyer", image: flyerThree },
-  { id: 3, name: "Holiday Deals Flyer", image: flyerTwo },
-  { id: 4, name: "Back to School Flyer", image: flyer },
-  { id: 5, name: "Black Friday Flyer", image: flyerTwo },
+  { id: 1, name: "Summer Sale Flyer", image: flyerImage },
+  { id: 2, name: "New Arrivals Flyer", image: flyerImage },
+  { id: 3, name: "Holiday Deals Flyer", image: flyerImage },
+  { id: 4, name: "Back to School Flyer", image: flyerImage },
+  { id: 5, name: "Black Friday Flyer", image: flyerImage },
   {
     id: 6,
     name: "Winter Clearance Flyer",
-    image: flyerThree,
+    image: flyerImage,
   },
   {
     id: 7,
     name: "Spring Collection Flyer",
-    image: flyer,
+    image: flyerImage,
   },
-  { id: 8, name: "Flash Sale Flyer", image: flyerTwo },
+  { id: 8, name: "Flash Sale Flyer", image: flyerImage },
   {
     id: 9,
     name: "Limited Edition Flyer",
-    image: flyerThree,
+    image: flyerImage,
   },
   {
     id: 10,
     name: "Weekly Specials Flyer",
-    image: flyerTwo,
+    image: flyerImage,
   },
 ];
 
