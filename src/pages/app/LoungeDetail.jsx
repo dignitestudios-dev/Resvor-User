@@ -243,12 +243,21 @@ const LoungeDetail = () => {
 
               </div>
 
-              <p className="py-1">
-                Tags:{" "}
-                <span className="h-[28px] px-2 py-1 text-[14px] rounded-full font-medium bg-[#E6E6F0] text-[#010067] mr-1">
-                  {lounge?.specialization || "-"}
-                </span>
-              </p>
+              <p className="py-1 flex items-center gap-2 flex-wrap">
+  Tags:
+  {lounge?.tags?.length ? (
+    lounge.tags.map((tag, index) => (
+      <span
+        key={index}
+        className="h-[28px] px-2 py-1 text-[14px] rounded-full font-medium bg-[#E6E6F0] text-[#010067]"
+      >
+        {tag}
+      </span>
+    ))
+  ) : (
+    <span>-</span>
+  )}
+</p>
 
               <ul className="space-y-2 list-none">
                 <li className="flex items-center gap-2 text-gray-700">
@@ -266,13 +275,13 @@ const LoungeDetail = () => {
                 </li>
               </ul>
 
-              <p className="text-[#010067] text-[19px] font-semibold mt-2">
+              {/* <p className="text-[#010067] text-[19px] font-semibold mt-2">
                 Description
               </p>
 
               <p className="text-[#6B6B6B] text-[15px]">
                 {lounge?.description || "-"}
-              </p>
+              </p> */}
 
               <div className="flex justify-between items-center gap-2 w-[50%] py-4">
                 <div className="w-full">

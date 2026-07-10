@@ -146,15 +146,16 @@ export default function BookingDetails() {
   "-";
 
   const contactPhone =
-    booking?.contactPhone ||
-    booking?.phoneNumber ||
-    booking?.phone ||
-    (booking?.userId && typeof booking.userId === "object"
-      ? booking.userId.phone ||
-        booking.userId.phoneNumber ||
-        booking.userId.mobile
-      : "") ||
-    "-";
+  booking?.contactPhone ||
+  booking?.guestPhone ||
+  booking?.phoneNumber ||
+  booking?.phone ||
+  (booking?.userId && typeof booking.userId === "object"
+    ? booking.userId.phone ||
+      booking.userId.phoneNumber ||
+      booking.userId.mobile
+    : "") ||
+  "-";
 
   // ── Issue #4 — lounge cover image: widen lookup ───────────────────────────
   const lounge = booking?.loungeId;

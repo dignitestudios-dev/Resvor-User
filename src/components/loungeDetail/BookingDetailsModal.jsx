@@ -131,7 +131,7 @@ const BookingDetailsModal = ({
             </div>
             <div className="flex justify-between gap-4 items-start">
               <span className="font-medium text-[#727272] shrink-0">Phone Number</span>
-              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{phone}</span>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">+1 {phone}</span>
             </div>
           </div>
 
