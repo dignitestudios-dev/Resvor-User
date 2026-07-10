@@ -353,3 +353,31 @@ export const useRetryCampaign = () => {
   });
 };
 
+
+
+const fetchMe = async () => {
+  const { data } = await axios.get("/auth/me");
+  return data;
+};
+
+export const useMe = (options = {}) => {
+  return useQuery({
+    queryKey: ["me"],
+    queryFn: fetchMe,
+    retry: false,
+    ...options,
+  });
+};
+
+
+const updateOwnProfile = async (payload) => {
+  const { data } = await axios.patch("/users/own", payload);
+  return data;
+};
+
+
+export const useUpdateProfile = () => {
+  return useMutation({
+    mutationFn: updateOwnProfile,
+  });
+};

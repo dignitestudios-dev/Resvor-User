@@ -135,7 +135,7 @@ const GuestBook = () => {
                       Email
                     </th>
                     <th className="px-4 py-5 text-left text-nowrap font-[500]">
-                      Special Date
+                      Created Date
                     </th>
                     <th className="px-4 py-5 text-left text-nowrap font-[500]">
                       Action

@@ -1,24 +1,34 @@
 import { useRef } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import { useNavigate } from "react-router";
 
 import ProfileDetail from "../../components/userProfile/ProfileDetail";
 import ProfilePreferences from "../../components/userProfile/ProfilePreferences";
-
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-import { useNavigate } from "react-router";
 import LoungeCard from "../../components/global/LoungeCard";
-import { useFavorites } from "../../hooks/queries/useQueries";
+
+import { useFavorites, useMe } from "../../hooks/queries/useQueries";
 
 const UserProfile = () => {
   const navigate = useNavigate();
-  const { data: favoritesResponse, isLoading } = useFavorites();
+
+  const { data: favoritesResponse, isLoading: favoritesLoading } =
+    useFavorites();
+
+  const { data: meResponse, isLoading: userLoading } = useMe();
+
+  const user = meResponse?.data?.user;
+
   const favoriteLounges = favoritesResponse?.data || [];
+
   const scrollContainerRef = useRef(null);
 
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
       const { scrollLeft, clientWidth } = scrollContainerRef.current;
-      const scrollAmount = clientWidth * 0.8; // Scroll 80% of container width for a smoother look
+
+      const scrollAmount = clientWidth * 0.8;
+
       if (direction === "left") {
         scrollContainerRef.current.scrollTo({
           left: scrollLeft - scrollAmount,
@@ -40,25 +50,34 @@ const UserProfile = () => {
           <button type="button" onClick={() => navigate(-1)}>
             <FaArrowLeftLong color="white" size={20} />
           </button>
+
           <h2 className="text-white text-[30px] mt-0 font-bold leading-[48px] capitalize">
             Profile
           </h2>
         </div>
       </div>
+
       <div className="px-5 lg:px-40">
         <div
-          className=" mx-auto px-6 py-10 bg-white rounded-xl -mt-[16em]"
+          className="mx-auto px-6 py-10 bg-white rounded-xl -mt-[16em]"
           style={{ boxShadow: "0px 4px 30px 0px #00000026" }}
         >
           <div className="grid grid-cols-2 gap-4">
-            <ProfileDetail />
-            <ProfilePreferences />
+            <ProfileDetail user={user} loading={userLoading} />
+
+            <ProfilePreferences
+              user={user}
+              loading={userLoading}
+            />
           </div>
+
+
           <div className="bg-[#F5F5F5] rounded-[16px] p-6 space-y-4 mt-4">
             <div className="flex justify-between items-center">
               <p className="text-[24px] text-[#252525] font-[600]">
                 Favorite Lounges
               </p>
+
               <div className="flex items-center gap-4">
                 <div
                   onClick={() => scroll("left")}
@@ -66,6 +85,7 @@ const UserProfile = () => {
                 >
                   <IoIosArrowBack className="text-[16px]" />
                 </div>
+
                 <div
                   onClick={() => scroll("right")}
                   className="p-2 rounded-full border-[1px] border-[#D1D1D1] cursor-pointer hover:bg-white/50 transition duration-200 select-none"
@@ -74,7 +94,9 @@ const UserProfile = () => {
                 </div>
               </div>
             </div>
-            {isLoading ? (
+
+
+            {favoritesLoading ? (
               <div className="flex gap-6 overflow-x-hidden pb-2">
                 {[...Array(3)].map((_, index) => (
                   <div
@@ -82,6 +104,7 @@ const UserProfile = () => {
                     className="rounded-[24px] p-4 bg-white animate-pulse min-w-[300px] w-[300px] md:min-w-[350px] md:w-[350px] flex-shrink-0"
                   >
                     <div className="w-full h-[200px] bg-gray-200 rounded-[12px]" />
+
                     <div className="mt-6 space-y-3">
                       <div className="h-6 w-2/3 bg-gray-200 rounded" />
                       <div className="h-4 w-full bg-gray-200 rounded" />
