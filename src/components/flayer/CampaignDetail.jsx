@@ -164,6 +164,51 @@ export default function CampaignDetail() {
     (r) => (r.status || "").toUpperCase() === "FAILED"
   ).length;
 
+  const totalSent = campaign.totalRecipients ?? recipients.length ?? 0;
+  const totalDelivered = deliveredCount;
+  const totalFailed = failedCount;
+
+  const recipientsList = recipients;
+
+  const statusConfig = (status) => {
+    switch ((status || "").toUpperCase()) {
+      case "DELIVERED":
+      case "SUCCESS":
+      case "SENT":
+        return {
+          label: "Delivered",
+          cls: "bg-[#E6F9F0] text-[#1A9E5C] border-[#1A9E5C]",
+        };
+      case "FAILED":
+        return {
+          label: "Failed",
+          cls: "bg-[#FEE8E8] text-[#D93025] border-[#D93025]",
+        };
+      case "PENDING":
+        return {
+          label: "Pending",
+          cls: "bg-[#FEF3E2] text-[#C87D0E] border-[#C87D0E]",
+        };
+      default:
+        return {
+          label: status
+            ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
+            : "Unknown",
+          cls: "bg-[#F0F0F0] text-[#555555] border-[#555555]",
+        };
+    }
+  };
+
+  const st = {
+    ...statusConfig(campaign?.status),
+    icon: statusCfg.icon,
+  };
+
+  const getCampaignImage = (image) => {
+    if (!image) return null;
+    return image.location || null;
+  };
+
   // ── render ────────────────────────────────────────────────────────────────
   return (
     <>
@@ -198,210 +243,154 @@ export default function CampaignDetail() {
       {/* ── Main Card ── */}
       <div className="px-5 lg:px-40">
         <div
-          className="mx-auto bg-white rounded-[16px] -mt-[16em]"
+          className="mx-auto bg-white rounded-2xl -mt-[16em]"
           style={{ boxShadow: "0px 4px 30px 0px #00000026" }}
         >
-          <div className="p-5 bg-[#F5F5F5] rounded-[16px] space-y-5">
+          <div className="bg-white rounded-lg border border-white p-4">
+            <div className="bg-[#F5F5F5] rounded-lg p-6 border border-[#F5F5F5]">
 
-            {/* ── Section: Campaign Overview ───────────────────────────────── */}
-            <h2 className="text-[22px] font-semibold text-gray-800">Campaign Overview</h2>
+              {/* Grid Content */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <div className="bg-white rounded-[20px] p-6 space-y-6">
-              {/* Image + core details */}
-              <div className="flex flex-col md:flex-row gap-6 pb-6 border-b border-[#0000001A]">
-                {/* Flyer Image */}
-                <div className="flex-shrink-0">
-                  {campaign.image?.location ? (
-                    <img
-                      src={campaign.image.location}
-                      alt="Campaign flyer"
-                      className="w-full md:w-[220px] h-[200px] object-cover rounded-[14px] border border-[#E5E7EB]"
-                    />
-                  ) : (
-                    <div className="w-full md:w-[220px] h-[200px] bg-[#F3F4F6] rounded-[14px] flex items-center justify-center text-gray-400 text-sm">
-                      No Image
+                {/* Left Columns - Info & Stats */}
+                <div className="lg:col-span-2 space-y-6">
+
+                  {/* Stats Cards */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-white rounded-2xl p-5 flex flex-col justify-between">
+                      <span className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Total Sent</span>
+                      <span className="text-3xl font-bold text-gray-900 mt-2">{totalSent}</span>
                     </div>
-                  )}
-                </div>
 
-                {/* Core info */}
-                <div className="flex-1 space-y-4">
-                  {/* Channel + Status badges */}
-                  <div className="flex flex-wrap items-center gap-3">
-                    {/* Channel */}
-                    <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8E8FF] text-[#222246] text-[12px] font-semibold capitalize">
-                      {(campaign.channel || "").toLowerCase() === "email" ? (
-                        <MdEmail size={14} />
-                      ) : (
-                        <MdSms size={14} />
-                      )}
-                      {campaign.channel || "-"}
-                    </span>
-
-                    {/* Overall status */}
-                    <span
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold"
-                      style={{ backgroundColor: statusCfg.bg, color: statusCfg.text }}
-                    >
-                      {statusCfg.icon}
-                      {statusCfg.label}
-                    </span>
-                  </div>
-
-                  {/* Stats grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-                    <DetailRow label="Total Recipients" value={String(campaign.totalRecipients ?? recipients.length ?? 0)} />
-                    <DetailRow label="Delivered" value={`${deliveredCount} / ${recipients.length}`} />
-                    <DetailRow label="Failed" value={String(failedCount)} />
-                    <DetailRow label="Sent At" value={`${formatDate(campaign.sentAt || campaign.createdAt)} ${formatTime(campaign.sentAt || campaign.createdAt)}`} />
-                    {campaign.image?.filename && (
-                      <DetailRow label="Filename" value={campaign.image.filename} />
-                    )}
-                    {campaign.image?.size && (
-                      <DetailRow label="File Size" value={formatBytes(campaign.image.size)} />
-                    )}
-                  </div>
-
-                  {/* Additional Info */}
-                  {campaign.additionalInfo && (
-                    <div className="bg-[#F9FAFB] rounded-[12px] p-4">
-                      <p className="text-[12px] font-semibold text-[#9CA3AF] uppercase tracking-wide mb-1">
-                        Additional Info
-                      </p>
-                      <p className="text-[14px] text-[#374151]">{campaign.additionalInfo}</p>
+                    <div className="bg-white rounded-2xl p-5 flex flex-col justify-between">
+                      <span className="text-green-500/80 text-xs font-semibold uppercase tracking-wider">Delivered</span>
+                      <span className="text-3xl font-bold text-green-600 mt-2">{totalDelivered}</span>
                     </div>
-                  )}
-                </div>
-              </div>
 
-              {/* Delivery summary cards */}
-              <div className="grid grid-cols-3 gap-4 pb-6 border-b border-[#0000001A]">
-                <div className="bg-[#F0FDF4] rounded-[14px] p-4 text-center">
-                  <IoCheckmarkCircle className="mx-auto text-[#1A9E5C] mb-1" size={24} />
-                  <p className="text-[24px] font-bold text-[#1A9E5C]">{deliveredCount}</p>
-                  <p className="text-[12px] font-medium text-[#6B7280] mt-0.5">Delivered</p>
-                </div>
-                <div className="bg-[#FFF7ED] rounded-[14px] p-4 text-center">
-                  <IoPaperPlane className="mx-auto text-[#C87D0E] mb-1" size={22} />
-                  <p className="text-[24px] font-bold text-[#C87D0E]">{recipients.length}</p>
-                  <p className="text-[12px] font-medium text-[#6B7280] mt-0.5">Total Sent</p>
-                </div>
-                <div className="bg-[#FFF1F2] rounded-[14px] p-4 text-center">
-                  <IoCloseCircle className="mx-auto text-[#D93025] mb-1" size={24} />
-                  <p className="text-[24px] font-bold text-[#D93025]">{failedCount}</p>
-                  <p className="text-[12px] font-medium text-[#6B7280] mt-0.5">Failed</p>
-                </div>
-              </div>
-
-              {/* Retry CTA — inside card for failed campaigns */}
-              {isFailed && (
-                <div className="flex items-center justify-between bg-[#FEE8E8] rounded-[14px] p-4">
-                  <div>
-                    <p className="text-[14px] font-semibold text-[#D93025]">Campaign Failed</p>
-                    <p className="text-[12px] text-[#9B1C1C] mt-0.5">
-                      Some or all recipients did not receive this campaign. You can retry to resend.
-                    </p>
+                    <div className="bg-white rounded-2xl p-5 flex flex-col justify-between">
+                      <span className="text-red-500/80 text-xs font-semibold uppercase tracking-wider">Failed</span>
+                      <span className="text-3xl font-bold text-red-600 mt-2">{totalFailed}</span>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleRetry}
-                    disabled={isRetrying}
-                    className="flex items-center gap-2 px-4 py-2 rounded-[10px] bg-[#D93025] text-white text-[13px] font-semibold hover:bg-[#b91c1c] transition disabled:opacity-50 disabled:cursor-not-allowed ml-4 whitespace-nowrap"
-                  >
-                    <MdRefresh size={15} className={isRetrying ? "animate-spin" : ""} />
-                    Retry
-                  </button>
+
+                  {/* Campaign Details Info Card */}
+                  <div className="bg-white rounded-2xl p-6 space-y-5">
+                    <h3 className="text-lg font-bold text-gray-800 border-b pb-3">General Information</h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <p className="text-xs text-gray-400 font-semibold uppercase">Campaign Status</p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${st.cls}`}>
+                            {st.icon} {st.label}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-gray-400 font-semibold uppercase">Channel</p>
+                        <p className="text-sm font-semibold text-gray-800 mt-2 capitalize">{campaign.channel || "email"}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-gray-400 font-semibold uppercase">Created At</p>
+                        <p className="text-sm text-gray-700 mt-2 flex items-center gap-1.5">
+                          <IoTimeOutline className="w-4 h-4 text-gray-400" />
+                          {formatDate(campaign.createdAt)}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-gray-400 font-semibold uppercase">Last Updated At</p>
+                        <p className="text-sm text-gray-700 mt-2 flex items-center gap-1.5">
+                          <IoTimeOutline className="w-4 h-4 text-gray-400" />
+                          {formatDate(campaign.updatedAt)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Additional Info Box */}
+                    {campaign.additionalInfo && (
+                      <div className="bg-gray-50 rounded-xl p-4 mt-4">
+                        <p className="text-xs text-gray-400 font-semibold uppercase mb-2">Additional Description</p>
+                        <div
+                          className="text-sm text-gray-700 leading-relaxed font-light"
+                          dangerouslySetInnerHTML={{ __html: campaign.additionalInfo }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Recipients List */}
+                  <div className="bg-white rounded-2xl p-6 space-y-4">
+                    <h3 className="text-lg font-bold text-gray-800 border-b pb-3 flex items-center gap-2">
+                      Recipients Directory
+                    </h3>
+
+                    {recipientsList.length === 0 ? (
+                      <p className="text-sm text-gray-400 text-center py-6">No specific recipient details available.</p>
+                    ) : (
+                      <div className="overflow-hidden border rounded-xl divide-y">
+                        {recipientsList.map((rec, i) => {
+                          const state = statusConfig(rec.status);
+                          return (
+                            <div key={i} className="flex flex-col md:flex-row md:items-center justify-between p-4 hover:bg-gray-50 transition gap-3">
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-semibold text-gray-900 truncate">{rec.value}</p>
+                                {rec.failureReason && (
+                                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                                    <IoCloseCircle className="w-3 h-3 shrink-0" />
+                                    Reason: {rec.failureReason}
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-4 flex-wrap shrink-0">
+                                <span className="text-xs text-gray-400">
+                                  Attempts: <span className="font-semibold text-gray-700">{rec.attempts || 1}</span>
+                                </span>
+                                {rec.lastAttemptedAt && (
+                                  <span className="text-xs text-gray-400">
+                                    Tried: <span className="font-semibold text-gray-700">{new Date(rec.lastAttemptedAt).toLocaleTimeString()}</span>
+                                  </span>
+                                )}
+                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${state.cls}`}>
+                                  {state.label}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
                 </div>
-              )}
+
+                {/* Right Column - Image / Flyer Preview */}
+                <div className="space-y-6">
+                  <div className="bg-white rounded-2xl p-6 space-y-4">
+                    <h3 className="text-lg font-bold text-gray-800 border-b pb-3">Flyer Preview</h3>
+
+                    {getCampaignImage(campaign.image) ? (
+                      <div className="rounded-xl overflow-hidden border bg-gray-50 flex items-center justify-center">
+                        <img
+                          src={getCampaignImage(campaign.image)}
+                          alt="Campaign Flyer"
+                          className="w-full h-auto object-cover max-h-[500px]"
+                        />
+                      </div>
+                    ) : (
+                      <div className="border border-dashed rounded-xl h-64 flex flex-col items-center justify-center text-gray-400 bg-gray-50">
+                        <MdEmail className="w-12 h-12 mb-2 text-gray-300" />
+                        <span className="text-sm">No flyer image attached</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+              </div>
             </div>
-
-            {/* ── Section: Recipients ──────────────────────────────────────── */}
-            {recipients.length > 0 && (
-              <div>
-                <h2 className="text-[22px] font-semibold text-gray-800 mb-3">Recipients</h2>
-                <div className="bg-white rounded-[20px] overflow-hidden">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="bg-[#F9F9F9] border-b border-[#E5E7EB]">
-                        <th className="px-6 py-4 text-[12px] font-semibold text-[#6B7280] uppercase tracking-wide">
-                          Recipient
-                        </th>
-                        <th className="px-6 py-4 text-[12px] font-semibold text-[#6B7280] uppercase tracking-wide">
-                          Status
-                        </th>
-                        <th className="px-6 py-4 text-[12px] font-semibold text-[#6B7280] uppercase tracking-wide">
-                          Attempts
-                        </th>
-                        <th className="px-6 py-4 text-[12px] font-semibold text-[#6B7280] uppercase tracking-wide">
-                          Last Attempted
-                        </th>
-                        <th className="px-6 py-4 text-[12px] font-semibold text-[#6B7280] uppercase tracking-wide">
-                          Failure Reason
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recipients.map((r, idx) => {
-                        const cfg = recipientStatusConfig(r.status);
-                        return (
-                          <tr
-                            key={idx}
-                            className="border-b border-[#F0F0F0] hover:bg-[#FAFAFA] transition-colors"
-                          >
-                            {/* Recipient value */}
-                            <td className="px-6 py-4 text-[13px] font-medium text-[#111827]">
-                              {r.value || "-"}
-                            </td>
-
-                            {/* Status pill */}
-                            <td className="px-6 py-4">
-                              <span
-                                className="flex items-center gap-1.5 w-fit px-3 py-1 rounded-full text-[12px] font-semibold capitalize"
-                                style={{ backgroundColor: cfg.bg, color: cfg.text }}
-                              >
-                                <span
-                                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                                  style={{ backgroundColor: cfg.dot }}
-                                />
-                                {(r.status || "-").charAt(0).toUpperCase() +
-                                  (r.status || "").slice(1).toLowerCase()}
-                              </span>
-                            </td>
-
-                            {/* Attempts */}
-                            <td className="px-6 py-4 text-[13px] text-[#374151]">
-                              {r.attempts ?? "-"}
-                            </td>
-
-                            {/* Last attempted */}
-                            <td className="px-6 py-4 text-[13px] text-[#374151] whitespace-nowrap">
-                              {r.lastAttemptedAt ? (
-                                <div>
-                                  <div>{formatDate(r.lastAttemptedAt)}</div>
-                                  <div className="text-[11px] text-[#9CA3AF]">
-                                    {formatTime(r.lastAttemptedAt)}
-                                  </div>
-                                </div>
-                              ) : (
-                                "-"
-                              )}
-                            </td>
-
-                            {/* Failure reason */}
-                            <td className="px-6 py-4 text-[13px] text-[#6B7280]">
-                              {r.failureReason || (
-                                <span className="text-[#9CA3AF] italic">None</span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
           </div>
         </div>
       </div>

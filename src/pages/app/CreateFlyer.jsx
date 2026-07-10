@@ -21,6 +21,7 @@ import AuthSuccessModal from "../../components/auth/AuthSuccessModal";
 import html2canvas from "html2canvas";
 import { useCreateCampaign } from "../../hooks/mutations/OnboardingMutations";
 import { SuccessToast, ErrorToast } from "../../components/global/Toaster";
+import { eventTypes } from "../../static/LoungeDetailTabs";
 
 /* ─────────────────────────────────────────────────────────────
    Utilities
@@ -337,6 +338,22 @@ const CreateFlyer = () => {
                 </p>
               </div>
 
+              <div>
+                <FilterSelectableField
+                  label="Event Type"
+                  placeholder="Select event type"
+                  options={eventTypes}
+                  value={values.eventType}
+                  onChange={(option) => {
+                    setFieldValue("eventType", [option]);
+                    setFieldTouched("eventType", true, false);
+                  }}
+                />
+                {touched.eventType && errors.eventType && (
+                  <p className="text-red-600 text-[12px] mt-1">{errors.eventType}</p>
+                )}
+              </div>
+
               {/* Event Title */}
               <InputField
                 label="Event Title"
@@ -354,22 +371,8 @@ const CreateFlyer = () => {
               />
 
               {/* Event Type & Date */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <FilterSelectableField
-                    label="Event Type"
-                    placeholder="Select event type"
-                    options={["Birthday Party", "Wedding", "Corporate Event", "Festival"]}
-                    value={values.eventType}
-                    onChange={(option) => {
-                      setFieldValue("eventType", [option]);
-                      setFieldTouched("eventType", true, false);
-                    }}
-                  />
-                  {touched.eventType && errors.eventType && (
-                    <p className="text-red-600 text-[12px] mt-1">{errors.eventType}</p>
-                  )}
-                </div>
+              {/* Start & End Time */}
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <DatePickerField
                     label="Event Date"
@@ -384,10 +387,6 @@ const CreateFlyer = () => {
                     <p className="text-red-600 text-[12px] mt-1">{errors.eventDate}</p>
                   )}
                 </div>
-              </div>
-
-              {/* Start & End Time */}
-              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <TimePickerField
                     text="Start Time"
@@ -445,7 +444,7 @@ const CreateFlyer = () => {
                     touched={touched.address}
                   />
                   <InputField
-                    label="City"
+                    label="City (Optional)"
                     text="city"
                     placeholder="Enter city"
                     type="text"
@@ -542,7 +541,7 @@ const CreateFlyer = () => {
                 </div>
 
                 {/* Download button */}
-                {/* <button
+                <button
                   type="button"
                   onClick={handleDownloadFlyer}
                   disabled={isGenerating}
@@ -582,7 +581,7 @@ const CreateFlyer = () => {
                       Download
                     </>
                   )}
-                </button> */}
+                </button>
               </div>
 
               {/* Flyer stage */}

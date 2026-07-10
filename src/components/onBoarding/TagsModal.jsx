@@ -151,9 +151,9 @@ const TagsModal = ({
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       if (newErrors.dob) {
-        setFieldError("specialDatesData", newErrors.dob);
+        setFieldError(newErrors.dob);
       } else {
-        setFieldError("specialDatesData", "Please fill all required fields for special dates.");
+        setFieldError("Please fill all required fields for special dates.");
       }
       return;
     }
@@ -164,7 +164,7 @@ const TagsModal = ({
     };
 
     setFieldValue("specialDatesData", payload);
-    setFieldError("specialDatesData", "");
+    setFieldError("");
 
     onClose();
   };

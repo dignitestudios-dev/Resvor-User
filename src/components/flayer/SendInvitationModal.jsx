@@ -3,6 +3,7 @@ import { RxCross2 } from "react-icons/rx";
 import Button from "../global/Button";
 import { useState } from "react";
 import { useCampaignContacts } from "../../hooks/queries/useQueries";
+import { ErrorToast } from "../../components/global/Toaster";
 
 const SendInvitationModal = ({ onClose, onClick, handleSuccess, isLoading }) => {
   const [email, setEmail] = useState("");
@@ -20,9 +21,35 @@ const SendInvitationModal = ({ onClose, onClick, handleSuccess, isLoading }) => 
   /* ── handlers ── */
   const handleAddEmail = () => {
     const trimmed = email.trim();
-    if (trimmed && !selectedGuests.includes(trimmed)) {
+    if (!trimmed) return;
+
+    // Rule 1: No spaces allowed
+    if (/\s/.test(email)) {
+      ErrorToast("Email cannot contain spaces.");
+      return;
+    }
+
+    // Rule 2: Cannot start with a special character/dot
+    if (/^[._%+-]/.test(trimmed)) {
+      ErrorToast("Email cannot start with a special character.");
+      return;
+    }
+
+    // Rule 3: Strict industry-standard regex
+    // - (?!.*\.\.): No consecutive dots
+    // - (?!.*\.@): No dot right before @
+    // - (?!.*@\.): No dot right after @
+    const emailRegex = /^(?!.*\.\.)(?!.*\.@)(?!.*@\.)[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailRegex.test(trimmed)) {
+      ErrorToast("Invalid email format. Please enter a valid email address.");
+      return;
+    }
+
+    if (!selectedGuests.includes(trimmed)) {
       setSelectedGuests((prev) => [...prev, trimmed]);
       setEmail("");
+    } else {
+      ErrorToast("Email is already added.");
     }
   };
 
