@@ -43,7 +43,7 @@ async function getDeviceFingerprint() {
 
 const instance = axios.create({
   baseURL: baseUrl,
-  withCredentials: true,
+  // withCredentials: true,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
