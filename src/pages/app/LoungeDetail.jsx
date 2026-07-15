@@ -415,7 +415,8 @@ const LoungeDetail = () => {
 
         {isEventSummary && (
           <EventSummaryModal
-            apiPayload={{
+            apiPayload={
+              {
               loungeId: id,
               title: eventData?.title || eventData?.eventName || "",
               eventType: normalizeEventType(eventData?.eventType),
@@ -439,6 +440,7 @@ const LoungeDetail = () => {
                 (pkg) => pkg.id || pkg._id
               ),
             }}
+            services={eventServices}
             onClick={handleEventSummary}
             onClose={() => setISEventSummary(false)}
           />
