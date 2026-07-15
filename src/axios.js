@@ -60,7 +60,7 @@ instance.interceptors.request.use(
       return Promise.reject(new Error("No internet connection"));
     }
 
-    request.withCredentials = true;
+    // request.withCredentials = true;
 
     const fingerprint = await getDeviceFingerprint();
 
