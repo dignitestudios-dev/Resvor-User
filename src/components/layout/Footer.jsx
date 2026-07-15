@@ -77,7 +77,7 @@ const Footer = () => {
         {/* Bottom Row */}
         <div className="flex flex-col md:flex-row justify-between items-center text-sm gap-2">
           <p className="text-white">
-            Copyright © 2025 CodeClean. All rights reserved.
+            Copyright © 2026 Resvor. All rights reserved.
           </p>
           <div className="flex gap-4 text-white">
             <a

@@ -183,8 +183,12 @@ const BookingDetailsModal = ({
                 bookingServiceData.selectedPackage.map((item) => (
                   <div key={item.id} className="flex justify-between gap-4 items-start text-gray-700">
                     <span className="break-all max-w-[65%]">{item.title}</span>
-                    <span className="font-semibold text-gray-900 shrink-0">${item.price}</span>
-                  </div>
+<span className="font-semibold text-gray-900 shrink-0">
+  {new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format((item.price || 0) / 100)}
+</span>                  </div>
                 ))
               ) : (
                 <p className="text-gray-400 text-sm">No services or packages selected.</p>
