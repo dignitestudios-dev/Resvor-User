@@ -21,7 +21,7 @@ const DatePickerField = ({
 
       {/* Display Field */}
       <div
-        className="border border-[#BEBEBE] rounded-[16px] mt-2
+        className="border border-[#BEBEBE] rounded-[16px] mt-1
         px-3 py-2 flex items-center justify-between text-sm cursor-pointer hover:border-gray-200 transition"
         onClick={() => setShowPicker(!showPicker)}
       >

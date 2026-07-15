@@ -108,7 +108,7 @@ const RichTextEditor = ({ onChange, value = "" }) => {
     <div className="space-y-4">
       <div>
         <h3 className="text-[16px] font-bold text-[#333333] mb-2">
-          Additional Information
+          Additional Information (Optional)
         </h3>
         <p className="text-[13px] text-[#666666] mb-4">
           Provide additional details about your event. The message will appear

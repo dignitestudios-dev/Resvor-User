@@ -29,13 +29,13 @@ const FlayerFeeModal = ({ onClose, onClick }) => {
                 </p>
                 <p className="text-[16px] text-[#4B4B4B] ">$10.00</p>
               </div>
-              <div className="flex justify-between items-center mt-2">
+              {/* <div className="flex justify-between items-center mt-2">
                 <p className="text-[14px] font-[500] text-[#18181880] ">Tax</p>
                 <p className="text-[16px] text-[#4B4B4B] ">$10.00</p>
-              </div>
+              </div> */}
               <div className="flex justify-between items-center mt-2">
                 <p className="text-[14px] font-[500] text-[#18181880] ">
-                  Subtotal
+                  Total
                 </p>
                 <p className="text-[16px] text-[#4B4B4B] ">$10.00</p>
               </div>

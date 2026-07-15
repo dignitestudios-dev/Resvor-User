@@ -37,3 +37,21 @@ export const tabs = [
     content: <LoungeLocation />,
   },
 ];
+
+export const eventTypes = [
+  "Concert",
+  "Wedding",
+  "Corporate Event",
+  "Birthday Party",
+  "Charity Gala",
+  "Festival",
+  "Product Launch",
+  "Sports Event",
+  "Networking Meetup",
+  "Conference",
+  "Workshop",
+  "Exhibition",
+  "Fundraiser",
+  "Award Ceremony",
+  "Community Fair",
+];
