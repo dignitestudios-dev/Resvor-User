@@ -155,16 +155,15 @@ const LoungeServicesPackages = ({ lounge }) => {
               <p className="text-[16px] text-blue-950 font-[600]">
                 {service?.name}
               </p>
-              <p className="leading-relaxed text-[14px] font-[500] mt-1">
-                {service?.description}
-              </p>
+              <p className="leading-relaxed text-[14px] font-[500] mt-1 [overflow-wrap:anywhere]">
+  {service?.description}
+</p>
             </div>
 
             <div className="my-2">
               <p className="text-indigo-950 text-[18px] font-[700]">
                 {/* Price: {currency} {service?.price} */}
-                                Price: ${service?.price}
-
+Price: ${(service?.price / 100).toFixed(2)}
               </p>
             </div>
 
