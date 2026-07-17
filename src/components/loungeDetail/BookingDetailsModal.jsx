@@ -105,6 +105,21 @@ const BookingDetailsModal = ({
     });
   };
 
+
+  const formatTime = (time) => {
+  if (!time) return "-";
+
+  const [hours, minutes] = time.split(":");
+  const date = new Date();
+  date.setHours(Number(hours), Number(minutes));
+
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
       <div className="bg-white rounded-[12px] w-full max-w-[440px] mx-4 pb-2 h-[640px] overflow-y-auto">
@@ -142,8 +157,9 @@ const BookingDetailsModal = ({
             </div>
             <div className="flex justify-between gap-4 items-start">
               <span className="text-[14px] font-medium text-[#727272] shrink-0">Time</span>
-              <span className="text-[14px] text-[#000000] font-semibold text-right break-all max-w-[65%]">{time} – {endTime}</span>
-            </div>
+<span className="text-[14px] text-[#000000] font-semibold text-right break-all max-w-[65%]">
+  {formatTime(time)} – {formatTime(endTime)}
+</span>            </div>
             <div className="flex justify-between gap-4 items-start">
               <span className="text-[14px] font-medium text-[#727272] shrink-0">Guest Count</span>
               <span className="text-[14px] text-[#000000] font-semibold text-right break-all max-w-[65%]">{guestCount}</span>
