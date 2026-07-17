@@ -45,7 +45,18 @@ import flyerTwo from "./flyerTwo.png";
 import flyerThree from "./flyerThree.png";
 import loungeTwo from "./loungeTwo.jpg";
 import FlayerOne from "./flayer.png";
-import flyerImage from "./flyerImage.jpg";
+
+// Flyer images from public folder
+import flyerImageOne from "./flyerImageOne.jpg";
+import flyerImageTwo from "./flyerImageTwo.jpg";
+import flyerImageThree from "./flyerImageThree.jpg";
+import flyerImageFour from "./flyerImageFour.jpg";
+import flyerImageFive from "./flyerImageFive.jpg";
+import flyerImageSix from "./flyerImageSix.jpg";
+import flyerImageSeven from "./flyerImageSeven.jpg";
+import flyerImageEight from "./flyerImageEight.jpg";
+import flyerImageNine from "./flyerImageNine.jpg";
+import flyerImageTen from "./flyerImageTen.jpg";
 // export {
 //     FILENAME(PASCALCASE)
 // }
@@ -90,8 +101,17 @@ export {
   flyer,
   flyerTwo,
   flyerThree,
-  flyerImage,
   danger,
   dangerBlue,
   loungeTwo,
+  flyerImageOne,
+  flyerImageTwo,
+  flyerImageThree,
+  flyerImageFour,
+  flyerImageFive,
+  flyerImageSix,
+  flyerImageSeven,
+  flyerImageEight,
+  flyerImageNine,
+  flyerImageTen,
 };

@@ -1,3 +1,4 @@
+import { Theater } from "lucide-react";
 import LoungeAbout from "../components/loungeDetail/LoungeAbout";
 import LoungeFloorPlan from "../components/loungeDetail/LoungeFloorPlan";
 import LoungeGallery from "../components/loungeDetail/LoungeGallery";
@@ -39,19 +40,14 @@ export const tabs = [
 ];
 
 export const eventTypes = [
-  "Concert",
-  "Wedding",
-  "Corporate Event",
-  "Birthday Party",
-  "Charity Gala",
-  "Festival",
-  "Product Launch",
-  "Sports Event",
-  "Networking Meetup",
-  "Conference",
-  "Workshop",
-  "Exhibition",
-  "Fundraiser",
-  "Award Ceremony",
-  "Community Fair",
+  "Birthday Celebration",
+  "Ladies Night",
+  "Anniversary Celebration",
+  "Live DJ / Music Night",
+  "Happy Hour",
+  "VIP Bottle Service",
+  "Seafood Boil / Food Event",
+  "Special Event / Holiday",
+  "Weekly Event Schedule",
+  "Lounge Manager Announcement",
 ];
