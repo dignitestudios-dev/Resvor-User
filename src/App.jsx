@@ -28,6 +28,8 @@ import Notifications from "./pages/app/Notifications";
 import { useAuthMe } from "./hooks/queries/useQueries";
 import Cookies from "js-cookie";
 import ScrollToTop from "./components/global/ScrollToTop";
+import OfflineStatusDetector from "./components/global/OfflineStatusDetector";
+
 
 const ProtectedAppRoute = () => {
   const { data: authData, isLoading, isError } = useAuthMe();
@@ -109,7 +111,9 @@ function App() {
   return (
     <>
       <ScrollToTop />
+      <OfflineStatusDetector />
       <Routes>
+
         <Route
         path="/"
         element={
