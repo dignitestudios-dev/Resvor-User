@@ -52,7 +52,7 @@ import flyerImageTwo from "./flyerImageTwo.jpg";
 import flyerImageThree from "./flyerImageThree.jpg";
 import flyerImageFour from "./flyerImageFour.jpg";
 import flyerImageFive from "./flyerImageFive.jpg";
-import flyerImageSix from "./flyerImageSix.jpg";
+import flyerImageSix from "./flyerImagesix.jpg";
 import flyerImageSeven from "./flyerImageSeven.jpg";
 import flyerImageEight from "./flyerImageEight.jpg";
 import flyerImageNine from "./flyerImageNine.jpg";
