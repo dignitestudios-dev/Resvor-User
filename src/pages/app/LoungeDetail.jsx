@@ -22,6 +22,7 @@ import {
   useFavorites,
   useLoungeDetails,
   useToggleFavorite,
+  useInitiateChat,
 } from "../../hooks/queries/useQueries";
 
 const LoungeDetail = () => {
@@ -57,6 +58,8 @@ const LoungeDetail = () => {
   });
   const { mutate: toggleFavorite, isPending: isTogglingFavorite } =
     useToggleFavorite();
+  const { mutate: initiateChat, isPending: isInitiatingChat } =
+    useInitiateChat();
 
   const lounge = loungeResponse?.data;
 
@@ -85,6 +88,23 @@ const LoungeDetail = () => {
   const handleEventDetailsClose = () => {
     setIsEventDetails(false);
     setIsEventSubmit(true);
+  };
+
+  const handleChatClick = () => {
+    if (!id || isInitiatingChat) return;
+    initiateChat(
+      { loungeId: id },
+      {
+        onSuccess: (response) => {
+          const chat = response?.data;
+          navigate("/app/chat", { state: { chatId: chat?._id, chat } });
+        },
+        onError: () => {
+          // fallback: still navigate to chat list
+          navigate("/app/chat");
+        },
+      }
+    );
   };
 
   const handleFavoriteClick = () => {
@@ -221,13 +241,21 @@ const LoungeDetail = () => {
     {lounge?.name || "-"}
   </p>
 
-  <div className="flex gap-2 shrink-0">
-    <div
-      className="cursor-pointer"
-      onClick={() => navigate("/app/chat")}
-    >
-      <img src={msgIcon} alt="msg" className="w-10 h-10" />
-    </div>
+    <div className="flex gap-2 shrink-0">
+      <div
+        className={`cursor-pointer flex items-center justify-center ${
+          isInitiatingChat ? "opacity-60 pointer-events-none" : ""
+        }`}
+        onClick={handleChatClick}
+      >
+        {isInitiatingChat ? (
+          <div className="w-10 h-10 flex items-center justify-center">
+            <div className="w-5 h-5 border-2 border-[#010067] border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+          <img src={msgIcon} alt="msg" className="w-10 h-10" />
+        )}
+      </div>
 
     <div
       onClick={handleFavoriteClick}

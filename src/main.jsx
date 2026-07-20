@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router";
 import ReactQueryProvider from "./providers/ReactQueryProvider.jsx";
 import { ToasterContainer } from "./components/global/Toaster.jsx";
 import { AppContextProvider } from "./context/AppContext.jsx";
+import { SocketProvider } from "./context/SocketContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -13,7 +14,9 @@ createRoot(document.getElementById("root")).render(
       <ToasterContainer />
       <BrowserRouter>
         <AppContextProvider>
-          <App />
+          <SocketProvider>
+            <App />
+          </SocketProvider>
         </AppContextProvider>
       </BrowserRouter>
     </ReactQueryProvider>

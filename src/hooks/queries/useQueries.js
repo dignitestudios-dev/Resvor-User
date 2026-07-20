@@ -381,3 +381,69 @@ export const useUpdateProfile = () => {
     mutationFn: updateOwnProfile,
   });
 };
+
+// ── Chat ─────────────────────────────────────────────────────
+
+const initiateChat = async (payload) => {
+  const { data } = await axios.post("/chats", payload);
+  return data;
+};
+
+export const useInitiateChat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: initiateChat,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
+    },
+  });
+};
+
+const fetchChats = async () => {
+  const { data } = await axios.get("/chats");
+  return data;
+};
+
+export const useListChats = (options = {}) => {
+  return useQuery({
+    queryKey: ["chats"],
+    queryFn: fetchChats,
+    retry: false,
+    ...options,
+  });
+};
+
+const fetchMessages = async ({ chatId, page = 1, limit = 50 }) => {
+  const { data } = await axios.get(`/chats/${chatId}/messages`, {
+    params: { page, limit },
+  });
+  return data;
+};
+
+export const useGetMessages = (chatId, page = 1, limit = 50, options = {}) => {
+  return useQuery({
+    queryKey: ["chat-messages", chatId, page, limit],
+    queryFn: () => fetchMessages({ chatId, page, limit }),
+    enabled: !!chatId,
+    retry: false,
+    ...options,
+  });
+};
+
+const sendMessage = async ({ chatId, payload }) => {
+  const { data } = await axios.post(`/chats/${chatId}/messages`, payload);
+  return data;
+};
+
+export const useSendMessage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: sendMessage,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
+      queryClient.invalidateQueries({
+        queryKey: ["chat-messages", variables.chatId],
+      });
+    },
+  });
+};
