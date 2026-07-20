@@ -542,7 +542,7 @@ const CreateFlyer = () => {
                 </div>
 
                 {/* Download button */}
-                <button
+                {/* <button
                   type="button"
                   onClick={handleDownloadFlyer}
                   disabled={isGenerating}
@@ -582,7 +582,7 @@ const CreateFlyer = () => {
                       Download
                     </>
                   )}
-                </button>
+                </button> */}
               </div>
 
               {/* Flyer stage */}
