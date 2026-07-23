@@ -166,7 +166,7 @@ const BookingServiceModal = ({
                         key={svcId}
                         className="bg-blue-950 rounded-full px-3 py-1 mr-2 mb-1 inline-flex items-center gap-2"
                       >
-                        {service.title} (${service.price})
+                        {service.title} ({new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format((Number(service.price) || 0) / 100)})
                         {/* Small bin icon inside each tag */}
                         <button onClick={() => handleRemoveService(svcId)}>
                           <img src={binIcon} className="w-4 h-4" alt="remove" />

@@ -7,11 +7,12 @@ import AuthButton from "../../components/auth/AuthButton";
 import { loginSideImg } from "../../assets/export";
 import { logInSchema } from "../../schema/authentication/authSchema";
 import { loginValues } from "../../init/authentication/authValues";
-import { useLogin } from "../../hooks/mutations/OnboardingMutations";
+import { useLogin, useUpdateFcmToken } from "../../hooks/mutations/OnboardingMutations";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import { setStoredTokenType } from "../../lib/authSession";
 import { useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
+import { requestForToken } from "../../firebase/getFcmToken";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const Login = () => {
   const [apiError, setApiError] = useState("");
 
   const loginMutation = useLogin();
+  const updateFcmMutation = useUpdateFcmToken();
 
   const {
     values,
@@ -35,6 +37,13 @@ const Login = () => {
   setState("loading");
 
   try {
+    let fcmToken = "";
+    try {
+      fcmToken = await requestForToken();
+    } catch (tokenError) {
+      console.error("FCM Token retrieval failed:", tokenError);
+    }
+
     const response = await loginMutation.mutateAsync({
       email: values.email,
       password: values.password,
@@ -61,6 +70,16 @@ const Login = () => {
     }
 
     setStoredTokenType(tokenType);
+
+    // Register FCM token in the background (fire-and-forget)
+    if (fcmToken) {
+      try {
+        await updateFcmMutation.mutateAsync({ fcmToken });
+      } catch (fcmUpdateError) {
+        console.error("FCM Token update on backend failed:", fcmUpdateError);
+      }
+    }
+
     await queryClient.invalidateQueries({ queryKey: ["auth-me"] });
 
     if (tokenType === "access_token") {

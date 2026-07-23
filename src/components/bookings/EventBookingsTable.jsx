@@ -2,6 +2,36 @@
 import { IoIosArrowForward } from "react-icons/io";
 import { useNavigate } from "react-router";
 
+const formatDate = (value) => {
+  if (!value || value === "-") return "-";
+  if (typeof value === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(value)) return value;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "UTC",
+  });
+};
+
+const formatTime = (value) => {
+  if (!value || value === "-") return "-";
+  if (typeof value === "string" && (value.includes("AM") || value.includes("PM"))) return value;
+  if (typeof value === "string" && (value.includes("T") || value.includes("Z"))) {
+    const d = new Date(value);
+    if (!Number.isNaN(d.getTime())) {
+      return d.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "UTC",
+      });
+    }
+  }
+  return String(value);
+};
+
 const EventBookingsTable = ({ events, onSort, sortConfig }) => {
   const navigate = useNavigate();
 
@@ -16,15 +46,6 @@ const EventBookingsTable = ({ events, onSort, sortConfig }) => {
                 className="pr-4 pl-6 py-5 text-left text-nowrap font-[500] "
               >
                 Event Name{" "}
-                {/* {sortConfig.key === "name" ? (
-                  sortConfig.direction === "asc" ? (
-                    <span className="cursor-pointer">^</span>
-                  ) : (
-                    <span className="cursor-pointer">v</span>
-                  )
-                ) : (
-                  ""
-                )} */}
               </th>
               <th className="px-4 py-5 text-left text-nowrap font-[500] ">
                 Venue
@@ -72,8 +93,8 @@ const EventBookingsTable = ({ events, onSort, sortConfig }) => {
                   <div className="flex items-center gap-3">{event.name}</div>
                 </td>
                 <td className="px-4 py-6">{event.location}</td>
-                <td className="px-4 py-6">{event.date}</td>
-                <td className="px-4 py-6">{event.time}</td>
+                <td className="px-4 py-6">{formatDate(event.date)}</td>
+                <td className="px-4 py-6">{formatTime(event.time)}</td>
                 <td className="px-4 py-6">{event.guestLimit}</td>
                 <td className="px-4 py-6">{event.eventType}</td>
                 <td className="px-4 py-6">{event.budget}</td>
@@ -117,11 +138,11 @@ const EventBookingsTable = ({ events, onSort, sortConfig }) => {
               </div>
               <div className="flex justify-between mb-2">
                 <span className="text-gray-500 text-sm font-medium">Date</span>
-                <span className="text-gray-800">{event.date}</span>
+                <span className="text-gray-800">{formatDate(event.date)}</span>
               </div>
               <div className="flex justify-between mb-2">
                 <span className="text-gray-500 text-sm font-medium">Time</span>
-                <span className="text-gray-800">{event.time}</span>
+                <span className="text-gray-800">{formatTime(event.time)}</span>
               </div>
               <div className="flex justify-between mb-2">
                 <span className="text-gray-500 text-sm font-medium">

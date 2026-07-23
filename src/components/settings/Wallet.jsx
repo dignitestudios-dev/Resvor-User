@@ -259,11 +259,11 @@ const TopUpModalContent = ({ onClose }) => {
                     required
                   />
                 </div>
-                {amountDollars && parseFloat(amountDollars) > 0 && (
+                {/* {amountDollars && parseFloat(amountDollars) > 0 && (
                   <p className="text-xs text-gray-400 mt-1">
                     = {Math.round(parseFloat(amountDollars) * 100).toLocaleString()} cents sent to API
                   </p>
-                )}
+                )} */}
               </div>
 
               <div className="grid grid-cols-2 gap-4 mt-6">

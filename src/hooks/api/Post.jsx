@@ -79,8 +79,20 @@ export const getLounges = async (payload = {}) => {
 };
 
 //logout 
-export const submitLogout = async () => {
-  const { data } = await axios.post("/auth/logout");
+export const submitLogout = async (payload = {}) => {
+  const fcmToken =
+    payload?.fcmToken ||
+    localStorage.getItem("fcmToken") ||
+    localStorage.getItem("fcm_token") ||
+    undefined;
+
+  const body = fcmToken ? { fcmToken, ...payload } : payload;
+
+  const { data } = await axios.post("/auth/logout", body);
+
+  localStorage.removeItem("fcmToken");
+  localStorage.removeItem("fcm_token");
+
   return data;
 };
 
@@ -109,5 +121,17 @@ export const submitCampaign = async (payload) => {
 // Wallet top-up (amount must be in cents)
 export const submitWalletTopup = async (payload) => {
   const { data } = await axios.post("/wallet/topup/intent", payload);
+  return data;
+};
+
+// Update FCM Token
+export const submitUpdateFcmToken = async (payload) => {
+  const { data } = await axios.post("/auth/update-fcm", payload);
+  return data;
+};
+
+// Change Password
+export const submitChangePassword = async (payload) => {
+  const { data } = await axios.post("/auth/change-password", payload);
   return data;
 };

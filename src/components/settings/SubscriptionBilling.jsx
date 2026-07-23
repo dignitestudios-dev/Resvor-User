@@ -7,12 +7,12 @@ import Wallet from "./Wallet";
 
 const SubscriptionBilling = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("billing");
+  const [activeTab, setActiveTab] = useState("wallet");
 
   const tabs = [
-    { key: "billing", label: "Billing" },
-    { key: "plan", label: "Plans" },
+    // { key: "billing", label: "Billing" },
     { key: "wallet", label: "Wallet" },
+    { key: "plan", label: "Plans" },
   ];
 
   return (
@@ -41,11 +41,10 @@ const SubscriptionBilling = () => {
                   className={`
                   px-3 py-2 text-[16px] transition-all duration-200
                   border-b-2 whitespace-nowrap
-                  ${
-                    activeTab === tab.key
+                  ${activeTab === tab.key
                       ? "border-indigo-900 text-blue-950 font-[600]"
                       : "border-transparent text-[#727272] hover:text-gray-700 hover:border-[#727272]"
-                  }
+                    }
                 `}
                 >
                   {tab.label}
@@ -53,14 +52,15 @@ const SubscriptionBilling = () => {
               ))}
             </nav>
           </div>
-
-          {activeTab === "billing" ? (
+          {/* activeTab === "billing" ? (
             <Billing />
-          ) : activeTab === "plan" ? (
-            <UpdatePlan />
-          ) : (
-            <Wallet />
-          )}
+          ) : */}
+          {
+            activeTab === "plan" ? (
+              <UpdatePlan />
+            ) : (
+              <Wallet />
+            )}
         </div>
       </div>
     </>

@@ -11,6 +11,36 @@ const statusClasses = (status) => {
   return "bg-gray-100 text-gray-600";
 };
 
+const formatDate = (value) => {
+  if (!value || value === "-") return "-";
+  if (typeof value === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(value)) return value;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "UTC",
+  });
+};
+
+const formatTime = (value) => {
+  if (!value || value === "-") return "-";
+  if (typeof value === "string" && (value.includes("AM") || value.includes("PM"))) return value;
+  if (typeof value === "string" && (value.includes("T") || value.includes("Z"))) {
+    const d = new Date(value);
+    if (!Number.isNaN(d.getTime())) {
+      return d.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "UTC",
+      });
+    }
+  }
+  return String(value);
+};
+
 const BookingsTable = ({ users, onSort, sortConfig }) => {
   const navigate = useNavigate();
 
@@ -101,9 +131,9 @@ const BookingsTable = ({ users, onSort, sortConfig }) => {
                 <td className="px-4 py-4 truncate max-w-0">
                   <span title={user.location}>{user.location}</span>
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap">{user.date}</td>
+                <td className="px-4 py-4 whitespace-nowrap">{formatDate(user.date)}</td>
                 <td className="px-4 py-4 whitespace-nowrap text-[12.5px]">
-                  {user.time}
+                  {formatTime(user.time)}
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-center">
                   {user.guestLimit}
@@ -148,8 +178,8 @@ const BookingsTable = ({ users, onSort, sortConfig }) => {
             {[
               ["Lounge Name", user.name],
               ["Location", user.location],
-              ["Date", user.date],
-              ["Time", user.time],
+              ["Date", formatDate(user.date)],
+              ["Time", formatTime(user.time)],
               ["Guests", user.guestLimit],
               ["Seating Area", user.seatingArea],
             ].map(([label, val]) => (
