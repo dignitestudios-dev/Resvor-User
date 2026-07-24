@@ -161,7 +161,7 @@ const GuestBook = () => {
                         <td className="pl-8 pr-4 py-6 font-semibold">
                           {user.loungeId?.name || "N/A"}
                         </td>
-                        <td className="px-4 py-6">{user.fullName}</td>
+                        <td className="px-4 py-6">{user.fullName.slice(0,20)}</td>
                         <td className="px-4 py-6">{user.email}</td>
 
                         <td className="px-4 py-6">

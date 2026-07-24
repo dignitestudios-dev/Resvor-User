@@ -309,16 +309,31 @@ const TopUpModal = ({ onClose }) => {
 /* ─── Main Wallet Component ────────────────────────── */
 const Wallet = () => {
   const [showTopUp, setShowTopUp] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 10;
 
   const { data: walletResponse, isLoading: isLoadingWallet } = useWalletMe();
   const { data: txResponse, isLoading: isLoadingTx } = useWalletTransactions({
-    page: 1,
-    limit: 10,
+    page: currentPage,
+    limit,
   });
 
   const wallet = walletResponse?.data;
   const transactions = txResponse?.data || [];
   const pagination = txResponse?.pagination;
+  const totalPages = pagination?.totalPages || pagination?.pages || 1;
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
 
   return (
     <div className="mx-auto px-6 py-8">
@@ -479,6 +494,34 @@ const Wallet = () => {
             ))
           )}
         </div>
+
+        {/* Pagination Controls Section */}
+        {!isLoadingTx && transactions.length > 0 && (
+          <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl mt-4">
+            <div className="text-sm text-gray-500">
+              Showing page <span className="font-semibold text-gray-800">{currentPage}</span> of{" "}
+              <span className="font-semibold text-gray-800">{totalPages}</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                onClick={handleNextPage}
+                disabled={currentPage >= totalPages}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Top-Up Modal */}
