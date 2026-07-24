@@ -6,7 +6,117 @@ import { useNavigate, useParams } from "react-router";
 import ConfirmationModal from "../global/ConfirmationModal";
 import SendInvitationModal from "../flayer/SendInvitationModal";
 import { ErrorToast, SuccessToast } from "../global/Toaster";
-import { useCancelEvent, useEventDetails } from "../../hooks/queries/useQueries";
+import DisputeModal from "./DisputeModal";
+import ViewDisputeModal from "./ViewDisputeModal";
+import { useCancelEvent, useCreateDispute, useEventDetails } from "../../hooks/queries/useQueries";
+
+// ── dispute eligibility helper ────────────────────────────────────────────────
+const checkDisputeEligibility = (event) => {
+  if (!event) return { eligible: false, message: "No event data" };
+
+  if (event?.isDisputed || event?.disputeStatus || event?.dispute) {
+    return { eligible: false, message: "Dispute already filed", isDisputed: true };
+  }
+
+  const rawEndTime = event?.endDateTime || event?.endTime;
+  const dateStr = event?.startDateTime || event?.bookingDate || event?.date;
+
+  let endDateTime = null;
+
+  if (rawEndTime) {
+    let year, month, day, hours = 0, minutes = 0;
+
+    if (dateStr) {
+      const dObj = new Date(dateStr);
+      if (!isNaN(dObj.getTime())) {
+        if (typeof dateStr === "string" && dateStr.includes("T")) {
+          const datePart = dateStr.split("T")[0];
+          const [y, m, d] = datePart.split("-").map(Number);
+          year = y;
+          month = m - 1;
+          day = d;
+        } else {
+          year = dObj.getFullYear();
+          month = dObj.getMonth();
+          day = dObj.getDate();
+        }
+      }
+    }
+
+    if (typeof rawEndTime === "string" && rawEndTime.includes("T")) {
+      const directDate = new Date(rawEndTime);
+      if (!isNaN(directDate.getTime())) {
+        const datePart = rawEndTime.split("T")[0];
+        const timePart = rawEndTime.split("T")[1];
+        if (datePart && timePart) {
+          const [y, m, d] = datePart.split("-").map(Number);
+          const [h, min] = timePart.split(":").map(Number);
+          year = y;
+          month = m - 1;
+          day = d;
+          hours = h;
+          minutes = min;
+        } else {
+          hours = directDate.getUTCHours();
+          minutes = directDate.getUTCMinutes();
+        }
+      }
+    } else if (typeof rawEndTime === "string") {
+      const timeParts = String(rawEndTime).match(/(\d+):(\d+)(?::(\d+))?\s*(AM|PM)?/i);
+      if (timeParts) {
+        let h = parseInt(timeParts[1], 10);
+        const min = parseInt(timeParts[2], 10);
+        const ampm = timeParts[4];
+        if (ampm) {
+          if (ampm.toUpperCase() === "PM" && h < 12) h += 12;
+          if (ampm.toUpperCase() === "AM" && h === 12) h = 0;
+        }
+        hours = h;
+        minutes = min;
+      }
+    }
+
+    if (year !== undefined && month !== undefined && day !== undefined) {
+      endDateTime = new Date(year, month, day, hours, minutes, 0, 0);
+    } else {
+      const direct = new Date(rawEndTime);
+      if (!isNaN(direct.getTime())) {
+        endDateTime = direct;
+      }
+    }
+  } else if (dateStr) {
+    const baseDate = new Date(dateStr);
+    if (!isNaN(baseDate.getTime())) {
+      endDateTime = baseDate;
+    }
+  }
+
+  if (!endDateTime) {
+    return { eligible: true, message: "" };
+  }
+
+  const now = new Date();
+  const diffInMs = now.getTime() - endDateTime.getTime();
+  const twentyFourHoursInMs = 24 * 60 * 60 * 1000;
+
+  if (diffInMs < 0) {
+    return {
+      eligible: false,
+      message: "Dispute can only be filed after the event end time",
+      notStarted: true,
+    };
+  }
+
+  if (diffInMs > twentyFourHoursInMs) {
+    return {
+      eligible: false,
+      message: "Dispute window expired (24 hours passed after event end time)",
+      expired: true,
+    };
+  }
+
+  return { eligible: true, message: "" };
+};
 
 const formatLabel = (value) =>
   String(value || "-")
@@ -28,6 +138,32 @@ const formatDate = (value) => {
 
 const formatTime = (value) => {
   if (!value) return "-";
+
+  if (typeof value === "string" && (value.includes("T") || value.includes("Z"))) {
+    const d = new Date(value);
+    if (!Number.isNaN(d.getTime())) {
+      return d.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+  }
+
+  if (typeof value === "string" && value.includes(":")) {
+    const [hoursStr, minutesStr] = value.split(":");
+    const hours = Number(hoursStr);
+    const minutes = Number(minutesStr);
+    if (!Number.isNaN(hours) && !Number.isNaN(minutes)) {
+      const date = new Date();
+      date.setHours(hours, minutes, 0, 0);
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+  }
 
   const dateValue = new Date(value);
   if (Number.isNaN(dateValue.getTime())) return "-";
@@ -81,6 +217,8 @@ export default function ReservationDetails() {
 
   const [sendInvitation, setSendInvitation] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [showViewDisputeModal, setShowViewDisputeModal] = useState(false);
 
   const {
     data: eventResponse,
@@ -91,6 +229,14 @@ export default function ReservationDetails() {
 
   const event = eventResponse?.data;
   const { mutate: cancelEvent, isPending: isCancelling } = useCancelEvent();
+  const { mutate: createDispute, isPending: isFilingDispute } = useCreateDispute();
+
+  const disputeId =
+    (typeof event?.disputeId === "object" ? event?.disputeId?._id : event?.disputeId) ||
+    (typeof event?.dispute === "object" ? event?.dispute?._id : event?.dispute) ||
+    null;
+
+  const disputeEligibility = checkDisputeEligibility(event);
 
   const organizerName = [
     event?.userId?.firstName,
@@ -126,10 +272,36 @@ export default function ReservationDetails() {
       onError: (requestError) => {
         ErrorToast(
           requestError?.response?.data?.message ||
-            "Failed to cancel this event."
+          "Failed to cancel this event."
         );
       },
     });
+  };
+
+  const handleCreateDispute = ({ reason }) => {
+    const sourceId = event?._id || event?.id || id;
+
+    createDispute(
+      {
+        sourceId,
+        sourceModel: "Event",
+        reason,
+      },
+      {
+        onSuccess: (response) => {
+          setShowDisputeModal(false);
+          SuccessToast(response?.message || "Dispute submitted successfully.");
+          queryClient.invalidateQueries({ queryKey: ["events"] });
+          queryClient.invalidateQueries({ queryKey: ["event-details", id] });
+        },
+        onError: (requestError) => {
+          ErrorToast(
+            requestError?.response?.data?.message ||
+            "Failed to submit dispute. Please try again."
+          );
+        },
+      }
+    );
   };
 
   if (isLoading) {
@@ -176,6 +348,50 @@ export default function ReservationDetails() {
             </div>
 
             <div className="flex items-center gap-2">
+              {disputeId ? (
+                <button
+                  type="button"
+                  onClick={() => setShowViewDisputeModal(true)}
+                  className="px-5 py-2.5 rounded-[12px] text-[12px] font-semibold bg-amber-600 hover:bg-amber-700 text-white transition shadow-sm"
+                >
+                  View Dispute
+                </button>
+              ) : disputeEligibility.isDisputed ? (
+                <button
+                  type="button"
+                  onClick={() => setShowViewDisputeModal(true)}
+                  className="px-5 py-2.5 rounded-[12px] text-[12px] font-semibold bg-amber-600 hover:bg-amber-700 text-white transition shadow-sm"
+                >
+                  View Dispute
+                </button>
+              ) : disputeEligibility.eligible ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDisputeModal(true)}
+                  className="px-5 py-2.5 rounded-[12px] text-[12px] font-semibold bg-amber-600 hover:bg-amber-700 text-white transition shadow-sm"
+                >
+                  File Dispute
+                </button>
+              ) : disputeEligibility.notStarted ? (
+                <button
+                  type="button"
+                  disabled
+                  title="Dispute can only be filed after the event end time"
+                  className="px-5 py-2.5 rounded-[12px] text-[12px] font-semibold border border-gray-200 bg-white/20 text-gray-300 cursor-not-allowed"
+                >
+                  Dispute Available After Event Ends
+                </button>
+              ) : disputeEligibility.expired ? (
+                <button
+                  type="button"
+                  disabled
+                  title="Dispute window expired (24 hours passed after event end time)"
+                  className="px-5 py-2.5 rounded-[12px] text-[12px] font-semibold border border-gray-200 bg-white/20 text-gray-300 cursor-not-allowed"
+                >
+                  Dispute Expired
+                </button>
+              ) : null}
+
               <button
                 className="px-6 py-3 rounded-[12px] text-[12px] font-semibold bg-purple-50 text-[#181818]"
                 type="button"
@@ -187,17 +403,16 @@ export default function ReservationDetails() {
                 type="button"
                 onClick={handleCancelEvent}
                 disabled={!isCancelable || isCancelling}
-                className={`px-8 py-3 rounded-[12px] text-[12px] font-semibold border transition ${
-                  isCancelable && !isCancelling
-                    ? "border-rose-200 bg-white text-rose-600 hover:bg-rose-50"
-                    : "border-gray-200 bg-white text-gray-400 cursor-not-allowed"
-                }`}
+                className={`px-8 py-3 rounded-[12px] text-[12px] font-semibold border transition ${isCancelable && !isCancelling
+                  ? "border-rose-200 bg-white text-rose-600 hover:bg-rose-50"
+                  : "border-gray-200 bg-white text-gray-400 cursor-not-allowed"
+                  }`}
               >
                 {isCancelling
                   ? "Cancelling..."
                   : isCancelable
-                  ? "Cancel Event"
-                  : eventStatus}
+                    ? "Cancel Event"
+                    : eventStatus}
               </button>
             </div>
           </div>
@@ -426,6 +641,19 @@ export default function ReservationDetails() {
         loading={isCancelling}
         onCancel={() => setShowCancelModal(false)}
         onConfirm={confirmCancelEvent}
+      />
+
+      <DisputeModal
+        isOpen={showDisputeModal}
+        onClose={() => setShowDisputeModal(false)}
+        onSubmit={handleCreateDispute}
+        loading={isFilingDispute}
+      />
+
+      <ViewDisputeModal
+        isOpen={showViewDisputeModal}
+        onClose={() => setShowViewDisputeModal(false)}
+        disputeId={disputeId}
       />
     </>
   );

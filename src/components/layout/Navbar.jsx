@@ -4,11 +4,57 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { logoBlack, userImage, vipTag } from "../../assets/export";
 import { IoNotificationsOutline } from "react-icons/io5";
 import LogOutModal from "../global/LogoutModal";
+import { useAuthMe, useNotifications } from "../../hooks/queries/useQueries";
+import moment from "moment";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
+  const { data: authData } = useAuthMe();
+  const { data: notificationsData } = useNotifications();
+  const notificationsList = notificationsData?.data || [];
+  console.log("🚀 ~ Navbar ~ notificationsList:", notificationsList)
+  const unreadCount = notificationsList.filter(
+    (n) => n.isRead === false || n.unreadCount > 0
+  ).length;
+
+  const user = authData?.data?.user || authData?.data;
+  const isSubscribed = Boolean(
+    authData?.data?.isSubscribed ?? authData?.data?.user?.isSubscribed
+  );
+
+  const handleNotificationClick = (item) => {
+    setIsPopupOpen(false);
+    const resourceType =
+      item?.metadata?.resourceType || item?.resourceType;
+    const resource = item?.metadata?.resource || item?.resource;
+
+    if (resourceType === "Event" && resource) {
+      navigate(`/app/reservationDetails/${resource}`);
+    } else if (resourceType === "Booking" && resource) {
+      navigate(`/app/bookingDetails/${resource}`);
+    } else {
+      navigate("/app/notifications");
+    }
+  };
+
+  const getProfilePicture = (profilePicture) => {
+    if (!profilePicture) return userImage;
+    if (typeof profilePicture === "string") {
+      return profilePicture.startsWith("http")
+        ? profilePicture
+        : `https://api-dev.resvor.com/uploads/${profilePicture}`;
+    }
+    if (profilePicture.location) return profilePicture.location;
+    if (profilePicture.url) return profilePicture.url;
+    if (profilePicture.filename) {
+      return `https://api-dev.resvor.com/uploads/${profilePicture.filename}`;
+    }
+    return userImage;
+  };
+
+  const profilePicSrc = getProfilePicture(user?.profilePicture);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userPopup, setUserPopup] = useState(false);
   const [logoutpopup, setLogoutpopup] = useState(false);
@@ -66,28 +112,6 @@ const Navbar = () => {
     setIsMobileMenuOpen(false);
     setIsPopupOpen(false);
   };
-
-  const [notifications, setNotifications] = useState([
-    {
-      title: "Your Booking is Approved",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed adipiscing elit",
-      time: "12:30 AM",
-      unreadCount: 1,
-    },
-    {
-      title: "Your Booking is Approved",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed adipiscing elit",
-      time: "12:30 AM",
-    },
-    {
-      title: "Your Booking is Approved",
-      message:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed adipiscing elit",
-      time: "12:30 AM",
-    },
-  ]);
 
   const handleLogoClick = () => {
     return navigate("/app/home");
@@ -154,11 +178,10 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`w-full ${
-        isMobileMenuOpen
-          ? "fixed top-0 left-0 min-h-screen bg-[#181818] z-50"
-          : ""
-      } text-[#181818]`}
+      className={`w-full ${isMobileMenuOpen
+        ? "fixed top-0 left-0 min-h-screen bg-[#181818] z-50"
+        : ""
+        } text-[#181818]`}
     >
       <div className="max-w-7xl border-b border-white/40 mx-auto px-4 py-2 flex z-10 items-center justify-between relative">
         <div className="md:w-[60%] w-[40%]">
@@ -172,21 +195,20 @@ const Navbar = () => {
 
         {/* Desktop Menu */}
 
-        <div className="hidden md:flex justify-end items-center gap-5 lg:gap-10 font-medium text-sm w-full">
+        <div className="hidden md:flex justify-end items-center gap-5 lg:gap-10 font-medium text-sm w-full joyride-navbar-nav">
           {menuLinks.map((link) => (
             <Link
               key={link.label}
               to={link.path}
-              className={`pb-1 relative text-[12px] lg:text-[16px] lg:font-[500] font-medium transition-all duration-300 font-sans ${
-                currentPath === link.path
-                  ? "after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-white"
-                  : ""
-              }`}
+              className={`pb-1 relative text-[12px] lg:text-[16px] lg:font-[500] font-medium transition-all duration-300 font-sans ${currentPath === link.path
+                ? "after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-white"
+                : ""
+                }`}
             >
               {link.label}
             </Link>
           ))}
-          <div ref={popupRef} className="relative">
+          <div ref={popupRef} className="relative joyride-navbar-notifications">
             {/* Notification Icon */}
             <IoNotificationsOutline
               ref={iconRef}
@@ -194,9 +216,9 @@ const Navbar = () => {
               onClick={togglePopup} // Toggle popup on icon click
             />
             {/* Show unread count badge if there are unread notifications */}
-            {notifications.filter((n) => n.unreadCount > 0).length > 0 && (
+            {unreadCount > 0 && (
               <div className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full w-[14px] h-[14px] flex items-center justify-center">
-                {notifications.filter((n) => n.unreadCount > 0).length}
+                {unreadCount}
               </div>
             )}
 
@@ -210,17 +232,12 @@ const Navbar = () => {
                   Notifications
                 </h3>
                 <div className="mt-4 space-y-4 max-h-96 overflow-y-auto">
-                  {notifications.length > 0 ? (
-                    notifications.map((n, idx) => (
+                  {notificationsList.length > 0 ? (
+                    notificationsList.slice(0, 3).map((n, idx) => (
                       <div
-                        key={idx}
-                        onClick={() => {
-                          // Handle marking notification as read (Optional)
-                          const updatedNotifications = [...notifications];
-                          updatedNotifications[idx].unreadCount = 0; // Mark as read
-                          setNotifications(updatedNotifications);
-                        }}
-                        className="cursor-auto"
+                        key={n._id || idx}
+                        onClick={() => handleNotificationClick(n)}
+                        className="cursor-pointer hover:bg-gray-50 transition-colors p-2 rounded"
                       >
                         <div className="flex w-full justify-between">
                           <div>
@@ -228,16 +245,18 @@ const Navbar = () => {
                               {n.title}
                             </span>
                             <p className="text-[13px] mt-2 text-[#18181880]">
-                              {n.message}
+                              {n.description || n.message}
                             </p>
                           </div>
                           <div className="flex flex-col items-end px-2 w-[100px]">
                             <div className="text-xs text-gray-600">
-                              {n.time}
+                              {n.createdAt
+                                ? moment(n.createdAt).format("hh:mm A")
+                                : n.time || ""}
                             </div>
-                            {n.unreadCount > 0 && (
+                            {!n.isRead && (
                               <div className="bg-red-600 mt-2 text-white text-xs rounded-full w-[19px] h-[19px] flex items-center justify-center">
-                                {n.unreadCount}
+                                1
                               </div>
                             )}
                           </div>
@@ -265,8 +284,12 @@ const Navbar = () => {
           <div>
             <img
               ref={avatarRef}
-              src={userImage}
-              className="h-10 w-10 object-cover rounded-full cursor-pointer border-2"
+              src={profilePicSrc}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = userImage;
+              }}
+              className="h-10 w-10 object-cover rounded-full cursor-pointer border-2 joyride-navbar-profile"
               onClick={toggleUserpopup}
               alt="Avatar"
             />
@@ -302,9 +325,11 @@ const Navbar = () => {
               </div>
             )}
           </div>
-          <div className="-ml-6">
-            <img src={vipTag} alt="vipTag" className="w-12" />
-          </div>
+          {isSubscribed && (
+            <div className="-ml-6">
+              <img src={vipTag} alt="vipTag" className="w-12" />
+            </div>
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -318,9 +343,9 @@ const Navbar = () => {
                 }}
               />
               {/* Show unread count badge if there are unread notifications */}
-              {notifications.filter((n) => n.unreadCount > 0).length > 0 && (
+              {unreadCount > 0 && (
                 <div className="absolute top-0 right-0 bg-red-600 text-white text-[10px] rounded-full w-[13px] h-[13px] flex items-center justify-center">
-                  {notifications.filter((n) => n.unreadCount > 0).length}
+                  {unreadCount}
                 </div>
               )}
               {isPopupOpen && (
@@ -329,12 +354,12 @@ const Navbar = () => {
                     Notifications
                   </h3>
                   <div className="mt-4 space-y-4 max-h-96 overflow-y-auto">
-                    {notifications.length > 0 ? (
-                      notifications.map((n, idx) => (
+                    {notificationsList.length > 0 ? (
+                      notificationsList.map((n, idx) => (
                         <div
-                          key={idx}
-                          // onClick={() => markAsRead(idx)}
-                          className="cursor-pointer"
+                          key={n._id || idx}
+                          onClick={() => handleNotificationClick(n)}
+                          className="cursor-pointer hover:bg-gray-50 transition-colors p-2 rounded"
                         >
                           <div className="flex w-full justify-between">
                             <div>
@@ -342,16 +367,18 @@ const Navbar = () => {
                                 {n.title}
                               </span>
                               <p className="text-[13px] mt-2 text-[#18181880]">
-                                {n.message}
+                                {n.description || n.message}
                               </p>
                             </div>
                             <div className="flex flex-col items-end px-2 ">
                               <div className="text-xs text-gray-600">
-                                {n.time}
+                                {n.createdAt
+                                  ? moment(n.createdAt).format("hh:mm A")
+                                  : n.time || ""}
                               </div>
-                              {n.unreadCount > 0 && (
+                              {!n.isRead && (
                                 <div className="bg-red-600 mt-2 text-white text-xs rounded-full w-[19px] h-[19px] flex items-center justify-center">
-                                  {n.unreadCount}
+                                  1
                                 </div>
                               )}
                             </div>
@@ -366,13 +393,20 @@ const Navbar = () => {
                 </div>
               )}
             </div>
-            <div className="relative">
+            <div className="relative flex items-center">
               <img
-                src={userImage}
+                src={profilePicSrc}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = userImage;
+                }}
                 alt="User Avatar"
                 className="w-9 h-9 rounded-full cursor-pointer object-cover border-2 border-white"
                 onClick={toggleUserpopup}
               />
+              {isSubscribed && (
+                <img src={vipTag} alt="vipTag" className="w-8 -ml-3 z-10" />
+              )}
               {userPopup && (
                 <div className="bg-white text-black right-4 w-[200px] rounded absolute shadow-lg p-4 space-y-2 mt-2">
                   <span

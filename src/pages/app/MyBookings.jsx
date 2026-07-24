@@ -12,7 +12,7 @@ const formatDateLabel = (isoValue) => {
   if (!isoValue) return "-";
   const d = new Date(isoValue);
   if (Number.isNaN(d.getTime())) return "-";
-  // MM/DD/YYYY
+  // MM/DD/YYYY in local timezone
   return d.toLocaleDateString("en-US", {
     year: "numeric",
     month: "2-digit",
@@ -25,7 +25,11 @@ const formatTimeLabel = (isoValue) => {
   const d = new Date(isoValue);
   if (Number.isNaN(d.getTime())) return "";
   return d
-    .toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })
+    .toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
     .replace(" ", "");
 };
 
@@ -116,14 +120,14 @@ const MyBooking = () => {
     const seatingArea =
       booking.tableIds?.length > 0
         ? booking.tableIds
-            .map((t) => {
-              const label = t.type
-                ? t.type.charAt(0).toUpperCase() + t.type.slice(1)
-                : "Regular";
-              const code = t.code || (t.tableNumber != null ? `T${t.tableNumber}` : "");
-              return code ? `${label} (${code})` : label;
-            })
-            .join(", ")
+          .map((t) => {
+            const label = t.type
+              ? t.type.charAt(0).toUpperCase() + t.type.slice(1)
+              : "Regular";
+            const code = t.code || (t.tableNumber != null ? `T${t.tableNumber}` : "");
+            return code ? `${label} (${code})` : label;
+          })
+          .join(", ")
         : "Regular";
 
     const location =
@@ -140,8 +144,13 @@ const MyBooking = () => {
     const fmtTime = (isoStr) => {
       if (!isoStr) return "";
       const d = new Date(isoStr);
+      if (Number.isNaN(d.getTime())) return String(isoStr);
       return d
-        .toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })
+        .toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        })
         .replace(" ", "");
     };
 
@@ -239,22 +248,20 @@ const MyBooking = () => {
           <div className="flex flex-col">
             <div className="w-[320px] flex">
               <button
-                className={`text-[12px] py-3 px-6 rounded-l-2xl w-full ${
-                  activeTab === "bookings"
+                className={`text-[12px] py-3 px-6 rounded-l-2xl w-full ${activeTab === "bookings"
                     ? " bg-[#FFFFFF] text-[#222246]"
                     : " bg-[#222246] text-white"
-                }`}
+                  }`}
                 onClick={() => setActiveTab("bookings")}
               >
                 My Reservations
               </button>
 
               <button
-                className={`text-[12px] px-6 rounded-r-2xl w-full ${
-                  activeTab === "events"
+                className={`text-[12px] px-6 rounded-r-2xl w-full ${activeTab === "events"
                     ? "bg-[#FFFFFF] text-[#222246]"
                     : "bg-[#222246] text-white"
-                }`}
+                  }`}
                 onClick={() => setActiveTab("events")}
               >
                 My Events

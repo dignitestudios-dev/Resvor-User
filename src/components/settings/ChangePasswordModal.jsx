@@ -6,14 +6,35 @@ import InputField from "../auth/InputField";
 import { useFormik } from "formik";
 import { changPasswordValues } from "../../init/app/appValues";
 import { changePasswordSchema } from "../../schema/app/appSchema";
+import { useChangePassword } from "../../hooks/mutations/OnboardingMutations";
+import { SuccessToast, ErrorToast } from "../global/Toaster";
 
-const ChangePasswordModal = ({ onClose, handleOtpModal }) => {
+const ChangePasswordModal = ({ onClose }) => {
+  const { mutate: changePasswordMutate, isPending } = useChangePassword();
+
   const { values, handleBlur, handleChange, errors, touched, handleSubmit } =
     useFormik({
       initialValues: changPasswordValues,
       validationSchema: changePasswordSchema,
       onSubmit: async (values) => {
-        console.log("🚀 ~ ChangePasswordModal ~ values:", values);
+        const payload = {
+          password: values.password,
+          newPassword: values.newPassword,
+          role: "user"
+        };
+        changePasswordMutate(payload, {
+          onSuccess: (res) => {
+            SuccessToast(res?.message || "Password changed successfully.");
+            onClose();
+          },
+          onError: (err) => {
+            ErrorToast(
+              err?.response?.data?.message ||
+              err?.message ||
+              "Failed to change password."
+            );
+          },
+        });
       },
     });
 
@@ -36,7 +57,7 @@ const ChangePasswordModal = ({ onClose, handleOtpModal }) => {
               </p>
             </div>
             <InputField
-              label="New Password"
+              label="Current Password"
               placeholder="Current password"
               showToggle
               id="password"
@@ -76,10 +97,15 @@ const ChangePasswordModal = ({ onClose, handleOtpModal }) => {
               maxLength={50}
             />
           </div>
+
+          <div className="mt-8 mx-16 pb-4">
+            <Button
+              text={isPending ? "Updating..." : "Update"}
+              type="submit"
+              disabled={isPending}
+            />
+          </div>
         </form>
-        <div className="mt-8 mx-16 pb-4">
-          <Button text="Update" type="button" onClick={onClose} />
-        </div>
       </div>
     </div>
   );

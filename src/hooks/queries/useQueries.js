@@ -24,15 +24,15 @@ export const useAuthMe = () => {
   });
 };
 
-const fetchLounges = async () => {
-  const { data } = await axios.get("/lounges/list");
+const fetchLounges = async (params = {}) => {
+  const { data } = await axios.get("/lounges/list", { params });
   return data;
 };
 
-export const useLounges = () => {
+export const useLounges = (params = {}) => {
   return useQuery({
-    queryKey: ["lounges"],
-    queryFn: fetchLounges,
+    queryKey: ["lounges", params],
+    queryFn: () => fetchLounges(params),
     retry: false,
   });
 };
@@ -215,6 +215,42 @@ export const useCancelBooking = () => {
   });
 };
 
+const createDispute = async (payload) => {
+  const { data } = await axios.post("/disputes", payload);
+  return data;
+};
+
+export const useCreateDispute = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createDispute,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["booking-details"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["event-details"] });
+      if (variables?.sourceId) {
+        queryClient.invalidateQueries({ queryKey: ["booking-details", variables.sourceId] });
+        queryClient.invalidateQueries({ queryKey: ["event-details", variables.sourceId] });
+      }
+    },
+  });
+};
+
+const fetchDisputeDetails = async (disputeId) => {
+  const { data } = await axios.get(`/disputes/${disputeId}`);
+  return data;
+};
+
+export const useDisputeDetails = (disputeId, options = {}) => {
+  return useQuery({
+    queryKey: ["dispute-details", disputeId],
+    queryFn: () => fetchDisputeDetails(disputeId),
+    enabled: Boolean(disputeId) && (options.enabled ?? true),
+    retry: false,
+  });
+};
+
 const fetchSubscriptionPlans = async () => {
   const { data } = await axios.get("/subscriptions/plans");
   return data;
@@ -254,7 +290,7 @@ const fetchMySubscription = async () => {
   const { data } = await axios.get(`/subscriptions/my`);
   return data?.data || null;
 };
- 
+
 export const useGetMySubscription = () => {
   return useQuery({
     queryKey: ["my-subscription"],
@@ -379,5 +415,87 @@ const updateOwnProfile = async (payload) => {
 export const useUpdateProfile = () => {
   return useMutation({
     mutationFn: updateOwnProfile,
+  });
+};
+
+// ── Chat ─────────────────────────────────────────────────────
+
+const initiateChat = async (payload) => {
+  const { data } = await axios.post("/chats", payload);
+  return data;
+};
+
+export const useInitiateChat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: initiateChat,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
+    },
+  });
+};
+
+const fetchChats = async () => {
+  const { data } = await axios.get("/chats");
+  return data;
+};
+
+export const useListChats = (options = {}) => {
+  return useQuery({
+    queryKey: ["chats"],
+    queryFn: fetchChats,
+    retry: false,
+    ...options,
+  });
+};
+
+const fetchMessages = async ({ chatId, page = 1, limit = 50 }) => {
+  const { data } = await axios.get(`/chats/${chatId}/messages`, {
+    params: { page, limit },
+  });
+  return data;
+};
+
+export const useGetMessages = (chatId, page = 1, limit = 50, options = {}) => {
+  return useQuery({
+    queryKey: ["chat-messages", chatId, page, limit],
+    queryFn: () => fetchMessages({ chatId, page, limit }),
+    enabled: !!chatId,
+    retry: false,
+    ...options,
+  });
+};
+
+const sendMessage = async ({ chatId, payload }) => {
+  const { data } = await axios.post(`/chats/${chatId}/messages`, payload);
+  return data;
+};
+
+export const useSendMessage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: sendMessage,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
+      queryClient.invalidateQueries({
+        queryKey: ["chat-messages", variables.chatId],
+      });
+    },
+  });
+};
+
+const fetchNotifications = async (page = 1, limit = 10) => {
+  const { data } = await axios.get("/notifications", {
+    params: { page, limit },
+  });
+  return data;
+};
+
+export const useNotifications = (page = 1, limit = 10, options = {}) => {
+  return useQuery({
+    queryKey: ["notifications", page, limit],
+    queryFn: () => fetchNotifications(page, limit),
+    retry: false,
+    ...options,
   });
 };

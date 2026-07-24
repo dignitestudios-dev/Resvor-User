@@ -81,7 +81,7 @@ const ServicesModal = ({
                       {new Intl.NumberFormat("en-US", {
                         style: "currency",
                         currency: "USD",
-                      }).format((item.price || 0) / 100)}
+                      }).format((Number(item.price) || 0) / 100)}
                     </div>
 
                     {/* Added Badge */}
@@ -140,13 +140,22 @@ const ServicesModal = ({
               Continue when you're ready.
             </p>
           </div>
+          <div className="w-[140px]">
+            <Button
+              text="Continue"
+              type="button"
+              onClick={() => handleDateData()}
+              className="w-full"
+            />
+          </div>
 
-          <button
+
+          {/* <button
             onClick={handleDateData}
             className="rounded-xl bg-gradient-to-r from-[#012C57] to-[#0A5DB8] px-10 py-4 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
           >
             Continue
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

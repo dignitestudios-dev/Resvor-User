@@ -4,10 +4,10 @@ import Navbar from "../components/layout/Navbar";
 
 const DashboardLayout = () => {
   return (
-    <div className="w-full h-[100vh] flex flex-col justify-start items-start">
+    <div className="w-full min-h-screen flex flex-col justify-start items-start">
       <Navbar />
-      <div className="w-full h-screen flex justify-start items-start">
-        <div className="w-full h-[calc(100%-2.5rem)]">
+      <div className="w-full flex-1 flex justify-start items-start">
+        <div className="w-full">
           <Outlet />
           <Footer />
         </div>
@@ -15,6 +15,5 @@ const DashboardLayout = () => {
     </div>
   );
 };
-
 
 export default DashboardLayout;

@@ -112,9 +112,8 @@ const Settings = () => {
                 className="h-[50px] bg-[#F9FAFA] text-[#212935] rounded-lg px-4 text-center cursor-pointer flex items-center justify-between "
               >
                 <p
-                  className={`text-[14px] font-[500] ${
-                    item?.key === "logout" ? "text-red-500" : "text-black"
-                  }`}
+                  className={`text-[14px] font-[500] ${item?.key === "logout" ? "text-red-500" : "text-black"
+                    }`}
                 >
                   {item?.label}
                 </p>
@@ -223,32 +222,34 @@ const Settings = () => {
           onClose={() => setKey("")}
           handleOtpModal={handleOtpModal}
         />
-      ) : key === "number" ? (
-        <ChangeNumberModal
-          onClose={() => {
-            setNumberChangeStep(null);
-            setKey("");
-          }}
-          onNext={handleCurrentPhoneSubmit}
-        />
-      ) : key === "delete" && deleteAccountStep === null ? (
-        <DeleteAccountModal
-          onClose={() => setKey("")}
-          onNext={handleDeleteAccountClick}
-        />
-      ) : key === "terms" ? (
-        <TermsModal onClose={() => setKey("")} />
-      ) : key === "privacy" ? (
-        <PrivacyModal onClose={() => setKey("")} />
-      ) : key === "logout" ? (
-        <LogOutModal
-          isOpen={key === "logout" ? true : false}
-          setIsOpen={() => setKey("")}
-          onConfirm={handleLogout}
-        />
-      ) : (
-        <></>
-      )}
+      )
+        : key === "number" ? (
+          <ChangeNumberModal
+            onClose={() => {
+              setNumberChangeStep(null);
+              setKey("");
+            }}
+            onNext={handleCurrentPhoneSubmit}
+          />
+        )
+          : key === "delete" && deleteAccountStep === null ? (
+            <DeleteAccountModal
+              onClose={() => setKey("")}
+              onNext={handleDeleteAccountClick}
+            />
+          ) : key === "terms" ? (
+            <TermsModal onClose={() => setKey("")} />
+          ) : key === "privacy" ? (
+            <PrivacyModal onClose={() => setKey("")} />
+          ) : key === "logout" ? (
+            <LogOutModal
+              isOpen={key === "logout" ? true : false}
+              setIsOpen={() => setKey("")}
+              onConfirm={handleLogout}
+            />
+          ) : (
+            <></>
+          )}
     </>
   );
 };

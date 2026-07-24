@@ -1,11 +1,18 @@
 import {
   flyer,
   loungeImg,
-  flyerThree,
-  flyerTwo,
   loungeTwo,
   FlayerOne,
-  flyerImage,
+  flyerImageOne,
+  flyerImageTwo,
+  flyerImageThree,
+  flyerImageFour,
+  flyerImageFive,
+  flyerImageSix,
+  flyerImageSeven,
+  flyerImageEight,
+  flyerImageNine,
+  flyerImageTen,
 } from "../assets/export";
 
 export const loungeData = [
@@ -39,32 +46,16 @@ export const loungeData = [
 ];
 
 export const flyerData = [
-  { id: 1, name: "Summer Sale Flyer", image: flyerImage },
-  { id: 2, name: "New Arrivals Flyer", image: flyerImage },
-  { id: 3, name: "Holiday Deals Flyer", image: flyerImage },
-  { id: 4, name: "Back to School Flyer", image: flyerImage },
-  { id: 5, name: "Black Friday Flyer", image: flyerImage },
-  {
-    id: 6,
-    name: "Winter Clearance Flyer",
-    image: flyerImage,
-  },
-  {
-    id: 7,
-    name: "Spring Collection Flyer",
-    image: flyerImage,
-  },
-  { id: 8, name: "Flash Sale Flyer", image: flyerImage },
-  {
-    id: 9,
-    name: "Limited Edition Flyer",
-    image: flyerImage,
-  },
-  {
-    id: 10,
-    name: "Weekly Specials Flyer",
-    image: flyerImage,
-  },
+  { id: 1, name: "Happy Hour Flyer", image: flyerImageTwo },
+  { id: 2, name: "Ladies Night Flyer", image: flyerImageOne },
+  { id: 3, name: "Live DJ / Music Night Flyer", image: flyerImageThree },
+  { id: 4, name: "Seafood Boil / Food Event Flyer", image: flyerImageSix },
+  { id: 5, name: "Anniversary Celebration Flyer", image: flyerImageSeven },
+  { id: 6, name: "Birthday Celebration Flyer", image: flyerImageFive },
+  { id: 7, name: "VIP Bottle Service Flyer", image: flyerImageFour },
+  { id: 8, name: "Lounge Manager Announcement Flyer", image: flyerImageEight },
+  { id: 9, name: "Special Event / Holiday Flyer", image: flyerImageNine },
+  { id: 10, name: "Weekly Event Schedule Flyer", image: flyerImageTen }
 ];
 
 export const cardTemplates = [

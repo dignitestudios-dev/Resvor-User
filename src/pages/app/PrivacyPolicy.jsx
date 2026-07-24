@@ -16,63 +16,71 @@ const PrivacyPolicy = () => {
       </button>
 
       <div className="bg-white p-6 rounded-2xl mb-4">
-        <div className="bg-white p-6 rounded-2xl mb-4">
-          <h1 className="text-[24px] text-[#181818] font-semibold mb-4">
-            Privacy Policy
-          </h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-4">
+          Privacy Policy
+        </h1>
 
-          <p className="text-[15px] text-[#5C5C5C] mb-2">
-            <strong>Effective Date:</strong> June 19, 2025
-            <br />
-            <strong>Last Updated:</strong> June 19, 2025
+        <div className="text-gray-700 space-y-4 text-sm md:text-base leading-relaxed">
+          <p className="font-semibold">
+            Effective Date: October 1, 2025
           </p>
 
-          {/* Section 1 */}
-          <h2 className="text-[17px] font-semibold text-[#181818] mb-2">
-            1. Acceptance of Terms
-          </h2>
-          <p className="text-[15px] text-[#5C5C5C] mb-4">
-            By accessing or using our mobile application (the “App”), you agree to be bound by these Terms of Service.
-            If you do not agree to these Terms, please do not use the App.
+          <p>
+            Lladner Business Solutions LLC ("Lladner," "we," "our," or "us")
+            respects your privacy and is committed to protecting your personal
+            information. This Privacy Policy ("Policy") explains how we collect,
+            use, and safeguard your data when you access our website at{" "}
+            <span className="text-indigo-400">www.lladner.com</span>, use the{" "}
+            <span className="font-semibold">ResVor web application</span> or
+            engage with any of our other online platforms, services, or web
+            applications (collectively, the "Services").
           </p>
 
-          {/* Section 2 */}
-          <h2 className="text-[17px] font-semibold text-[#181818] mb-2">
-            2. User Conduct
-          </h2>
-          <div className="text-[15px] text-[#5C5C5C] mb-4">
-            You agree not to:
-            <ul className="list-disc list-inside mt-2">
-              <li>Use the App for any illegal or unauthorized purpose.</li>
-              <li>Interfere with the security or functionality of the App.</li>
-              <li>Attempt to gain unauthorized access to the App or its systems.</li>
-              <li>
-                Use the App in a way that could harm, disable, overburden, or
-                impair the App or interfere with other users’ enjoyment of the
-                App.
-              </li>
-            </ul>
-          </div>
-
-          {/* Section 3 */}
-          <h2 className="text-[17px] font-semibold text-[#181818] mb-2">
-            3. Intellectual Property
-          </h2>
-          <p className="text-[15px] text-[#5C5C5C] mb-4">
-            All content and materials on the App, including but not limited to
-            text, graphics, logos, images, and software, are the property of the
-            company or its licensors and are protected by copyright and other
-            intellectual property laws.
+          <p>
+            By using the ResVor web application or any of our Services, you
+            agree to the practices outlined in this Policy. If we make
+            significant changes to how we use your information, we will update
+            this Policy and post a revised version on our web application.
+            Continued use of our Services after updates are published will
+            indicate your acceptance of those changes. If you have any questions
+            about this Privacy Policy, please contact us at:{" "}
+            <span className="text-indigo-400">privacy@lladner.com</span>.
           </p>
 
-          {/* Section 4 */}
-          <h2 className="text-[17px] font-semibold text-[#181818] mb-2">
-            4. Disclaimer of Warranties
+          <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mt-8 mb-4">
+            Information We Collect
           </h2>
-          <p className="text-[15px] text-[#5C5C5C] mb-4">
-            The App is provided "as is" without warranty of any kind, express or
-            implied, including, but not limited to, the implied warranties of
-            merchantability, fitness for a particular purpose, and non-infringement.
+
+          <p>
+            To use the ResVor web application or other Services, you may be
+            asked to register and provide personal details such as your name,
+            email address, and other profile information (e.g., location,
+            preferences, or date of birth). Additional details you choose to
+            share will help us improve your experience but are not mandatory.
+          </p>
+
+          <p>
+            We do not knowingly collect information from individuals under the
+            age of 16. If we learn that a child under 16 has registered for our
+            Services, we will promptly delete their information. If you suspect
+            that we may have collected data from a minor, please notify us at{" "}
+            <span className="text-indigo-400">privacy@lladner.com</span>.
+          </p>
+
+          <p>
+            We may also automatically collect technical details such as your IP
+            address, browser type, operating system, pages you visit, features
+            you use, and the referring website. This information is used to
+            monitor system performance, improve functionality, and analyze user
+            trends.
+          </p>
+
+          <p>
+            When inviting others to access your ResVor web application, you may
+            provide us with their contact details (e.g., email address or phone
+            number). While we store this information to deliver invitations and
+            messages, we will not sell or share your guests' contact information
+            without permission.
           </p>
         </div>
       </div>

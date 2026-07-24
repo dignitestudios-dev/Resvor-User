@@ -4,11 +4,126 @@ import { FaArrowLeftLong } from "react-icons/fa6";
 import { IoLocation } from "react-icons/io5";
 import { useNavigate, useParams } from "react-router";
 import ConfirmationModal from "../global/ConfirmationModal";
+import DisputeModal from "./DisputeModal";
+import ViewDisputeModal from "./ViewDisputeModal";
 import { ErrorToast, SuccessToast } from "../global/Toaster";
 import {
   useBookingDetails,
   useCancelBooking,
+  useCreateDispute,
 } from "../../hooks/queries/useQueries";
+
+// ── dispute eligibility helper ────────────────────────────────────────────────
+const checkDisputeEligibility = (booking) => {
+  if (!booking) return { eligible: false, message: "No booking data" };
+
+  if (booking?.isDisputed || booking?.disputeStatus || booking?.dispute) {
+    return { eligible: false, message: "Dispute already filed", isDisputed: true };
+  }
+
+  const rawEndTime = booking?.endTime || booking?.endDateTime;
+  const dateStr = booking?.bookingDate || booking?.startDateTime || booking?.date;
+
+  let endDateTime = null;
+
+  if (rawEndTime) {
+    let year, month, day, hours = 0, minutes = 0;
+
+    // Extract year, month, day from dateStr or rawEndTime
+    if (dateStr) {
+      const dObj = new Date(dateStr);
+      if (!isNaN(dObj.getTime())) {
+        if (typeof dateStr === "string" && dateStr.includes("T")) {
+          const datePart = dateStr.split("T")[0];
+          const [y, m, d] = datePart.split("-").map(Number);
+          year = y;
+          month = m - 1;
+          day = d;
+        } else {
+          year = dObj.getFullYear();
+          month = dObj.getMonth();
+          day = dObj.getDate();
+        }
+      }
+    }
+
+    if (typeof rawEndTime === "string" && rawEndTime.includes("T")) {
+      const directDate = new Date(rawEndTime);
+      if (!isNaN(directDate.getTime())) {
+        const datePart = rawEndTime.split("T")[0];
+        const timePart = rawEndTime.split("T")[1];
+        if (datePart && timePart) {
+          const [y, m, d] = datePart.split("-").map(Number);
+          const [h, min] = timePart.split(":").map(Number);
+          year = y;
+          month = m - 1;
+          day = d;
+          hours = h;
+          minutes = min;
+        } else {
+          hours = directDate.getUTCHours();
+          minutes = directDate.getUTCMinutes();
+        }
+      }
+    } else if (typeof rawEndTime === "string") {
+      const timeParts = String(rawEndTime).match(/(\d+):(\d+)(?::(\d+))?\s*(AM|PM)?/i);
+      if (timeParts) {
+        let h = parseInt(timeParts[1], 10);
+        const min = parseInt(timeParts[2], 10);
+        const ampm = timeParts[4];
+        if (ampm) {
+          if (ampm.toUpperCase() === "PM" && h < 12) h += 12;
+          if (ampm.toUpperCase() === "AM" && h === 12) h = 0;
+        }
+        hours = h;
+        minutes = min;
+      }
+    }
+
+    if (year !== undefined && month !== undefined && day !== undefined) {
+      endDateTime = new Date(year, month, day, hours, minutes, 0, 0);
+    } else {
+      const direct = new Date(rawEndTime);
+      if (!isNaN(direct.getTime())) {
+        endDateTime = direct;
+      }
+    }
+  } else if (dateStr) {
+    const baseDate = new Date(dateStr);
+    if (!isNaN(baseDate.getTime())) {
+      endDateTime = baseDate;
+    }
+  }
+
+  if (!endDateTime) {
+    return { eligible: true, message: "" };
+  }
+
+  const now = new Date();
+  const diffInMs = now.getTime() - endDateTime.getTime();
+  const twentyFourHoursInMs = 24 * 60 * 60 * 1000;
+
+  // 1. Before booking end time: Not allowed to file dispute yet
+  if (diffInMs < 0) {
+    return {
+      eligible: false,
+      message: "Dispute can only be filed after the booking end time",
+      notStarted: true,
+    };
+  }
+
+  // 2. After 24 hours after booking end time: Dispute window expired
+  if (diffInMs > twentyFourHoursInMs) {
+    return {
+      eligible: false,
+      message: "Dispute window expired (24 hours passed after booking end time)",
+      expired: true,
+    };
+  }
+
+  // 3. Within 24-hour window after booking end time: Allowed
+  return { eligible: true, message: "" };
+};
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -31,6 +146,33 @@ const formatDate = (value) => {
 
 const formatTime = (value) => {
   if (!value) return "-";
+
+  if (typeof value === "string" && (value.includes("T") || value.includes("Z"))) {
+    const d = new Date(value);
+    if (!Number.isNaN(d.getTime())) {
+      return d.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+  }
+
+  if (typeof value === "string" && value.includes(":")) {
+    const [hoursStr, minutesStr] = value.split(":");
+    const hours = Number(hoursStr);
+    const minutes = Number(minutesStr);
+    if (!Number.isNaN(hours) && !Number.isNaN(minutes)) {
+      const date = new Date();
+      date.setHours(hours, minutes, 0, 0);
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+  }
+
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return String(value);
   return d.toLocaleTimeString("en-US", {
@@ -63,9 +205,9 @@ const isRenderableImage = (value) =>
 const getStatusClasses = (status) => {
   const s = String(status || "").toLowerCase();
   if (s === "pending" || s === "awaiting_payment") return "bg-amber-100 text-amber-700";
-  if (s === "approved" || s === "confirmed")       return "bg-emerald-100 text-emerald-700";
-  if (s === "completed")                            return "bg-blue-100 text-blue-700";
-  if (s === "cancelled" || s === "rejected")        return "bg-rose-100 text-rose-700";
+  if (s === "approved" || s === "confirmed") return "bg-emerald-100 text-emerald-700";
+  if (s === "completed") return "bg-blue-100 text-blue-700";
+  if (s === "cancelled" || s === "rejected") return "bg-rose-100 text-rose-700";
   return "bg-gray-100 text-gray-700";
 };
 
@@ -92,6 +234,8 @@ export default function BookingDetails() {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [showViewDisputeModal, setShowViewDisputeModal] = useState(false);
 
   const {
     data: bookingResponse,
@@ -100,9 +244,17 @@ export default function BookingDetails() {
     error,
   } = useBookingDetails(id);
   const { mutate: cancelBooking, isPending: isCancelling } = useCancelBooking();
+  const { mutate: createDispute, isPending: isFilingDispute } = useCreateDispute();
 
   const booking = bookingResponse?.data ?? bookingResponse;
-  console.log("🚀 ~ BookingDetails ~ booking:", booking)
+  console.log("🚀 ~ BookingDetails ~ booking:", booking);
+  
+  const disputeId =
+    (typeof booking?.disputeId === "object" ? booking?.disputeId?._id : booking?.disputeId) ||
+    (typeof booking?.dispute === "object" ? booking?.dispute?._id : booking?.dispute) ||
+    null;
+
+  const disputeEligibility = checkDisputeEligibility(booking);
   const normalizedStatus = String(booking?.status || "").toLowerCase();
   const isCancelable =
     booking && !["cancelled", "completed", "rejected"].includes(normalizedStatus);
@@ -112,13 +264,13 @@ export default function BookingDetails() {
     booking?.bookingDate || booking?.startDateTime || booking?.startTime
   );
   const startTime = formatTime(booking?.startTime || booking?.startDateTime);
-  const endTime   = formatTime(booking?.endTime   || booking?.endDateTime);
+  const endTime = formatTime(booking?.endTime || booking?.endDateTime);
   const timeRange =
     startTime !== "-" && endTime !== "-"
       ? `${startTime} – ${endTime}`
       : startTime !== "-"
-      ? startTime
-      : endTime;
+        ? startTime
+        : endTime;
 
   // ── seating ────────────────────────────────────────────────────────────────
   const tableIds = Array.isArray(booking?.tableIds) ? booking.tableIds : [];
@@ -130,45 +282,45 @@ export default function BookingDetails() {
     booking?.guestName ||
     (booking?.userId && typeof booking.userId === "object"
       ? [booking.userId.firstName || booking.userId.name, booking.userId.lastName]
-          .filter(Boolean)
-          .join(" ")
-          .trim()
+        .filter(Boolean)
+        .join(" ")
+        .trim()
       : "") ||
     "-";
 
- const contactEmail =
-  booking?.contactEmail ||
-  booking?.guestEmail ||
-  booking?.email ||
-  (booking?.userId && typeof booking.userId === "object"
-    ? booking.userId.email
-    : "") ||
-  "-";
+  const contactEmail =
+    booking?.contactEmail ||
+    booking?.guestEmail ||
+    booking?.email ||
+    (booking?.userId && typeof booking.userId === "object"
+      ? booking.userId.email
+      : "") ||
+    "-";
 
   const contactPhone =
-  booking?.contactPhone ||
-  booking?.guestPhone ||
-  booking?.phoneNumber ||
-  booking?.phone ||
-  (booking?.userId && typeof booking.userId === "object"
-    ? booking.userId.phone ||
+    booking?.contactPhone ||
+    booking?.guestPhone ||
+    booking?.phoneNumber ||
+    booking?.phone ||
+    (booking?.userId && typeof booking.userId === "object"
+      ? booking.userId.phone ||
       booking.userId.phoneNumber ||
       booking.userId.mobile
-    : "") ||
-  "-";
+      : "") ||
+    "-";
 
   // ── Issue #4 — lounge cover image: widen lookup ───────────────────────────
   const lounge = booking?.loungeId;
-  const displayedImage =booking?.loungeId?.logo?.location
+  const displayedImage = booking?.loungeId?.logo?.location
 
   // ── Issue #5 — lounge location: widen lookup ──────────────────────────────
   const displayedAddress = (() => {
     const parts = [];
     const loc = lounge?.location;
     if (loc?.address) return loc.address;
-    if (loc?.street)  parts.push(loc.street);
-    if (loc?.city)    parts.push(loc.city);
-    if (loc?.state)   parts.push(loc.state);
+    if (loc?.street) parts.push(loc.street);
+    if (loc?.city) parts.push(loc.city);
+    if (loc?.state) parts.push(loc.state);
     if (parts.length) return parts.join(", ");
     return (
       lounge?.address ||
@@ -180,33 +332,34 @@ export default function BookingDetails() {
 
   // ── Issue #14 — lounge tags / amenities ───────────────────────────────────
   const loungeTags = [
-    ...(lounge?.tags      || []),
+    ...(lounge?.tags || []),
     ...(lounge?.amenities || []),
-    ...(lounge?.features  || []),
+    ...(lounge?.features || []),
   ].filter(Boolean);
 
   // ── Issue #10 — services & package ───────────────────────────────────────
   const bookingServices = Array.isArray(booking?.services)
     ? booking.services
     : Array.isArray(booking?.serviceIds)
-    ? booking.serviceIds
-    : [];
+      ? booking.serviceIds
+      : [];
   const bookingPackage =
     booking?.package ||
     booking?.packageId ||
     null;
 
-    const servicePackages = Array.isArray(booking?.servicePackageIds)
-  ? booking.servicePackageIds
-  : [];
+  const servicePackages = Array.isArray(booking?.servicePackageIds)
+    ? booking.servicePackageIds
+    : [];
 
-  // ── Issue #11 — payment amounts ──────────────────────────────────────────
+  // ── Issue #11 — payment amounts (in cents, converted to USD) ────────────
   const isAwaitingPayment =
     normalizedStatus === "awaiting_payment" || normalizedStatus === "pending";
-  const amountPaid  = Number(booking?.amountPaid  ?? 0);
-  const totalPrice  = Number(booking?.totalPrice  ?? booking?.totalAmount ?? booking?.amount ?? 0);
+  const amountPaid = Number(booking?.amountPaid ?? 0) / 100;
+  const rawTotalPrice = Number(booking?.totalPrice ?? booking?.totalAmount ?? booking?.amount ?? 0);
+  const totalPrice = rawTotalPrice > 0 ? (rawTotalPrice > 1000 ? rawTotalPrice / 100 : rawTotalPrice) : 0;
 
-  const statusLabel  = formatLabel(booking?.status);
+  const statusLabel = formatLabel(booking?.status);
   const paymentStatusLabel = formatLabel(booking?.paymentStatus);
 
   // ── actions ────────────────────────────────────────────────────────────────
@@ -229,6 +382,34 @@ export default function BookingDetails() {
         );
       },
     });
+  };
+
+  const handleCreateDispute = ({ reason }) => {
+    const sourceId = booking?._id || booking?.id || id;
+    const isEventBooking = Boolean(booking?.isEvent || booking?.eventType || booking?.sourceModel === "Event");
+    const sourceModel = booking?.sourceModel || (isEventBooking ? "Event" : "Booking");
+
+    createDispute(
+      {
+        sourceId,
+        sourceModel,
+        reason,
+      },
+      {
+        onSuccess: (response) => {
+          setShowDisputeModal(false);
+          SuccessToast(response?.message || "Dispute submitted successfully.");
+          queryClient.invalidateQueries({ queryKey: ["bookings"] });
+          queryClient.invalidateQueries({ queryKey: ["booking-details", id] });
+        },
+        onError: (requestError) => {
+          ErrorToast(
+            requestError?.response?.data?.message ||
+            "Failed to submit dispute. Please try again."
+          );
+        },
+      }
+    );
   };
 
   // ── loading / error states ─────────────────────────────────────────────────
@@ -277,18 +458,63 @@ export default function BookingDetails() {
               </h2>
             </div>
 
-            <button
-              type="button"
-              onClick={handleCancelBooking}
-              disabled={!isCancelable || isCancelling}
-              className={`px-6 py-2 rounded-[12px] text-[12px] font-semibold border transition ${
-                isCancelable && !isCancelling
+            <div className="flex items-center gap-3">
+              {disputeId ? (
+                <button
+                  type="button"
+                  onClick={() => setShowViewDisputeModal(true)}
+                  className="px-5 py-2 rounded-[12px] text-[12px] font-semibold bg-amber-600 hover:bg-amber-700 text-white transition shadow-sm"
+                >
+                  View Dispute
+                </button>
+              ) : disputeEligibility.isDisputed ? (
+                <button
+                  type="button"
+                  onClick={() => setShowViewDisputeModal(true)}
+                  className="px-5 py-2 rounded-[12px] text-[12px] font-semibold bg-amber-600 hover:bg-amber-700 text-white transition shadow-sm"
+                >
+                  View Dispute
+                </button>
+              ) : disputeEligibility.eligible ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDisputeModal(true)}
+                  className="px-5 py-2 rounded-[12px] text-[12px] font-semibold bg-amber-600 hover:bg-amber-700 text-white transition shadow-sm"
+                >
+                  File Dispute
+                </button>
+              ) : disputeEligibility.notStarted ? (
+                <button
+                  type="button"
+                  disabled
+                  title="Dispute can only be filed after the booking end time"
+                  className="px-5 py-2 rounded-[12px] text-[12px] font-semibold border border-gray-200 bg-white/20 text-gray-300 cursor-not-allowed"
+                >
+                  Dispute Available After Event Ends
+                </button>
+              ) : disputeEligibility.expired ? (
+                <button
+                  type="button"
+                  disabled
+                  title="Dispute window expired (24 hours passed after booking end time)"
+                  className="px-5 py-2 rounded-[12px] text-[12px] font-semibold border border-gray-200 bg-white/20 text-gray-300 cursor-not-allowed"
+                >
+                  Dispute Expired
+                </button>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={handleCancelBooking}
+                disabled={!isCancelable || isCancelling}
+                className={`px-6 py-2 rounded-[12px] text-[12px] font-semibold border transition ${isCancelable && !isCancelling
                   ? "border-rose-200 bg-white text-rose-600 hover:bg-rose-50"
                   : "border-gray-200 bg-white text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              {isCancelling ? "Cancelling…" : isCancelable ? "Cancel Booking" : statusLabel}
-            </button>
+                  }`}
+              >
+                {isCancelling ? "Cancelling…" : isCancelable ? "Cancel Booking" : statusLabel}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -415,7 +641,7 @@ export default function BookingDetails() {
                           : String(svc);
                       const price =
                         typeof svc === "object" && (svc.price !== undefined)
-                          ? ` — ${formatCurrency(svc.price)}`
+                          ? ` — ${formatCurrency(Number(svc?.price ?? 0) / 100)}`
                           : "";
                       return (
                         <span
@@ -445,38 +671,38 @@ export default function BookingDetails() {
                 </div>
               )}
 
-          {servicePackages.length > 0 && (
-  <div className="space-y-3 pb-5 border-b border-[#0000001A]">
-    <p className="font-semibold text-[#000000] text-[15px]">
-      Service Packages
-    </p>
+              {servicePackages.length > 0 && (
+                <div className="space-y-3 pb-5 border-b border-[#0000001A]">
+                  <p className="font-semibold text-[#000000] text-[15px]">
+                    Service Packages
+                  </p>
 
-    <div className="flex flex-wrap gap-4">
-      {servicePackages.map((pkg) => (
-        <div
-          key={pkg._id}
-          className="flex-1 min-w-[260px] max-w-[340px] rounded-lg "
-        >
-          <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="font-semibold text-[#181818] text-[15px]">
-              {pkg.name}
-            </h4>
+                  <div className="flex flex-wrap gap-4">
+                    {servicePackages.map((pkg) => (
+                      <div
+                        key={pkg._id}
+                        className="flex-1 min-w-[260px] max-w-[340px] rounded-lg "
+                      >
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-semibold text-[#181818] text-[15px]">
+                            {pkg.name}
+                          </h4>
 
-            <span className="text-[#010067] font-semibold text-[14px]">
-              ({formatCurrency(pkg.price)})
-            </span>
-          </div>
+                          <span className="text-[#010067] font-semibold text-[14px]">
+                            ({formatCurrency(Number(pkg?.price ?? 0) / 100)})
+                          </span>
+                        </div>
 
-          {pkg.description && (
-            <p className="mt-1 text-[13px] leading-5 text-[#505050] break-words">
-              {pkg.description}
-            </p>
-          )}
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+                        {pkg.description && (
+                          <p className="mt-1 text-[13px] leading-5 text-[#505050] break-words">
+                            {pkg.description}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* Issue #11 & #12 — financial summary */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
                 {isAwaitingPayment ? (
@@ -548,6 +774,19 @@ export default function BookingDetails() {
         loading={isCancelling}
         onCancel={() => setShowCancelModal(false)}
         onConfirm={confirmCancelBooking}
+      />
+
+      <DisputeModal
+        isOpen={showDisputeModal}
+        onClose={() => setShowDisputeModal(false)}
+        onSubmit={handleCreateDispute}
+        loading={isFilingDispute}
+      />
+
+      <ViewDisputeModal
+        isOpen={showViewDisputeModal}
+        onClose={() => setShowViewDisputeModal(false)}
+        disputeId={disputeId}
       />
     </>
   );

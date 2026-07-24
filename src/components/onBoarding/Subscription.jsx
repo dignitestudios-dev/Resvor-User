@@ -102,6 +102,7 @@ const Subscription = ({ handlePrevious }) => {
               text={"Explore Lounges"}
               onClick={() => {
                 localStorage.setItem("onboarding_complete_acknowledged", "true");
+                localStorage.setItem("show_welcome_walkthrough", "true");
                 queryClient.invalidateQueries({ queryKey: ["auth-me"] });
                 navigate("/app/home");
               }}
@@ -211,6 +212,7 @@ const Subscription = ({ handlePrevious }) => {
             <button
               onClick={() => {
                 localStorage.setItem("onboarding_complete_acknowledged", "true");
+                localStorage.setItem("show_welcome_walkthrough", "true");
                 queryClient.invalidateQueries({ queryKey: ["auth-me"] });
                 navigate("/app/home");
               }}

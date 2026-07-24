@@ -22,6 +22,7 @@ import {
   useFavorites,
   useLoungeDetails,
   useToggleFavorite,
+  useInitiateChat,
 } from "../../hooks/queries/useQueries";
 
 const LoungeDetail = () => {
@@ -57,13 +58,15 @@ const LoungeDetail = () => {
   });
   const { mutate: toggleFavorite, isPending: isTogglingFavorite } =
     useToggleFavorite();
+  const { mutate: initiateChat, isPending: isInitiatingChat } =
+    useInitiateChat();
 
   const lounge = loungeResponse?.data;
 
   useEffect(() => {
     const isFavoriteFromServer = Boolean(
       lounge?.isFavorite ||
-        favoritesResponse?.data?.some((favorite) => favorite._id === lounge?._id)
+      favoritesResponse?.data?.some((favorite) => favorite._id === lounge?._id)
     );
 
     setLiked(isFavoriteFromServer);
@@ -87,6 +90,23 @@ const LoungeDetail = () => {
     setIsEventSubmit(true);
   };
 
+  const handleChatClick = () => {
+    if (!id || isInitiatingChat) return;
+    initiateChat(
+      { loungeId: id },
+      {
+        onSuccess: (response) => {
+          const chat = response?.data;
+          navigate("/app/chat", { state: { chatId: chat?._id, chat } });
+        },
+        onError: () => {
+          // fallback: still navigate to chat list
+          navigate("/app/chat");
+        },
+      }
+    );
+  };
+
   const handleFavoriteClick = () => {
     if (!lounge?._id || isTogglingFavorite) return;
 
@@ -97,16 +117,16 @@ const LoungeDetail = () => {
       onSuccess: (response) => {
         SuccessToast(
           response?.message ||
-            (nextValue
-              ? "Lounge added to favorites."
-              : "Lounge removed from favorites.")
+          (nextValue
+            ? "Lounge added to favorites."
+            : "Lounge removed from favorites.")
         );
       },
       onError: (requestError) => {
         setLiked(!nextValue);
         ErrorToast(
           requestError?.response?.data?.message ||
-            "Unable to update favorite lounge."
+          "Unable to update favorite lounge."
         );
       },
     });
@@ -217,47 +237,54 @@ const LoungeDetail = () => {
 
             <div className="px-6 mt-10">
               <div className="flex items-center justify-between gap-4">
-  <p className="text-[24px] font-[600] flex-1 min-w-0 truncate">
-    {lounge?.name || "-"}
-  </p>
+                <p className="text-[24px] font-[600] flex-1 min-w-0 truncate">
+                  {lounge?.name || "-"}
+                </p>
 
-  <div className="flex gap-2 shrink-0">
-    <div
-      className="cursor-pointer"
-      onClick={() => navigate("/app/chat")}
-    >
-      <img src={msgIcon} alt="msg" className="w-10 h-10" />
-    </div>
+                <div className="flex gap-2 shrink-0">
+                  <div
+                    className={`cursor-pointer flex items-center justify-center ${isInitiatingChat ? "opacity-60 pointer-events-none" : ""
+                      }`}
+                    onClick={handleChatClick}
+                  >
+                    {isInitiatingChat ? (
+                      <div className="w-10 h-10 flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-[#010067] border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    ) : (
+                      <img src={msgIcon} alt="msg" className="w-10 h-10" />
+                    )}
+                  </div>
 
-    <div
-      onClick={handleFavoriteClick}
-      className={`cursor-pointer ${isTogglingFavorite ? "opacity-70 pointer-events-none" : ""}`}
-    >
-      <img
-        src={liked ? likedIcon : likeIcon}
-        alt="like"
-        className="w-10 h-10"
-      />
-    </div>
-  </div>
+                  <div
+                    onClick={handleFavoriteClick}
+                    className={`cursor-pointer ${isTogglingFavorite ? "opacity-70 pointer-events-none" : ""}`}
+                  >
+                    <img
+                      src={liked ? likedIcon : likeIcon}
+                      alt="like"
+                      className="w-10 h-10"
+                    />
+                  </div>
+                </div>
 
               </div>
 
               <p className="py-1 flex items-center gap-2 flex-wrap">
-  Tags:
-  {lounge?.tags?.length ? (
-    lounge.tags.map((tag, index) => (
-      <span
-        key={index}
-        className="h-[28px] px-2 py-1 text-[14px] rounded-full font-medium bg-[#E6E6F0] text-[#010067]"
-      >
-        {tag}
-      </span>
-    ))
-  ) : (
-    <span>-</span>
-  )}
-</p>
+                Tags:
+                {lounge?.tags?.length ? (
+                  lounge.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="h-[28px] px-2 py-1 text-[14px] rounded-full font-medium bg-[#E6E6F0] text-[#010067]"
+                    >
+                      {tag}
+                    </span>
+                  ))
+                ) : (
+                  <span>-</span>
+                )}
+              </p>
 
               <ul className="space-y-2 list-none">
                 <li className="flex items-center gap-2 text-gray-700">
@@ -291,7 +318,7 @@ const LoungeDetail = () => {
                       setEventServices(null);
                       setIsEventRequest(true);
                     }}
-                    className="bg-[#21293514] text-[#212935] font-semibold text-[13px] rounded-[8px] w-full py-2 flex-1"
+                    className="bg-[#21293514] text-[#212935] font-semibold text-[13px] rounded-lg w-full py-2.5 flex-1"
                   >
                     Request Event
                   </button>
@@ -395,7 +422,7 @@ const LoungeDetail = () => {
           />
         )}
 
-        {isEventSubmit && (
+        {/* {isEventSubmit && (
           <AuthSuccessModal
             onClick={() => {
               setIsEventSubmit(false);
@@ -411,35 +438,35 @@ const LoungeDetail = () => {
             onClose={() => setIsEventAccepted(false)}
             onClick={handleEventAccepted}
           />
-        )}
+        )} */}
 
-        {isEventSummary && (
+        {isEventSubmit && (
           <EventSummaryModal
             apiPayload={
               {
-              loungeId: id,
-              title: eventData?.title || eventData?.eventName || "",
-              eventType: normalizeEventType(eventData?.eventType),
-              guestCount: Number(eventData?.guestCount),
-              budget: Number(eventData?.budget),
-              preferredMusic: eventData?.preferredMusic,
-              specialRequest:
-                eventData?.specialRequest ||
-                eventServices?.instruction ||
-                "",
-              startDateTime:
-                typeof eventData?.startDateTime === "string"
-                  ? eventData.startDateTime
-                  : eventData?.startDateTime?.toISOString?.() || "",
-              endDateTime:
-                typeof eventData?.endDateTime === "string"
-                  ? eventData.endDateTime
-                  : eventData?.endDateTime?.toISOString?.() || "",
-              ticketAtDoor: eventData?.ticketAtDoor,
-              servicePackageIds: (eventServices?.selectedPackage || []).map(
-                (pkg) => pkg.id || pkg._id
-              ),
-            }}
+                loungeId: id,
+                title: eventData?.title || eventData?.eventName || "",
+                eventType: normalizeEventType(eventData?.eventType),
+                guestCount: Number(eventData?.guestCount),
+                budget: Number(eventData?.budget),
+                preferredMusic: eventData?.preferredMusic,
+                specialRequest:
+                  eventData?.specialRequest ||
+                  eventServices?.instruction ||
+                  "",
+                startDateTime:
+                  typeof eventData?.startDateTime === "string"
+                    ? eventData.startDateTime
+                    : eventData?.startDateTime?.toISOString?.() || "",
+                endDateTime:
+                  typeof eventData?.endDateTime === "string"
+                    ? eventData.endDateTime
+                    : eventData?.endDateTime?.toISOString?.() || "",
+                ticketAtDoor: eventData?.ticketAtDoor,
+                servicePackageIds: (eventServices?.selectedPackage || []).map(
+                  (pkg) => pkg.id || pkg._id
+                ),
+              }}
             services={eventServices}
             onClick={handleEventSummary}
             onClose={() => setISEventSummary(false)}

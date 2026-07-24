@@ -51,12 +51,12 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
     if (typeof hours === "string") {
       const parts = hours.split(/\s+-\s+/);
       const startLabel = parts[0]?.trim() || "";
-      const endLabel   = parts[1]?.trim() || "";
+      const endLabel = parts[1]?.trim() || "";
       return {
         start: toHHMM(startLabel),
-        end:   toHHMM(endLabel || startLabel),
-        openLabel:  startLabel || hours,
-        closeLabel: endLabel   || startLabel || hours,
+        end: toHHMM(endLabel || startLabel),
+        openLabel: startLabel || hours,
+        closeLabel: endLabel || startLabel || hours,
       };
     }
 
@@ -74,7 +74,7 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
 
   // Returns true if the time range crosses midnight (e.g. open 1:30 PM, close 12:48 AM)
   const isOvernightRange = (openHHMM, closeHHMM) => {
-    const openMin  = toMinutes(openHHMM);
+    const openMin = toMinutes(openHHMM);
     const closeMin = toMinutes(closeHHMM);
     if (openMin === null || closeMin === null) return false;
     return closeMin < openMin; // close is numerically earlier → crosses midnight
@@ -83,9 +83,9 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
   // Is a given "HH:MM" within [openHHMM, closeHHMM] accounting for overnight wrap?
   const isTimeInRange = (valHHMM, openHHMM, closeHHMM) => {
     if (!valHHMM || !openHHMM || !closeHHMM) return true; // can't validate → pass
-    const val   = toMinutes(valHHMM);
-    const open  = toMinutes(openHHMM);
-    let   close = toMinutes(closeHHMM);
+    const val = toMinutes(valHHMM);
+    const open = toMinutes(openHHMM);
+    let close = toMinutes(closeHHMM);
     if (val === null || open === null || close === null) return true;
 
     if (isOvernightRange(openHHMM, closeHHMM)) {
@@ -125,40 +125,59 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
   // Effective min = max(lounge open, current time + 1 hour buffer) when today; else just lounge open
   const effectiveMinTime = isToday(startDate)
     ? (() => {
-        const { timeStr } = getNowWithBuffer();
-        if (!minTime) return timeStr;
-        return timeStr > minTime ? timeStr : minTime;
-      })()
+      const { timeStr } = getNowWithBuffer();
+      if (!minTime) return timeStr;
+      return timeStr > minTime ? timeStr : minTime;
+    })()
     : minTime;
 
   const effectiveMinLabel = isToday(startDate)
     ? (() => {
-        const { timeStr, label } = getNowWithBuffer();
-        if (!minTime || timeStr > minTime) return `${label} (1-hour buffer)`;
-        return openLabel;
-      })()
+      const { timeStr, label } = getNowWithBuffer();
+      if (!minTime || timeStr > minTime) return `${label} (1-hour buffer)`;
+      return openLabel;
+    })()
     : openLabel;
 
   const isBufferEnforced = isToday(startDate) && (!minTime || getNowWithBuffer().timeStr > minTime);
 
-  const formatDateTime = (date, timeStr) => {
+  const formatDateTimeToUTC = (date, timeStr, isNextDay = false) => {
     if (!date || !timeStr) return null;
     try {
       const d = new Date(date);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      
-      const [hours, minutes] = timeStr.split(':');
-      return `${year}-${month}-${day}T${hours}:${minutes}:00.000Z`;
+      if (isNextDay) {
+        d.setDate(d.getDate() + 1);
+      }
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      if (isNaN(hours) || isNaN(minutes)) return null;
+
+      const localDate = new Date(
+        d.getFullYear(),
+        d.getMonth(),
+        d.getDate(),
+        hours,
+        minutes,
+        0,
+        0
+      );
+
+      return localDate.toISOString();
     } catch {
       return null;
     }
   };
 
-  const formattedDate = formatDateTime(startDate, startTime); 
-  const formattedStartTime = formatDateTime(startDate, startTime);
-  const formattedEndTime = formatDateTime(startDate, endTime);
+  const isEndNextDay = Boolean(
+    startTime &&
+    endTime &&
+    (isOvernightRange(minTime, maxTime)
+      ? endTime <= maxTime && startTime >= minTime
+      : endTime < startTime)
+  );
+
+  const formattedDate = formatDateTimeToUTC(startDate, startTime);
+  const formattedStartTime = formatDateTimeToUTC(startDate, startTime);
+  const formattedEndTime = formatDateTimeToUTC(startDate, endTime, isEndNextDay);
 
   const [formData, setFormData] = useState({
     name: initialDisplay.name || "",
@@ -222,9 +241,9 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
     if (name === "guestCount" || name === "children") {
       const cleanVal = value.replace(/\D/g, "").slice(0, 4);
       setFormData((prev) => ({ ...prev, [name]: cleanVal }));
-      setFormErrors((prev) => ({ 
-        ...prev, 
-        [name]: name === "guestCount" ? validateGuestCount(cleanVal) : validateChildren(cleanVal) 
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: name === "guestCount" ? validateGuestCount(cleanVal) : validateChildren(cleanVal)
       }));
       return;
     }
@@ -245,8 +264,8 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
     if (!val) return "";
     // First check the effective minimum (buffer or open time)
     if (effectiveMinTime) {
-      const valMin  = toMinutes(val);
-      const effMin  = toMinutes(effectiveMinTime);
+      const valMin = toMinutes(val);
+      const effMin = toMinutes(effectiveMinTime);
       // For overnight ranges, times before opening that wrap need the +1440 trick
       let normalisedVal = valMin;
       if (isOvernightRange(effectiveMinTime, maxTime) && valMin !== null && effMin !== null && valMin < effMin) {
@@ -265,16 +284,16 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
   };
 
   // Validates that end time is strictly after start time (overnight-aware)
- const checkEndAfterStart = (start, end) => {
+  const checkEndAfterStart = (start, end) => {
     if (!start || !end) return "";
     if (isOvernightRange(minTime, maxTime)) {
       // Both in evening portion: end must be > start
       // Both in early-morning portion: end must be > start
       // start in evening, end in early-morning: always valid (crosses midnight)
       const startIsEvening = start >= minTime; // e.g. >= "11:30"
-      const endIsEvening   = end   >= minTime;
+      const endIsEvening = end >= minTime;
       const startIsMorning = start <= maxTime; // e.g. <= "02:30"
-      const endIsMorning   = end   <= maxTime;
+      const endIsMorning = end <= maxTime;
 
       if (startIsEvening && endIsEvening && end <= start)
         return "End time must be after start time";
@@ -337,7 +356,7 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
     if (!startDate) errors.date = "Date is required";
     if (!startTime) errors.startTime = "Start time is required";
     if (!endTime) errors.endTime = "End time is required";
-    
+
     const nameErr = validateName(formData.name);
     if (nameErr) errors.name = nameErr;
 
@@ -418,22 +437,21 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
               <DatePickerField
                 label="Select Date"
                 value={startDate}
-                onChange={(val) => { setStartDate(val); setFormErrors(p => ({...p, date: ""})); }}
+                onChange={(val) => { setStartDate(val); setFormErrors(p => ({ ...p, date: "" })); }}
               />
               {formErrors.date && <p className="text-red-600 text-[12px] mt-1">{formErrors.date}</p>}
             </div>
           </div>
           <div className="w-full flex mt-2 items-start gap-2 px-1">
-               <div className="w-full">
+            <div className="w-full">
               <label className="block text-[14px] font-[500] text-[#181818] mb-2">
-               Start Time
+                Start Time
               </label>
               <input
                 type="time"
                 data-slot="input"
-                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
-                  formErrors.startTime ? "ring-red-600" : "ring-[#CACACA]"
-                } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
+                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${formErrors.startTime ? "ring-red-600" : "ring-[#CACACA]"
+                  } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
                 value={startTime}
                 onChange={handleStartTimeChange}
                 onBlur={handleStartTimeBlur}
@@ -445,17 +463,16 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
               )}
               {formErrors.startTime && <p className="text-red-600 text-[12px] mt-1">{formErrors.startTime}</p>}
             </div>
-               <div className="w-full">
+            <div className="w-full">
               <label className="block text-[14px] font-[500] text-[#181818] mb-2">
-               End Time
+                End Time
               </label>
               <input
                 type="time"
                 data-slot="input"
                 min={!isOvernightRange(minTime, maxTime) && startTime ? startTime : undefined}
-                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
-                  formErrors.endTime ? "ring-red-600" : "ring-[#CACACA]"
-                } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
+                className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${formErrors.endTime ? "ring-red-600" : "ring-[#CACACA]"
+                  } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
                 value={endTime}
                 onChange={handleEndTimeChange}
                 onBlur={handleEndTimeBlur}
@@ -467,7 +484,7 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
               )}
               {formErrors.endTime && <p className="text-red-600 text-[12px] mt-1">{formErrors.endTime}</p>}
             </div>
-            </div>
+          </div>
           <div>
             <div className="px-1 py-2">
               <InputField
@@ -555,8 +572,8 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
                 />
               </div>
             </div>
-            
-          
+
+
 
             <div className="mt-4 px-1 flex gap-2">
               <Button text="Next" type="button" onClick={handleNext} />

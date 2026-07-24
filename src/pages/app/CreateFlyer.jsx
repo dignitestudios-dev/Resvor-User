@@ -18,6 +18,7 @@ import FlayerFeeModal from "../../components/flayer/FlayerFeeModal";
 import ProceedFlayerModal from "../../components/flayer/ProceedFlayerModal";
 import SendInvitationModal from "../../components/flayer/SendInvitationModal";
 import AuthSuccessModal from "../../components/auth/AuthSuccessModal";
+import TemplateCarousel from "../../components/flayer/TemplateCarousel";
 import html2canvas from "html2canvas";
 import { useCreateCampaign } from "../../hooks/mutations/OnboardingMutations";
 import { SuccessToast, ErrorToast } from "../../components/global/Toaster";
@@ -167,8 +168,8 @@ const CreateFlyer = () => {
 
   // Resolve the clicked flyer from Flyers page (if any) to use as initial preview
   const initialCard = flyerId
-    ? flyerData.find((f) => String(f.id) === String(flyerId)) || cardTemplates[0]
-    : cardTemplates[0];
+    ? flyerData.find((f) => String(f.id) === String(flyerId)) || flyerData[0]
+    : flyerData[0];
 
   const [selectedCard, setSelectedCard] = useState(initialCard);
   const tomorrow = new Date();
@@ -541,7 +542,7 @@ const CreateFlyer = () => {
                 </div>
 
                 {/* Download button */}
-                <button
+                {/* <button
                   type="button"
                   onClick={handleDownloadFlyer}
                   disabled={isGenerating}
@@ -581,7 +582,7 @@ const CreateFlyer = () => {
                       Download
                     </>
                   )}
-                </button>
+                </button> */}
               </div>
 
               {/* Flyer stage */}
@@ -593,10 +594,13 @@ const CreateFlyer = () => {
                 />
               </div>
 
-              {/* Template label */}
-              <p className="text-center mt-2.5 text-[12px] text-[#888] italic">
-                Template: {selectedCard.name}
-              </p>
+              {/* Template selection carousel */}
+              <div>
+                <p className="my-3 font-semibold text-lg text-center lg:text-left">
+                  Select Card Template
+                </p>
+                <TemplateCarousel selectedId={selectedCard.id} onSelectTemplate={setSelectedCard} />
+              </div>
             </div>
           </div>
         </div>

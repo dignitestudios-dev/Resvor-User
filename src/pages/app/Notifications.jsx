@@ -1,43 +1,37 @@
 import React, { useState } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
+import { useNavigate } from "react-router";
+import { useNotifications } from "../../hooks/queries/useQueries";
+import moment from "moment";
 
 const Notifications = () => {
+  const navigate = useNavigate();
   const [selectTab, setSelectTab] = useState("all");
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "New Task Assigned",
-      description:
-        "Lorem ipsum dolor sit amet consectetur. In volutpat et mattis ut tristique viverra blandit.",
-      createdAt: "12-03-2025",
-      read: false,
-    },
-    {
-      id: 2,
-      title: "Shift Approved",
-      description:
-        "Your requested shift change has been approved by the manager.",
-      createdAt: "11-20-2025",
-      read: true,
-    },
-    {
-      id: 3,
-      title: "New Message from Manager",
-      description: "Please check the updated schedule for next week.",
-      createdAt: "11-18-2025",
-      read: false,
-    },
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { data: notificationsData, isLoading } = useNotifications();
+  const notifications = notificationsData?.data || [];
 
   const handleSelect = (val) => {
     setSelectTab(val);
   };
+
+  const handleNotificationClick = (item) => {
+    const resourceType =
+      item?.metadata?.resourceType || item?.resourceType;
+    const resource = item?.metadata?.resource || item?.resource;
+
+    if (resourceType === "Event" && resource) {
+      navigate(`/app/reservationDetails/${resource}`);
+    } else if (resourceType === "Booking" && resource) {
+      navigate(`/app/bookingDetails/${resource}`);
+    }
+  };
+
   // derive filtered tasks from notifications and selected tab
   const filteredTasks = notifications.filter((n) => {
+    const isRead = n.isRead ?? n.read;
     if (selectTab === "all") return true;
-    if (selectTab === "read") return n.read === true;
-    if (selectTab === "unread") return n.read === false;
+    if (selectTab === "read") return isRead === true;
+    if (selectTab === "unread") return isRead === false;
     return true;
   });
   return (
@@ -64,31 +58,28 @@ const Notifications = () => {
             <div className="flex justify-start items-center gap-4 mx-6 pb-2">
               <button
                 onClick={() => handleSelect("all")}
-                className={` ${
-                  selectTab === "all"
-                    ? "text-indigo-950 font-bold"
-                    : "text-gray-500"
-                }`}
+                className={` ${selectTab === "all"
+                  ? "text-indigo-950 font-bold"
+                  : "text-gray-500"
+                  }`}
               >
                 All
               </button>
               <button
                 onClick={() => handleSelect("read")}
-                className={` ${
-                  selectTab === "read"
-                    ? "text-indigo-950 font-bold"
-                    : "text-gray-500"
-                } `}
+                className={` ${selectTab === "read"
+                  ? "text-indigo-950 font-bold"
+                  : "text-gray-500"
+                  } `}
               >
                 Read
               </button>
               <button
                 onClick={() => handleSelect("unread")}
-                className={` ${
-                  selectTab === "unread"
-                    ? "text-indigo-950 font-bold"
-                    : "text-gray-500"
-                } `}
+                className={` ${selectTab === "unread"
+                  ? "text-indigo-950 font-bold"
+                  : "text-gray-500"
+                  } `}
               >
                 Unread
               </button>
@@ -121,7 +112,11 @@ const Notifications = () => {
               {filteredTasks?.length > 0 ? (
                 <div className=" h-[430px] overflow-y-auto ">
                   {filteredTasks?.map((item, index) => (
-                    <div className="pl-8" key={index}>
+                    <div
+                      className="pl-8 cursor-pointer hover:bg-gray-50 transition-colors"
+                      key={item._id || index}
+                      onClick={() => handleNotificationClick(item)}
+                    >
                       <div className="flex justify-between items-center py-2 w-[95%] border-gray-100">
                         <div className="bg-white flex w-[95%]">
                           {/* <div className="py-3 px-2 mt-1">
@@ -144,10 +139,12 @@ const Notifications = () => {
 
                         <div className="w-[20%] flex flex-col items-center">
                           <p className="text-[14px] text-[#717171] mb-2">
-                            {item?.createdAt}
+                            {item?.createdAt
+                              ? moment(item.createdAt).format("MM-DD-YYYY")
+                              : item?.createdAt}
                           </p>
                           {/* unread indicator */}
-                          {!item?.read ? (
+                          {!(item?.isRead ?? item?.read) ? (
                             <span className="bg-indigo-950 rounded-full px-2 text-[14px] text-white">
                               1
                             </span>
@@ -171,7 +168,7 @@ const Notifications = () => {
                   ))}
                 </div>
               ) : (
-                <div className="h-[430px]">No record found</div>
+                <div className="h-[430px] flex items-center justify-center text-gray-500 font-medium">No record found</div>
               )}
             </div>
           )}

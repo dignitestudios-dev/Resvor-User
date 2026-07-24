@@ -15,10 +15,10 @@ export const settingOptions = [
   //   key: "email",
   //   label: "Change Email",
   // },
-  {
-    key: "number",
-    label: "Change Number",
-  },
+  // {
+  //   key: "number",
+  //   label: "Change Number",
+  // },
   {
     key: "delete",
     label: "Delete Account",

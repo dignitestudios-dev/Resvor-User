@@ -2,7 +2,7 @@ import * as Yup from "yup";
 
 export const changePasswordSchema = Yup.object().shape({
   password: Yup.string()
-    .required("Please enter your password")
+    .required("Please enter your current password")
     .matches(/^(?!\s)(?!.*\s$)/, "Password must not begin or end with spaces")
     .min(8, "Password must contain at least 8 characters")
     .matches(/[A-Z]/, "Password must include at least one uppercase letter")
@@ -14,7 +14,7 @@ export const changePasswordSchema = Yup.object().shape({
     ),
 
   newPassword: Yup.string()
-    .required("Please enter your password")
+    .required("Please enter your new password")
     .matches(/^(?!\s)(?!.*\s$)/, "Password must not begin or end with spaces")
     .min(8, "Password must contain at least 8 characters")
     .matches(/[A-Z]/, "Password must include at least one uppercase letter")

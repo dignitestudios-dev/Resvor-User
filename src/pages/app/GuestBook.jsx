@@ -15,7 +15,7 @@ const GuestBook = () => {
   const [addGuest, setAddGuest] = useState(false);
   const [editGuest, setEditGuest] = useState(null);
   const [guestToDelete, setGuestToDelete] = useState(null);
-  
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -23,9 +23,8 @@ const GuestBook = () => {
 
   // Pass currentPage to your hook so TanStack Query refetches when the page updates
   const { data: guestbookResponse, isLoading } = useGuestBook(currentPage, limit);
-  console.log("🚀 ~ GuestBook ~ guestbookResponse:", guestbookResponse);
 
-  const users = guestbookResponse?.data || []; 
+  const users = guestbookResponse?.data || [];
   const pagination = guestbookResponse?.pagination || {
     currentPage: 1,
     totalPages: 1,
@@ -110,34 +109,34 @@ const GuestBook = () => {
       <div className="px-5 lg:px-40 pb-10">
         <div className="mx-auto bg-white rounded-xl -mt-[16em] border-[1px] border-[#b9b9b95f] overflow-hidden">
           {/* Desktop View */}
-          <div className="bg-white hidden md:block overflow-x-auto overflow-y-auto min-h-[300px]">
+          <div className="bg-white hidden md:block overflow-y-auto min-h-[300px]">
             {isLoading ? (
               <div className="flex justify-center items-center h-[300px] text-gray-500 text-[14.82px]">
                 Loading guests...
               </div>
             ) : (
-              <table className="w-full">
+              <table className="w-full table-fixed">
                 <thead className="sticky top-0 z-0">
                   <tr className="bg-[#E8E8FF] text-[14.82px]">
                     <th
                       onClick={() => requestSort("loungeId")}
-                      className="pl-8 pr-4 py-5 text-left text-nowrap font-[500] cursor-pointer"
+                      className="w-1/5 pl-8 pr-4 py-5 text-left font-[500] cursor-pointer break-words"
                     >
                       Lounge
                     </th>
                     <th
                       onClick={() => requestSort("fullName")}
-                      className="px-4 py-5 text-left text-nowrap font-[500] cursor-pointer"
+                      className="w-1/5 px-4 py-5 text-left font-[500] cursor-pointer break-words"
                     >
                       Full Name
                     </th>
-                     <th className="px-4 py-5 text-left text-nowrap font-[500]">
+                    <th className="w-1/5 px-4 py-5 text-left font-[500] break-words">
                       Email
                     </th>
-                    <th className="px-4 py-5 text-left text-nowrap font-[500]">
+                    <th className="w-1/5 px-4 py-5 text-left font-[500] break-words">
                       Created Date
                     </th>
-                    <th className="px-4 py-5 text-left text-nowrap font-[500]">
+                    <th className="w-1/5 px-4 py-5 text-left font-[500] break-words">
                       Action
                     </th>
                   </tr>
@@ -158,13 +157,13 @@ const GuestBook = () => {
                         key={user._id}
                         className="border-b border-[#D4D4D4] text-[14.82px]"
                       >
-                        <td className="pl-8 pr-4 py-6 font-semibold">
+                        <td className="pl-8 pr-4 py-6 font-semibold break-words">
                           {user.loungeId?.name || "N/A"}
                         </td>
                         <td className="px-4 py-6">{user.fullName.slice(0,20)}</td>
                         <td className="px-4 py-6">{user.email}</td>
 
-                        <td className="px-4 py-6">
+                        <td className="px-4 py-6 break-words">
                           {user.specialDates?.length > 0
                             ? user.specialDates[0]
                             : new Date(user.createdAt).toLocaleDateString()}

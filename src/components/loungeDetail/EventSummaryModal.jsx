@@ -5,7 +5,6 @@ import { useCreateEvent } from "../../hooks/queries/useQueries";
 import { SuccessToast, ErrorToast } from "../global/Toaster";
 
 const EventSummaryModal = ({ onClose, onClick, apiPayload, services }) => {
-  console.log("🚀 ~ EventSummaryModal ~ services--> :", services);
   const { mutate: createEvent, isPending } = useCreateEvent();
 
   const handlePayNow = () => {
@@ -13,7 +12,7 @@ const EventSummaryModal = ({ onClose, onClick, apiPayload, services }) => {
       ErrorToast("Missing event data.");
       return;
     }
-    
+
     createEvent(apiPayload, {
       onSuccess: (data) => {
         SuccessToast("Event request created successfully!");
@@ -45,40 +44,40 @@ const EventSummaryModal = ({ onClose, onClick, apiPayload, services }) => {
               <p className="text-[16px] text-[#181818] font-semibold  pb-2 border-b border-b-gray-300">
                 Event Summary
               </p>
-{services?.selectedPackage?.map((pkg) => (
-    <div
-      key={pkg.id || pkg._id}
-      className="flex justify-between items-center mt-3"
-    >
-      <p className="text-[14px] font-[500] text-[#18181880]">
-        {pkg.title}
-      </p>
+              {services?.selectedPackage?.map((pkg) => (
+                <div
+                  key={pkg.id || pkg._id}
+                  className="flex justify-between items-center mt-3"
+                >
+                  <p className="text-[14px] font-[500] text-[#18181880]">
+                    {pkg.title}
+                  </p>
 
-      <p className="text-[16px] text-[#4B4B4B]">
-        {new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-        }).format((pkg.price || 0) / 100)}
-      </p>
-    </div>
-  ))}
+                  <p className="text-[16px] text-[#4B4B4B]">
+                    {new Intl.NumberFormat("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                    }).format((pkg.price || 0) / 100)}
+                  </p>
+                </div>
+              ))}
               <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-300">
-    <p className="text-[15px] font-semibold text-[#181818]">
-      Total
-    </p>
+                <p className="text-[15px] font-semibold text-[#181818]">
+                  Total
+                </p>
 
-    <p className="text-[18px] font-bold text-[#181818]">
-      {new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(
-        (services?.selectedPackage?.reduce(
-          (total, pkg) => total + (pkg.price || 0),
-          0
-        ) || 0) / 100
-      )}
-    </p>
-  </div>
+                <p className="text-[18px] font-bold text-[#181818]">
+                  {new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                  }).format(
+                    (services?.selectedPackage?.reduce(
+                      (total, pkg) => total + (pkg.price || 0),
+                      0
+                    ) || 0) / 100
+                  )}
+                </p>
+              </div>
             </div>
           </div>
           <div className="mt-4 flex justify-center">
