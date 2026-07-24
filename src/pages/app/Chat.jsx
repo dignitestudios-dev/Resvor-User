@@ -45,10 +45,10 @@ const getOtherParticipant = (chat, myId) => {
   );
   return other
     ? {
-        id: other.participantId?._id || other.participantId,
-        model: other.participantModel,
-        details: other.participantId,
-      }
+      id: other.participantId?._id || other.participantId,
+      model: other.participantModel,
+      details: other.participantId,
+    }
     : null;
 };
 
@@ -86,7 +86,7 @@ const Chat = () => {
   const location = useLocation();
   const queryClient = useQueryClient();
   const { socket } = useSocket();
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
   // Route state injected by LoungeDetail on initiate chat
   const routeState = location.state;
@@ -104,21 +104,32 @@ const Chat = () => {
   const selectedChatId = selectedChat?._id;
 
   const { data: messagesResponse, isLoading: isMessagesLoading } =
-    useGetMessages(selectedChatId, 1, 50, {
-      onSuccess: (data) => {
-        // Messages come back sorted newest-first from backend; reverse for display
-        const msgs = [...(data?.data || [])].reverse();
-        setLocalMessages(msgs);
-      },
-    });
+    useGetMessages(selectedChatId, 1, 50);
 
   const { mutate: sendMessageMutate, isPending: isSending } = useSendMessage();
 
   // Initialise messages whenever the query data changes for the selected chat
   useEffect(() => {
-    if (messagesResponse?.data) {
-      const msgs = [...(messagesResponse.data || [])].reverse();
-      setLocalMessages(msgs);
+    if (messagesResponse) {
+      const rawMsgs = Array.isArray(messagesResponse?.data?.data)
+        ? messagesResponse.data.data
+        : Array.isArray(messagesResponse?.data)
+          ? messagesResponse.data
+          : Array.isArray(messagesResponse?.data?.messages)
+            ? messagesResponse.data.messages
+            : Array.isArray(messagesResponse?.data?.docs)
+              ? messagesResponse.data.docs
+              : Array.isArray(messagesResponse)
+                ? messagesResponse
+                : [];
+
+      if (rawMsgs.length > 0) {
+        // Sort chronologically (oldest first, newest last)
+        const sorted = [...rawMsgs].sort(
+          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        );
+        setLocalMessages(sorted);
+      }
     }
   }, [messagesResponse]);
 
@@ -151,11 +162,30 @@ const Chat = () => {
     if (!socket) return;
 
     const handleNewMessage = (message) => {
+      const incomingChatId =
+        (message.chatId || message.chat)?._id || message.chatId || message.chat;
+
       // Only append if it belongs to the currently open chat
-      if (message.chatId === selectedChatId) {
+      if (incomingChatId?.toString() === selectedChatId?.toString()) {
         setLocalMessages((prev) => {
           // deduplicate by _id
           if (prev.some((m) => m._id === message._id)) return prev;
+
+          // Replace matching optimistic message if any
+          const optIdx = prev.findIndex(
+            (m) =>
+              typeof m._id === "string" &&
+              m._id.startsWith("optimistic-") &&
+              ((m.payload?.text && m.payload?.text === message.payload?.text) ||
+                (m.text && m.text === message.text))
+          );
+
+          if (optIdx !== -1) {
+            const updated = [...prev];
+            updated[optIdx] = message;
+            return updated;
+          }
+
           return [...prev, message];
         });
       }
@@ -183,9 +213,14 @@ const Chat = () => {
     };
   }, [socket, queryClient]);
 
-  // ── Scroll to bottom on new messages ─────────────────────────
+  // ── Scroll container to bottom on new messages ───────────────
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
   }, [localMessages]);
 
   // ── Send Message ─────────────────────────────────────────────
@@ -202,6 +237,7 @@ const Chat = () => {
       payload: { text },
       type: "TEXT",
       isOwn: true,
+      senderModel: "User",
       createdAt: new Date().toISOString(),
     };
     setLocalMessages((prev) => [...prev, optimistic]);
@@ -210,14 +246,17 @@ const Chat = () => {
       { chatId: selectedChatId, payload: { text, type: "TEXT" } },
       {
         onSuccess: (res) => {
-          const saved = res?.data;
-          if (saved) {
+          const saved = res?.data?.data || res?.data;
+          if (saved && saved._id) {
             setLocalMessages((prev) =>
-              prev.map((m) => (m._id === optimistic._id ? saved : m))
+              prev.map((m) =>
+                m._id === optimistic._id ? { ...saved, isOwn: true } : m
+              )
             );
           }
         },
-        onError: () => {
+        onError: (err) => {
+          console.error("Failed to send message:", err);
           // Remove optimistic message on error
           setLocalMessages((prev) =>
             prev.filter((m) => m._id !== optimistic._id)
@@ -228,12 +267,13 @@ const Chat = () => {
   }, [messageInput, selectedChatId, isSending, sendMessageMutate]);
 
   // ── Derived: current user id (from first own message or auth) ─
-  // We identify own messages by comparing senderId to the logged-in user.
-  // The backend marks messages — we check isOwn or compare senderModel === 'User'
   const isOwnMessage = (msg) => {
-    // The REST endpoint returns messages from the perspective of the chat;
-    // we can check senderModel === "User" since this is the User app.
-    return msg.isOwn || msg.senderModel === "User";
+    if (msg.isOwn !== undefined) return msg.isOwn;
+    return (
+      msg.senderModel === "User" ||
+      msg.sender?.model === "User" ||
+      msg.senderType === "User"
+    );
   };
 
   // ── Filtered chat list ────────────────────────────────────────
@@ -321,7 +361,11 @@ const Chat = () => {
                 const name = getParticipantName(other);
                 const avatar = getParticipantAvatar(other);
                 const lName = getLoungeName(chat);
-                const lastMsg = chat.lastMessage?.payload?.text || "";
+                const lastMsg =
+                  chat.lastMessage?.payload?.text ||
+                  chat.lastMessage?.text ||
+                  chat.lastMessage?.message ||
+                  "";
                 const lastTime = formatSidebarTime(
                   chat.lastMessage?.createdAt || chat.updatedAt
                 );
@@ -332,9 +376,8 @@ const Chat = () => {
                   <div
                     key={chat._id}
                     onClick={() => handleSelectChat(chat)}
-                    className={`flex items-center gap-3 py-4 px-4 cursor-pointer border-b border-gray-50 hover:bg-gray-50 transition-colors ${
-                      isSelected ? "bg-[#7878ae15]" : ""
-                    }`}
+                    className={`flex items-center gap-3 py-4 px-4 cursor-pointer border-b border-gray-50 hover:bg-gray-50 transition-colors ${isSelected ? "bg-[#7878ae15]" : ""
+                      }`}
                   >
                     {/* Avatar */}
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#010067] to-[#3030b0] flex items-center justify-center text-white font-semibold flex-shrink-0 text-lg">
@@ -375,7 +418,7 @@ const Chat = () => {
         </div>
 
         {/* ── Right Chat Panel ───────────────────────────────── */}
-        <div className="flex-1 py-4 bg-white rounded-r-[16px] border border-l-0 border-gray-200 -mt-[16em] flex flex-col min-h-[600px]">
+        <div className="flex-1 py-4 bg-white rounded-r-[16px] border border-l-0 border-gray-200 -mt-[16em] flex flex-col min-h-[600px] h-[600px]">
           {selectedChat ? (
             <>
               {/* Chat header */}
@@ -397,7 +440,10 @@ const Chat = () => {
               </div>
 
               {/* Messages area */}
-              <div className="flex-1 overflow-y-auto py-4 px-6 space-y-3">
+              <div
+                ref={messagesContainerRef}
+                className="flex-1 overflow-y-auto py-4 px-6 space-y-3"
+              >
                 {/* Date separator */}
                 <div className="flex justify-center">
                   <span className="px-3 py-1 bg-gray-200 text-[#181818] text-xs rounded-md">
@@ -416,16 +462,20 @@ const Chat = () => {
                 ) : (
                   localMessages.map((msg) => {
                     const own = isOwnMessage(msg);
-                    const text = msg.payload?.text || msg.message || "";
-                    const mediaUrl = msg.payload?.mediaUrl;
+                    const text =
+                      msg.payload?.text ||
+                      msg.text ||
+                      msg.message ||
+                      msg.content ||
+                      "";
+                    const mediaUrl = msg.payload?.mediaUrl || msg.mediaUrl;
                     const time = formatTime(msg.createdAt);
 
                     return (
                       <div
                         key={msg._id}
-                        className={`flex items-end gap-2 ${
-                          own ? "justify-end" : "justify-start"
-                        }`}
+                        className={`flex items-end gap-2 ${own ? "justify-end" : "justify-start"
+                          }`}
                       >
                         {/* Other avatar */}
                         {!own && (
@@ -435,9 +485,8 @@ const Chat = () => {
                         )}
 
                         <div
-                          className={`flex flex-col ${
-                            own ? "items-end" : "items-start"
-                          } max-w-xs lg:max-w-md`}
+                          className={`flex flex-col ${own ? "items-end" : "items-start"
+                            } max-w-xs lg:max-w-md`}
                         >
                           {!own && (
                             <span className="text-xs text-gray-500 mb-1">
@@ -445,11 +494,14 @@ const Chat = () => {
                             </span>
                           )}
                           <div
-                            className={`rounded-2xl px-4 py-2.5 ${
-                              own
+                            className={`rounded-2xl px-4 py-2.5 ${own
                                 ? "bg-gradient-to-br from-[#010067] to-[#000000] text-white rounded-br-sm"
                                 : "bg-[#E6E6E6] text-gray-900 rounded-bl-sm"
-                            } ${msg._id?.startsWith("optimistic") ? "opacity-70" : ""}`}
+                              } ${typeof msg._id === "string" &&
+                                msg._id.startsWith("optimistic")
+                                ? "opacity-70"
+                                : ""
+                              }`}
                           >
                             {text && (
                               <p className="text-sm leading-relaxed">{text}</p>
@@ -463,9 +515,8 @@ const Chat = () => {
                             )}
                           </div>
                           <span
-                            className={`text-[10px] mt-1 ${
-                              own ? "text-gray-500" : "text-gray-400"
-                            }`}
+                            className={`text-[10px] mt-1 ${own ? "text-gray-500" : "text-gray-400"
+                              }`}
                           >
                             {time}
                           </span>
@@ -477,7 +528,6 @@ const Chat = () => {
                     );
                   })
                 )}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Input area */}
@@ -511,8 +561,12 @@ const Chat = () => {
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
               <div className="text-5xl">💬</div>
-              <p className="text-base font-medium">Select a conversation to start messaging</p>
-              <p className="text-sm">Choose from your existing conversations on the left</p>
+              <p className="text-base font-medium">
+                Select a conversation to start messaging
+              </p>
+              <p className="text-sm">
+                Choose from your existing conversations on the left
+              </p>
             </div>
           )}
         </div>

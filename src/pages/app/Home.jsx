@@ -139,12 +139,23 @@ import { useState } from "react";
 import LoungeCard from "../../components/global/LoungeCard";
 import FilterDropdown from "../../components/global/FilterDropdown";
 import { useFavorites, useLounges } from "../../hooks/queries/useQueries";
+import WalkthroughWrapper from "../../components/walkthrough/WalkthroughWrapper";
 
 const Home = () => {
   const [open, setOpen] = useState(false);
   const [services, setServices] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
 
-  const { data: loungesResponse, isLoading } = useLounges();
+  const handleSearch = () => {
+    setActiveSearch(searchTerm);
+  };
+
+  const queryParams = activeSearch.trim()
+    ? { name: activeSearch.trim() }
+    : {};
+
+  const { data: loungesResponse, isLoading } = useLounges(queryParams);
   const { data: favoritesResponse } = useFavorites({
     enabled: !isLoading,
   });
@@ -194,6 +205,9 @@ const Home = () => {
 
   return (
     <div className="relative">
+      {/* Walkthrough Modal & Joyride */}
+      <WalkthroughWrapper />
+
       {/* Hero Section */}
       <div className="h-[420px] w-full homeSectionImage">
         <div className="flex flex-col items-center justify-center h-[300px] md:text-center text-start">
@@ -212,7 +226,7 @@ const Home = () => {
 
       {/* Search Box */}
       <div
-        className="absolute top-[300px] lg:top-[320px] md:top-[280px] left-1/2 -translate-x-1/2 w-full max-w-md md:max-w-xl bg-white rounded-[16px] md:p-4 p-2 px-4 z-50"
+        className="absolute top-[300px] lg:top-[320px] md:top-[280px] left-1/2 -translate-x-1/2 w-full max-w-md md:max-w-xl bg-white rounded-[16px] md:p-4 p-2 px-4 z-50 joyride-search-box"
         style={{ boxShadow: "0px 4px 30px rgba(0,0,0,0.25)" }}
       >
         <div className="flex items-end border border-gray-400 text-sm rounded-[12px] overflow-hidden p-[3px]">
@@ -222,12 +236,20 @@ const Home = () => {
             <input
               type="text"
               placeholder="Search for lounges"
-              className="flex-1 bg-transparent outline-none border-0 placeholder:text-[#9F9F9F] text-[#9F9F9F]"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearch();
+                }
+              }}
+              className="flex-1 bg-transparent outline-none border-0 placeholder:text-[#9F9F9F] text-[#181818]"
             />
           </div>
 
           <button
             type="button"
+            onClick={handleSearch}
             className="bg-gradient-to-l from-[#010067] to-[#000000] text-white text-[12px] md:text-[14px] py-3.5 px-4 md:px-6 rounded-[12px]"
           >
             Find lounge
@@ -252,14 +274,14 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="relative">
+          {/* <div className="relative">
             <img
               src={filterIcon}
               alt="filter"
               className="w-10 cursor-pointer"
               onClick={() => setOpen(true)}
             />
-          </div>
+          </div> */}
 
           {open && (
             <FilterDropdown
@@ -274,7 +296,7 @@ const Home = () => {
           )}
         </div>
 
-        <div className="grid md:grid-cols-3 grid-cols-1 gap-6 md:px-10 px-4 mt-6">
+        <div className="grid md:grid-cols-3 grid-cols-1 gap-6 md:px-10 px-4 mt-6 joyride-lounge-list">
           {isLoading ? (
             <div className="col-span-full">
               <div className="grid md:grid-cols-3 grid-cols-1 gap-6">

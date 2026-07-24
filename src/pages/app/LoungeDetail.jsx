@@ -422,7 +422,7 @@ const LoungeDetail = () => {
           />
         )}
 
-        {isEventSubmit && (
+        {/* {isEventSubmit && (
           <AuthSuccessModal
             onClick={() => {
               setIsEventSubmit(false);
@@ -438,9 +438,9 @@ const LoungeDetail = () => {
             onClose={() => setIsEventAccepted(false)}
             onClick={handleEventAccepted}
           />
-        )}
+        )} */}
 
-        {isEventSummary && (
+        {isEventSubmit && (
           <EventSummaryModal
             apiPayload={
               {

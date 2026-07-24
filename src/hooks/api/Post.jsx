@@ -2,11 +2,9 @@ import axios from "../../axios";
 
 // Example: User Details Mutation
 export const submitSignUp = async (payload) => {
-  
   const { data } = await axios.post("/auth/onboarding/register", payload);
   return data;
 };
-
 
 // Example: Login Mutation
 export const submitLogin = async (credentials) => {
@@ -14,32 +12,29 @@ export const submitLogin = async (credentials) => {
   return data;
 };
 
-
 export const submitVerifyEmail = async (payload) => {
-  
   const { data } = await axios.post("/auth/onboarding/verify-email", payload);
   return data;
 };
 
 export const resendEmailVerificationOtp = async (payload) => {
-  const { data } = await axios.post(
-    "/auth/email-verification-otp",
-    payload
-  );
+  const { data } = await axios.post("/auth/email-verification-otp", payload);
 
   return data;
 };
 
 export const submitVerifyPhone = async (payload) => {
-  
-  const { data } = await axios.post("/auth/onboarding/verify-mobile-number", payload);
+  const { data } = await axios.post(
+    "/auth/onboarding/verify-mobile-number",
+    payload,
+  );
   return data;
 };
 
 export const submitPersonalDetails = async (payload) => {
   for (let [key, value] of payload.entries()) {
-  console.log("32 Resvor -User5 ====> ~ ~ ~ ", key, value);
-}
+    console.log("32 Resvor -User5 ====> ~ ~ ~ ", key, value);
+  }
   const { data } = await axios.post("/auth/onboarding/profile", payload, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -60,14 +55,13 @@ export const submitForgotPassword = async (payload) => {
   return data;
 };
 
-
 // verify forgot password otp
 export const submitVerifyForgotOtp = async (payload) => {
   const { data } = await axios.post("/auth/verify-otp", payload);
   return data;
 };
 
-//reset password 
+//reset password
 export const submitResetPassword = async (payload) => {
   const { data } = await axios.post("/auth/update-password", payload);
   return data;
@@ -78,7 +72,7 @@ export const getLounges = async (payload = {}) => {
   return data;
 };
 
-//logout 
+//logout
 export const submitLogout = async (payload = {}) => {
   const fcmToken =
     payload?.fcmToken ||
@@ -95,7 +89,6 @@ export const submitLogout = async (payload = {}) => {
 
   return data;
 };
-
 
 export const addGuest = async (payload) => {
   const { data } = await axios.post("/guestbook", payload);

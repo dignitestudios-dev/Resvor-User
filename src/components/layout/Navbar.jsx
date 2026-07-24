@@ -14,6 +14,7 @@ const Navbar = () => {
   const { data: authData } = useAuthMe();
   const { data: notificationsData } = useNotifications();
   const notificationsList = notificationsData?.data || [];
+  console.log("🚀 ~ Navbar ~ notificationsList:", notificationsList)
   const unreadCount = notificationsList.filter(
     (n) => n.isRead === false || n.unreadCount > 0
   ).length;
@@ -22,6 +23,21 @@ const Navbar = () => {
   const isSubscribed = Boolean(
     authData?.data?.isSubscribed ?? authData?.data?.user?.isSubscribed
   );
+
+  const handleNotificationClick = (item) => {
+    setIsPopupOpen(false);
+    const resourceType =
+      item?.metadata?.resourceType || item?.resourceType;
+    const resource = item?.metadata?.resource || item?.resource;
+
+    if (resourceType === "Event" && resource) {
+      navigate(`/app/reservationDetails/${resource}`);
+    } else if (resourceType === "Booking" && resource) {
+      navigate(`/app/bookingDetails/${resource}`);
+    } else {
+      navigate("/app/notifications");
+    }
+  };
 
   const getProfilePicture = (profilePicture) => {
     if (!profilePicture) return userImage;
@@ -179,7 +195,7 @@ const Navbar = () => {
 
         {/* Desktop Menu */}
 
-        <div className="hidden md:flex justify-end items-center gap-5 lg:gap-10 font-medium text-sm w-full">
+        <div className="hidden md:flex justify-end items-center gap-5 lg:gap-10 font-medium text-sm w-full joyride-navbar-nav">
           {menuLinks.map((link) => (
             <Link
               key={link.label}
@@ -192,7 +208,7 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
-          <div ref={popupRef} className="relative">
+          <div ref={popupRef} className="relative joyride-navbar-notifications">
             {/* Notification Icon */}
             <IoNotificationsOutline
               ref={iconRef}
@@ -220,7 +236,8 @@ const Navbar = () => {
                     notificationsList.slice(0, 3).map((n, idx) => (
                       <div
                         key={n._id || idx}
-                        className="cursor-auto"
+                        onClick={() => handleNotificationClick(n)}
+                        className="cursor-pointer hover:bg-gray-50 transition-colors p-2 rounded"
                       >
                         <div className="flex w-full justify-between">
                           <div>
@@ -272,7 +289,7 @@ const Navbar = () => {
                 e.target.onerror = null;
                 e.target.src = userImage;
               }}
-              className="h-10 w-10 object-cover rounded-full cursor-pointer border-2"
+              className="h-10 w-10 object-cover rounded-full cursor-pointer border-2 joyride-navbar-profile"
               onClick={toggleUserpopup}
               alt="Avatar"
             />
@@ -341,7 +358,8 @@ const Navbar = () => {
                       notificationsList.map((n, idx) => (
                         <div
                           key={n._id || idx}
-                          className="cursor-pointer"
+                          onClick={() => handleNotificationClick(n)}
+                          className="cursor-pointer hover:bg-gray-50 transition-colors p-2 rounded"
                         >
                           <div className="flex w-full justify-between">
                             <div>

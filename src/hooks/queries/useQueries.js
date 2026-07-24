@@ -24,15 +24,15 @@ export const useAuthMe = () => {
   });
 };
 
-const fetchLounges = async () => {
-  const { data } = await axios.get("/lounges/list");
+const fetchLounges = async (params = {}) => {
+  const { data } = await axios.get("/lounges/list", { params });
   return data;
 };
 
-export const useLounges = () => {
+export const useLounges = (params = {}) => {
   return useQuery({
-    queryKey: ["lounges"],
-    queryFn: fetchLounges,
+    queryKey: ["lounges", params],
+    queryFn: () => fetchLounges(params),
     retry: false,
   });
 };

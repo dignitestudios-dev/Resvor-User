@@ -12,12 +12,11 @@ const formatDateLabel = (isoValue) => {
   if (!isoValue) return "-";
   const d = new Date(isoValue);
   if (Number.isNaN(d.getTime())) return "-";
-  // MM/DD/YYYY
+  // MM/DD/YYYY in local timezone
   return d.toLocaleDateString("en-US", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-    timeZone: "UTC",
   });
 };
 
@@ -30,7 +29,6 @@ const formatTimeLabel = (isoValue) => {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
-      timeZone: "UTC",
     })
     .replace(" ", "");
 };
@@ -152,7 +150,6 @@ const MyBooking = () => {
           hour: "2-digit",
           minute: "2-digit",
           hour12: true,
-          timeZone: "UTC",
         })
         .replace(" ", "");
     };
