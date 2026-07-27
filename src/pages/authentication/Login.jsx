@@ -7,12 +7,11 @@ import AuthButton from "../../components/auth/AuthButton";
 import { loginSideImg } from "../../assets/export";
 import { logInSchema } from "../../schema/authentication/authSchema";
 import { loginValues } from "../../init/authentication/authValues";
-import { useLogin, useUpdateFcmToken } from "../../hooks/mutations/OnboardingMutations";
+import { useLogin } from "../../hooks/mutations/OnboardingMutations";
 import { ErrorToast, SuccessToast } from "../../components/global/Toaster";
 import { setStoredTokenType } from "../../lib/authSession";
 import { useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
-import { requestForToken } from "../../firebase/getFcmToken";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -21,7 +20,6 @@ const Login = () => {
   const [apiError, setApiError] = useState("");
 
   const loginMutation = useLogin();
-  const updateFcmMutation = useUpdateFcmToken();
 
   const {
     values,
@@ -34,75 +32,59 @@ const Login = () => {
     initialValues: loginValues,
     validationSchema: logInSchema,
     onSubmit: async (values) => {
-  setState("loading");
+      setState("loading");
 
-  try {
-    let fcmToken = "";
-    try {
-      fcmToken = await requestForToken();
-    } catch (tokenError) {
-      console.error("FCM Token retrieval failed:", tokenError);
-    }
-
-    const response = await loginMutation.mutateAsync({
-      email: values.email,
-      password: values.password,
-      role: "user",
-    });
-
-    console.log("Login Response:", response);
-
-    if (!response?.success) {
-      ErrorToast(response?.message || "Login failed");
-      return;
-    }
-
-    const token = response?.data?.token || response?.token || response?.data?.accessToken || response?.accessToken || (response?.data?.data && (response.data.data.token || response.data.data.accessToken));
-    const tokenType = response?.data?.tokenType || response?.tokenType || (response?.data?.data && response.data.data.tokenType) || "session_token";
-
-    if (token) {
-      Cookies.set("token", token, { expires: 7 });
-      localStorage.setItem("token", token);
-    }
-    if (tokenType) {
-      Cookies.set("tokenType", tokenType, { expires: 7 });
-      localStorage.setItem("tokenType", tokenType);
-    }
-
-    setStoredTokenType(tokenType);
-
-    // Register FCM token in the background (fire-and-forget)
-    if (fcmToken) {
       try {
-        await updateFcmMutation.mutateAsync({ fcmToken });
-      } catch (fcmUpdateError) {
-        console.error("FCM Token update on backend failed:", fcmUpdateError);
+        const response = await loginMutation.mutateAsync({
+          email: values.email,
+          password: values.password,
+          role: "user",
+        });
+
+        console.log("Login Response:", response);
+
+        if (!response?.success) {
+          ErrorToast(response?.message || "Login failed");
+          return;
+        }
+
+        const token = response?.data?.token || response?.token || response?.data?.accessToken || response?.accessToken || (response?.data?.data && (response.data.data.token || response.data.data.accessToken));
+        const tokenType = response?.data?.tokenType || response?.tokenType || (response?.data?.data && response.data.data.tokenType) || "session_token";
+
+        if (token) {
+          Cookies.set("token", token, { expires: 7 });
+          localStorage.setItem("token", token);
+        }
+        if (tokenType) {
+          Cookies.set("tokenType", tokenType, { expires: 7 });
+          localStorage.setItem("tokenType", tokenType);
+        }
+
+        setStoredTokenType(tokenType);
+
+        await queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+
+        if (tokenType === "access_token") {
+          localStorage.setItem("onboarding_complete_acknowledged", "true");
+          SuccessToast("Login successful");
+          navigate("/app/home", { replace: true });
+        } else {
+          localStorage.removeItem("onboarding_complete_acknowledged");
+          // SuccessToast("Session token received. Continue on auth pages.");
+          navigate("/auth/signup", { replace: true });
+        }
+      } catch (error) {
+        console.error("Login Error:", error);
+
+        ErrorToast(
+          error?.response?.data?.message ||
+          error?.message ||
+          "Something went wrong. Please try again."
+        );
+      } finally {
+        setState("idle");
       }
-    }
-
-    await queryClient.invalidateQueries({ queryKey: ["auth-me"] });
-
-    if (tokenType === "access_token") {
-      localStorage.setItem("onboarding_complete_acknowledged", "true");
-      SuccessToast("Login successful");
-      navigate("/app/home", { replace: true });
-    } else {
-      localStorage.removeItem("onboarding_complete_acknowledged");
-      // SuccessToast("Session token received. Continue on auth pages.");
-      navigate("/auth/signup", { replace: true });
-    }
-  } catch (error) {
-    console.error("Login Error:", error);
-
-    ErrorToast(
-      error?.response?.data?.message ||
-        error?.message ||
-        "Something went wrong. Please try again."
-    );
-  } finally {
-    setState("idle");
-  }
-},
+    },
   });
 
   return (

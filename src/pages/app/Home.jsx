@@ -135,17 +135,36 @@
 
 import { filterIcon } from "../../assets/export";
 import { FaSearch } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LoungeCard from "../../components/global/LoungeCard";
 import FilterDropdown from "../../components/global/FilterDropdown";
 import { useFavorites, useLounges } from "../../hooks/queries/useQueries";
 import WalkthroughWrapper from "../../components/walkthrough/WalkthroughWrapper";
+import { useUpdateFcmToken } from "../../hooks/mutations/OnboardingMutations";
+import { requestForToken } from "../../firebase/getFcmToken";
 
 const Home = () => {
   const [open, setOpen] = useState(false);
   const [services, setServices] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
+
+  const updateFcmMutation = useUpdateFcmToken();
+
+  useEffect(() => {
+    const syncFcmToken = async () => {
+      try {
+        const fcmToken = await requestForToken();
+        if (fcmToken) {
+          await updateFcmMutation.mutateAsync({ fcmToken });
+        }
+      } catch (error) {
+        console.error("FCM Token registration on Home page failed:", error);
+      }
+    };
+
+    syncFcmToken();
+  }, []);
 
   const handleSearch = () => {
     setActiveSearch(searchTerm);
