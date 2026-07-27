@@ -9,14 +9,22 @@ const WalkthroughWrapper = () => {
   const [runTour, setRunTour] = useState(false);
 
   useEffect(() => {
-    // Only show the walkthrough if the new-signup flag was explicitly set
-    const shouldShow =
-      localStorage.getItem("show_welcome_walkthrough") === "true" ||
-      localStorage.getItem("is_new_signup") === "true";
+    const checkAndShow = () => {
+      const shouldShow =
+        localStorage.getItem("show_welcome_walkthrough") === "true" ||
+        localStorage.getItem("is_new_signup") === "true";
 
-    if (shouldShow) {
-      setShowWelcome(true);
-    }
+      if (shouldShow) {
+        setShowWelcome(true);
+      }
+    };
+
+    checkAndShow();
+
+    window.addEventListener("trigger_walkthrough", checkAndShow);
+    return () => {
+      window.removeEventListener("trigger_walkthrough", checkAndShow);
+    };
   }, []);
 
   const handleStartWalkthrough = () => {

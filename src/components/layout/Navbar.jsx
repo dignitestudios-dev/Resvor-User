@@ -103,6 +103,16 @@ const Navbar = () => {
     window.location.href = "/auth/login";
   };
 
+  const handleStartWalkthrough = () => {
+    setUserPopup(false);
+    localStorage.setItem("show_welcome_walkthrough", "true");
+    if (location.pathname === "/app/home") {
+      window.dispatchEvent(new Event("trigger_walkthrough"));
+    } else {
+      navigate("/app/home");
+    }
+  };
+
   const dropdownRef = useRef(null);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -305,10 +315,19 @@ const Navbar = () => {
                   View Profile
                 </span>
                 <span
-                  className="block font-[400] py-1 border-b  border-[#E4E4E4] text-sm cursor-pointer"
-                  onClick={() => navigate("/app/settings")}
+                  className="block font-[400] py-1 border-b border-[#E4E4E4] text-sm cursor-pointer"
+                  onClick={() => {
+                    setUserPopup(false);
+                    navigate("/app/settings");
+                  }}
                 >
                   Settings
+                </span>
+                <span
+                  className="block font-[400] py-1 border-b border-[#E4E4E4] text-sm cursor-pointer"
+                  onClick={handleStartWalkthrough}
+                >
+                  Walkthrough
                 </span>
                 {/* <span
                   className="block font-[400] py-1 border-b  border-[#E4E4E4] text-sm cursor-pointer"
@@ -417,9 +436,18 @@ const Navbar = () => {
                   </span>
                   <span
                     className="block text-sm cursor-pointer"
-                    onClick={() => navigate("/app/settings")}
+                    onClick={() => {
+                      setUserPopup(false);
+                      navigate("/app/settings");
+                    }}
                   >
                     Settings
+                  </span>
+                  <span
+                    className="block text-sm cursor-pointer"
+                    onClick={handleStartWalkthrough}
+                  >
+                    Walkthrough
                   </span>
                   {/* <span
                       className="block text-sm cursor-pointer"
