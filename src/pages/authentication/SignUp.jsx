@@ -33,6 +33,8 @@ export default function SignUp() {
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     if (queryParams.get("session_id") || queryParams.get("success") === "true") {
+      // Coming back from Stripe payment — mark walkthrough to show on home
+      localStorage.setItem("show_welcome_walkthrough", "true");
       refetch();
     }
   }, [refetch]);
@@ -40,9 +42,12 @@ export default function SignUp() {
   // 👇 once API responds, set the correct step
   useEffect(() => {
     if (authData?.success) {
+      // "onboarding_complete_acknowledged" means the user has explicitly clicked
+      // "Explore Lounges" or "Skip" — i.e. they have seen the subscription screen.
+      // Being subscribed alone (returned from Stripe) should NOT count as acknowledged
+      // here, because the walkthrough still needs to show.
       const onboardingCompleteAcknowledged =
-        localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
-        authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed;
+        localStorage.getItem("onboarding_complete_acknowledged") === "true";
 
       if (authData?.data?.onboardingStep === "completed") {
         if (onboardingCompleteAcknowledged) {
