@@ -39,15 +39,8 @@ const formatTime = (value) => {
   return String(value);
 };
 
-const BookingsTable = ({ users, onSort, sortConfig }) => {
+const BookingsTable = ({ users }) => {
   const navigate = useNavigate();
-
-  const SortIcon = ({ col }) =>
-    sortConfig.key === col ? (
-      <span className="ml-1 text-[11px]">
-        {sortConfig.direction === "asc" ? "↑" : "↓"}
-      </span>
-    ) : null;
 
   return (
     <>
@@ -67,39 +60,26 @@ const BookingsTable = ({ users, onSort, sortConfig }) => {
 
           <thead className="sticky top-0 z-0">
             <tr className="bg-[#E8E8FF] text-[13px] text-[#202224]">
-              <th
-                onClick={() => onSort("name")}
-                className="px-4 py-4 text-left font-[500] cursor-pointer select-none whitespace-nowrap"
-              >
+              <th className="px-4 py-4 text-left font-[500] whitespace-nowrap">
                 Lounge Name
-                {/* Lounge Name <SortIcon col="name" /> */}
               </th>
               <th className="px-4 py-4 text-left font-[500] whitespace-nowrap">
                 Location
               </th>
-              <th
-                onClick={() => onSort("date")}
-                className="px-4 py-4 text-left font-[500] cursor-pointer select-none whitespace-nowrap"
-              >
-                Date <SortIcon col="date" />
+              <th className="px-4 py-4 text-left font-[500] whitespace-nowrap">
+                Date
               </th>
               <th className="px-4 py-4 text-left font-[500] whitespace-nowrap">
                 Time
               </th>
-              <th
-                onClick={() => onSort("guestLimit")}
-                className="px-4 py-4 text-left font-[500] cursor-pointer select-none whitespace-nowrap"
-              >
-                Guests <SortIcon col="guestLimit" />
+              <th className="px-4 py-4 text-left font-[500] whitespace-nowrap">
+                Guests
               </th>
               <th className="px-4 py-4 text-left font-[500] whitespace-nowrap">
                 Seating Area
               </th>
-              <th
-                onClick={() => onSort("status")}
-                className="px-4 py-4 text-left font-[500] cursor-pointer select-none whitespace-nowrap"
-              >
-                Status <SortIcon col="status" />
+              <th className="px-4 py-4 text-left font-[500] whitespace-nowrap">
+                Status
               </th>
               <th className="px-4 py-4 text-left font-[500] whitespace-nowrap">
                 Action

@@ -203,7 +203,7 @@ const MyBooking = () => {
     };
   });
 
-  // ── filter + sort ──────────────────────────────────────────────────────────
+  // ── filter ──────────────────────────────────────────────────────────────────
   const activeRows = activeTab === "bookings" ? bookingRows : eventRows;
   const activeStatusFilter = activeTab === "bookings" ? bookingStatusFilter : eventStatusFilter;
   const activeLoading = activeTab === "bookings" ? isBookingsLoading : isEventsLoading;
@@ -211,25 +211,6 @@ const MyBooking = () => {
   const filteredRows = activeStatusFilter
     ? activeRows.filter((row) => row.status === activeStatusFilter)
     : activeRows;
-
-  const sortedRows = [...filteredRows].sort((a, b) => {
-    if (!sortConfig.key) return 0;
-    let valA = a[sortConfig.key];
-    let valB = b[sortConfig.key];
-    if (sortConfig.key === "guestLimit") {
-      valA = parseInt(valA, 10);
-      valB = parseInt(valB, 10);
-    }
-    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
-    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
-    return 0;
-  });
-
-  const requestSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") direction = "desc";
-    setSortConfig({ key, direction });
-  };
 
   // ── render ─────────────────────────────────────────────────────────────────
   return (
@@ -287,7 +268,7 @@ const MyBooking = () => {
                     setEventStatusFilter(status);
                     setEventsPage(1);
                   }}
-                  options={["All", "Approval", "Upcoming", "Completed", "Rejected"]}
+                  options={["All", "Approval", "Upcoming", "Completed", "Rejected", "Cancelled"]}
                 />
               </div>
             )}
@@ -304,11 +285,9 @@ const MyBooking = () => {
           ) : activeTab === "bookings" ? (
             <>
               <BookingsTable
-                users={sortedRows}
-                onSort={requestSort}
-                sortConfig={sortConfig}
+                users={filteredRows}
               />
-              {!isBookingsLoading && sortedRows.length > 0 && (
+              {!isBookingsLoading && filteredRows.length > 0 && (
                 <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl">
                   <div className="text-sm text-gray-500">
                     Showing page <span className="font-semibold text-gray-800">{bookingsPagination.currentPage}</span> of{" "}
@@ -338,11 +317,9 @@ const MyBooking = () => {
           ) : (
             <>
               <EventBookingsTable
-                events={sortedRows}
-                onSort={requestSort}
-                sortConfig={sortConfig}
+                events={filteredRows}
               />
-              {!isEventsLoading && sortedRows.length > 0 && (
+              {!isEventsLoading && filteredRows.length > 0 && (
                 <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl">
                   <div className="text-sm text-gray-500">
                     Showing page <span className="font-semibold text-gray-800">{eventsPagination.currentPage}</span> of{" "}

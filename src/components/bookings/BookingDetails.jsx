@@ -182,7 +182,7 @@ const formatTime = (value) => {
   });
 };
 
-// Issue #12 — no currency suffix, just $symbol
+// Issue #12 — no currency suffix, just $symbol, always 2 decimal places
 const formatCurrency = (amount) => {
   if (amount === undefined || amount === null || amount === "") return "-";
   const num = Number(amount);
@@ -190,6 +190,7 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(num);
 };
@@ -248,7 +249,7 @@ export default function BookingDetails() {
 
   const booking = bookingResponse?.data ?? bookingResponse;
   console.log("🚀 ~ BookingDetails ~ booking:", booking);
-  
+
   const disputeId =
     (typeof booking?.disputeId === "object" ? booking?.disputeId?._id : booking?.disputeId) ||
     (typeof booking?.dispute === "object" ? booking?.dispute?._id : booking?.dispute) ||
@@ -600,24 +601,24 @@ export default function BookingDetails() {
 
               {/* Guest details row — Issue #6 children count, Issue #8 no dupe date */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 text-sm pb-5 border-b border-[#0000001A]">
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className="font-semibold text-[#000000] text-[15px]">Guests</p>
                   <p className="text-[#505050] text-[14px]">{booking?.guestCount ?? "-"}</p>
                 </div>
                 {/* Issue #6 — children count */}
                 {(booking?.childrenCount ?? 0) > 0 && (
-                  <div className="space-y-1">
+                  <div className="space-y-1 min-w-0">
                     <p className="font-semibold text-[#000000] text-[15px]">Children</p>
                     <p className="text-[#505050] text-[14px]">{booking.childrenCount}</p>
                   </div>
                 )}
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className="font-semibold text-[#000000] text-[15px]">Seating Area</p>
-                  <p className="text-[#505050] text-[14px]">{seatingArea}</p>
+                  <p className="text-[#505050] text-[14px] break-words">{seatingArea}</p>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className="font-semibold text-[#000000] text-[15px]">Payment</p>
-                  <p className="text-[#505050] text-[14px]">{paymentStatusLabel}</p>
+                  <p className="text-[#505050] text-[14px] break-words">{paymentStatusLabel}</p>
                 </div>
               </div>
 
@@ -625,7 +626,7 @@ export default function BookingDetails() {
               {booking?.specialRequest && (
                 <div className="space-y-1 pb-5 border-b border-[#0000001A]">
                   <p className="font-semibold text-[#000000] text-[15px]">Any Instructions</p>
-                  <p className="text-[#505050] text-[14px]">{booking.specialRequest}</p>
+                  <p className="text-[#505050] text-[14px] break-words whitespace-pre-wrap">{booking.specialRequest}</p>
                 </div>
               )}
 
@@ -646,7 +647,7 @@ export default function BookingDetails() {
                       return (
                         <span
                           key={i}
-                          className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-[12px] font-medium"
+                          className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-[12px] font-medium break-words"
                         >
                           {label}{price}
                         </span>
@@ -660,7 +661,7 @@ export default function BookingDetails() {
               {bookingPackage && (
                 <div className="space-y-1 pb-5 border-b border-[#0000001A]">
                   <p className="font-semibold text-[#000000] text-[15px]">Package</p>
-                  <p className="text-[#505050] text-[14px]">
+                  <p className="text-[#505050] text-[14px] break-words whitespace-pre-wrap">
                     {typeof bookingPackage === "object"
                       ? bookingPackage.name || bookingPackage.title || JSON.stringify(bookingPackage)
                       : String(bookingPackage)}
@@ -681,10 +682,10 @@ export default function BookingDetails() {
                     {servicePackages.map((pkg) => (
                       <div
                         key={pkg._id}
-                        className="flex-1 min-w-[260px] max-w-[340px] rounded-lg "
+                        className="flex-1 min-w-[260px] max-w-[340px] rounded-lg bg-gray-50 border border-gray-100 p-3.5"
                       >
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-semibold text-[#181818] text-[15px]">
+                          <h4 className="font-semibold text-[#181818] text-[15px] break-words">
                             {pkg.name}
                           </h4>
 
@@ -694,7 +695,7 @@ export default function BookingDetails() {
                         </div>
 
                         {pkg.description && (
-                          <p className="mt-1 text-[13px] leading-5 text-[#505050] break-words">
+                          <p className="mt-1 text-[13px] leading-5 text-[#505050] break-words whitespace-pre-wrap">
                             {pkg.description}
                           </p>
                         )}
@@ -708,9 +709,9 @@ export default function BookingDetails() {
                 {isAwaitingPayment ? (
                   // For pending/awaiting payment show Amount Due
                   <>
-                    <div className="space-y-1">
+                    <div className="space-y-1 min-w-0">
                       <p className="font-semibold text-[#000000] text-[15px]">Amount Due</p>
-                      <p className="text-amber-600 font-semibold text-[14px]">
+                      <p className="text-amber-600 font-semibold text-[14px] break-words">
                         {formatCurrency(totalPrice || amountPaid)}
                       </p>
                     </div>
@@ -718,24 +719,24 @@ export default function BookingDetails() {
                 ) : (
                   <>
                     {amountPaid > 0 && (
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-w-0">
                         <p className="font-semibold text-[#000000] text-[15px]">Amount Paid</p>
-                        <p className="text-emerald-600 font-semibold text-[14px]">
+                        <p className="text-emerald-600 font-semibold text-[14px] break-words">
                           {formatCurrency(amountPaid)}
                         </p>
                       </div>
                     )}
                     {totalPrice > 0 && (
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-w-0">
                         <p className="font-semibold text-[#000000] text-[15px]">Total Price</p>
-                        <p className="text-[#505050] text-[14px]">{formatCurrency(totalPrice)}</p>
+                        <p className="text-[#505050] text-[14px] break-words">{formatCurrency(totalPrice)}</p>
                       </div>
                     )}
                   </>
                 )}
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className="font-semibold text-[#000000] text-[15px]">Booked On</p>
-                  <p className="text-[#505050] text-[14px]">{formatDate(booking?.createdAt)}</p>
+                  <p className="text-[#505050] text-[14px] break-words">{formatDate(booking?.createdAt)}</p>
                 </div>
               </div>
             </div>
@@ -746,17 +747,17 @@ export default function BookingDetails() {
                 Contact Information
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm bg-white rounded-[16px] px-6 pt-6 pb-4">
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className="font-semibold text-[#000000] text-[16px]">Name</p>
-                  <p className="text-[#505050] text-[15px]">{contactName}</p>
+                  <p className="text-[#505050] text-[15px] break-words">{contactName}</p>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className="font-semibold text-[#000000] text-[16px]">Email Address</p>
                   <p className="text-[#505050] text-[15px] break-all">{contactEmail}</p>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <p className="font-semibold text-[#000000] text-[16px]">Phone Number</p>
-                  <p className="text-[#505050] text-[15px]">{contactPhone}</p>
+                  <p className="text-[#505050] text-[15px] break-words">{contactPhone}</p>
                 </div>
               </div>
             </div>

@@ -56,7 +56,7 @@ const statusClasses = (status) => {
   return "bg-gray-100 text-gray-600";
 };
 
-const EventBookingsTable = ({ events, onSort, sortConfig }) => {
+const EventBookingsTable = ({ events }) => {
   const navigate = useNavigate();
 
   return (
@@ -65,13 +65,10 @@ const EventBookingsTable = ({ events, onSort, sortConfig }) => {
         <table className="w-full">
           <thead className="sticky top-0 z-0">
             <tr className="bg-[#E8E8FF] text-[14.82px] text-[#202224]">
-              <th
-                onClick={() => onSort("name")}
-                className="pr-4 pl-6 py-5 text-left text-nowrap font-[500] "
-              >
-                Event Name{" "}
+              <th className="pr-4 pl-6 py-5 text-left text-nowrap font-[500]">
+                Event Name
               </th>
-              <th className="px-4 py-5 text-left text-nowrap font-[500] ">
+              <th className="px-4 py-5 text-left text-nowrap font-[500]">
                 Venue
               </th>
               <th className="px-4 py-5 text-left text-nowrap font-[500] ">

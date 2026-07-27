@@ -179,12 +179,18 @@ const formatCurrency = (amount, currency = "usd") => {
   if (amount === undefined || amount === null || amount === "") return "-";
 
   try {
+    const num = Number(amount);
+    if (Number.isNaN(num)) return String(amount);
+
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: String(currency || "USD").toUpperCase(),
-    }).format(Number(amount));
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(num);
   } catch {
-    return `${amount}`;
+    const num = Number(amount);
+    return !Number.isNaN(num) ? `$${num.toFixed(2)}` : `${amount}`;
   }
 };
 
@@ -238,23 +244,54 @@ export default function ReservationDetails() {
 
   const disputeEligibility = checkDisputeEligibility(event);
 
-  const organizerName = [
-    event?.userId?.firstName,
-    event?.userId?.lastName,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .trim() || "-";
+  const organizerName =
+    [event?.userId?.firstName, event?.userId?.lastName]
+      .filter(Boolean)
+      .join(" ")
+      .trim() ||
+    event?.name ||
+    event?.guestName ||
+    event?.contactName ||
+    "-";
 
-  const eventDate = formatDate(event?.startDateTime);
-  const startTime = formatTime(event?.startDateTime);
-  const endTime = formatTime(event?.endDateTime);
+  const organizerEmail =
+    event?.userId?.email ||
+    event?.email ||
+    event?.guestEmail ||
+    event?.contactEmail ||
+    "-";
+
+  const organizerPhone =
+    event?.phone ||
+    event?.phoneNumber ||
+    event?.contactPhone ||
+    event?.guestPhone ||
+    event?.userId?.phone ||
+    event?.userId?.phoneNumber ||
+    event?.userId?.mobile ||
+    "N/A";
+
+  const eventInstructions =
+    event?.description ||
+    event?.instructions ||
+    event?.additionalInstructions ||
+    event?.specialInstructions ||
+    event?.notes ||
+    "No instructions provided";
+
+  const eventDate = formatDate(event?.startDateTime || event?.date);
+  const startTime = formatTime(event?.startDateTime || event?.startTime);
+  const endTime = formatTime(event?.endDateTime || event?.endTime);
   const eventType = formatLabel(event?.eventType);
   const eventStatus = formatLabel(event?.status);
   const paymentStatus = formatLabel(event?.paymentStatus);
+  const currentStatus = String(event?.status || "").toLowerCase();
+  const hideSendInvite = ["rejected", "completed", "cancelled", "expired", "refunded"].includes(
+    currentStatus
+  );
   const isCancelable =
     event &&
-    !["cancelled", "completed"].includes(String(event.status || "").toLowerCase());
+    !["cancelled", "completed", "rejected", "expired", "refunded"].includes(currentStatus);
 
   const handleCancelEvent = () => {
     if (!isCancelable || isCancelling) return;
@@ -377,7 +414,7 @@ export default function ReservationDetails() {
                   type="button"
                   disabled
                   title="Dispute can only be filed after the event end time"
-                  className="px-5 py-2.5 rounded-[12px] text-[12px] font-semibold border border-gray-200 bg-white/20 text-gray-300 cursor-not-allowed"
+                  className="px-5 py-2.5 rounded-[12px] text-[12px] font-semibold border border-white/30 bg-white/10 text-white/70 cursor-not-allowed"
                 >
                   Dispute Available After Event Ends
                 </button>
@@ -386,19 +423,21 @@ export default function ReservationDetails() {
                   type="button"
                   disabled
                   title="Dispute window expired (24 hours passed after event end time)"
-                  className="px-5 py-2.5 rounded-[12px] text-[12px] font-semibold border border-gray-200 bg-white/20 text-gray-300 cursor-not-allowed"
+                  className="px-5 py-2.5 rounded-[12px] text-[12px] font-semibold border border-white/30 bg-white/10 text-white/70 cursor-not-allowed"
                 >
                   Dispute Expired
                 </button>
               ) : null}
 
-              <button
-                className="px-6 py-3 rounded-[12px] text-[12px] font-semibold bg-purple-50 text-[#181818]"
-                type="button"
-                onClick={() => setSendInvitation(true)}
-              >
-                Send Invite
-              </button>
+              {!hideSendInvite && (
+                <button
+                  className="px-6 py-3 rounded-[12px] text-[12px] font-semibold bg-[#F4F4FF] hover:bg-[#E8E8FF] text-[#222246] transition cursor-pointer shadow-sm"
+                  type="button"
+                  onClick={() => setSendInvitation(true)}
+                >
+                  Send Invite
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleCancelEvent}
@@ -477,7 +516,7 @@ export default function ReservationDetails() {
                     <div>
                       <p className="text-[#727272]">Organizer Email</p>
                       <p className="font-semibold text-[#181818] break-all">
-                        {event?.userId?.email || "-"}
+                        {organizerEmail}
                       </p>
                     </div>
                   </div>
@@ -528,30 +567,30 @@ export default function ReservationDetails() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-[#0000001A] text-sm">
-                <div>
+                <div className="min-w-0">
                   <p className="text-black font-semibold mb-2">Preferred Music</p>
-                  <p className="text-gray-600 text-sm font-semibold">
+                  <p className="text-gray-600 text-sm font-semibold break-words whitespace-pre-wrap">
                     {event?.preferredMusic || "N/A"}
                   </p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-black font-semibold mb-2">Special Request</p>
-                  <p className="text-gray-600 text-sm font-semibold">
+                  <p className="text-gray-600 text-sm font-semibold break-words whitespace-pre-wrap">
                     {event?.specialRequest || "None"}
                   </p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-black font-semibold mb-2">Budget</p>
-                  <p className="text-gray-600 text-sm font-semibold">
+                  <p className="text-gray-600 text-sm font-semibold break-words">
                     {formatCurrency(event?.budget, event?.currency)}
                   </p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-black font-semibold mb-2">
                     Ticket at Door{" "}
                     <span className="text-gray-400 font-normal">(optional)</span>
                   </p>
-                  <p className="text-gray-600 text-sm font-semibold">
+                  <p className="text-gray-600 text-sm font-semibold break-words">
                     {typeof event?.ticketAtDoor === "boolean"
                       ? event.ticketAtDoor
                         ? "Yes"
@@ -562,19 +601,31 @@ export default function ReservationDetails() {
               </div>
 
               <div className="border-t pt-6 mb-8">
-                <p className="text-black font-semibold mb-2">
+                <p className="text-black font-semibold mb-3">
                   Services and Packages
                 </p>
-                <div className="flex gap-12">
+                <div className="flex flex-wrap gap-4">
                   {event?.servicePackageIds?.length > 0 ? (
                     event?.servicePackageIds?.map((service, index) => (
-                      <div key={service?._id || service?.id || index}>
-                        <p className="text-gray-600 text-sm font-semibold">
-                          {service.name}
-                        </p>
-                        <p className="text-gray-600 text-sm font-semibold">
-                          {service.description}
-                        </p>
+                      <div
+                        key={service?._id || service?.id || index}
+                        className="flex-1 min-w-[240px] max-w-[340px] rounded-lg bg-gray-50 border border-gray-100 p-3.5"
+                      >
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-semibold text-[#181818] text-[15px] break-words">
+                            {service.name}
+                          </h4>
+                          {service.price !== undefined && service.price !== null && (
+                            <span className="text-[#010067] font-semibold text-[14px]">
+                              ({formatCurrency(Number(service?.price ?? 0) / (service?.price > 1000 ? 100 : 1), event?.currency)})
+                            </span>
+                          )}
+                        </div>
+                        {service.description && (
+                          <p className="mt-1 text-[13px] leading-5 text-gray-600 break-words whitespace-pre-wrap">
+                            {service.description}
+                          </p>
+                        )}
                       </div>
                     ))
                   ) : (
@@ -586,12 +637,12 @@ export default function ReservationDetails() {
               </div>
 
               <div className="border-t pt-6">
-                <p className="font-semibold mb-3">
+                <p className="font-semibold mb-3 text-black">
                   Any Instructions{" "}
                   <span className="text-gray-400 font-normal">(Optional)</span>
                 </p>
-                <p className="text-gray-700 leading-relaxed text-sm">
-                  {event?.description || "No instructions provided"}
+                <p className="text-gray-700 leading-relaxed text-sm break-words whitespace-pre-wrap">
+                  {eventInstructions}
                 </p>
               </div>
             </div>
@@ -603,19 +654,19 @@ export default function ReservationDetails() {
                 <div>
                   <p className="text-black font-semibold mb-2">Name</p>
                   <p className="text-gray-600 text-sm font-semibold">
-                    {organizerName && organizerName !== "-" ? organizerName : event?.guestName || "N/A"}
+                    {organizerName}
                   </p>
                 </div>
                 <div>
                   <p className="text-black font-semibold mb-2">Email Address</p>
                   <p className="text-gray-600 text-sm font-semibold break-all">
-                    {event?.userId?.email || event?.guestEmail || "N/A"}
+                    {organizerEmail}
                   </p>
                 </div>
                 <div>
                   <p className="text-black font-semibold mb-2">Phone Number</p>
                   <p className="text-gray-600 text-sm font-semibold">
-                    {event?.userId?.phone || event?.userId?.phoneNumber || event?.guestPhone || "N/A"}
+                    {organizerPhone}
                   </p>
                 </div>
               </div>
