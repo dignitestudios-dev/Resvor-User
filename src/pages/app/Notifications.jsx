@@ -7,8 +7,18 @@ import moment from "moment";
 const Notifications = () => {
   const navigate = useNavigate();
   const [selectTab, setSelectTab] = useState("all");
-  const { data: notificationsData, isLoading } = useNotifications();
+  const [page, setPage] = useState(1);
+  const limit = 10;
+
+  const { data: notificationsData, isLoading } = useNotifications(page, limit);
   const notifications = notificationsData?.data || [];
+
+  const pagination = notificationsData?.pagination || {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+  };
 
   const handleSelect = (val) => {
     setSelectTab(val);
@@ -34,14 +44,15 @@ const Notifications = () => {
     if (selectTab === "unread") return isRead === false;
     return true;
   });
+
   return (
     <>
       <div className="flex items-center pt-[16px] pb-[18em] homeSectionImage">
         <div className="flex items-center justify-between w-full px-5 lg:px-40 gap-3">
-          <div className="flex gap-1">
-            {/* <button type="button" onClick={() => navigate(-1)}>
-                  <FaArrowLeftLong color="white" size={20} />
-                </button> */}
+          <div className="flex items-center gap-3">
+            <button type="button" onClick={() => navigate(-1)} className="cursor-pointer">
+              <FaArrowLeftLong color="white" size={20} />
+            </button>
             <h2 className="text-white text-[30px] mt-0 font-bold leading-[48px] capitalize">
               Notifications
             </h2>
@@ -51,125 +62,130 @@ const Notifications = () => {
 
       <div className="px-5 lg:px-40">
         <div
-          className=" mx-auto pt-6 bg-white rounded-xl -mt-[16em]"
+          className="mx-auto pt-6 bg-white rounded-xl -mt-[16em] mb-12"
           style={{ boxShadow: "0px 4px 30px 0px #00000026" }}
         >
-          <div className="w-full border-b-2 border-gray-100 ">
-            <div className="flex justify-start items-center gap-4 mx-6 pb-2">
+          {/* Filter Tabs */}
+          <div className="w-full border-b-2 border-gray-100 pb-2 mb-4 px-6">
+            <div className="flex justify-start items-center gap-6">
               <button
+                type="button"
                 onClick={() => handleSelect("all")}
-                className={` ${selectTab === "all"
-                  ? "text-indigo-950 font-bold"
-                  : "text-gray-500"
-                  }`}
+                className={`text-base font-semibold pb-2 border-b-2 transition-colors cursor-pointer ${
+                  selectTab === "all"
+                    ? "text-indigo-950 border-indigo-950 font-bold"
+                    : "text-gray-500 border-transparent hover:text-gray-800"
+                }`}
               >
                 All
               </button>
               <button
+                type="button"
                 onClick={() => handleSelect("read")}
-                className={` ${selectTab === "read"
-                  ? "text-indigo-950 font-bold"
-                  : "text-gray-500"
-                  } `}
+                className={`text-base font-semibold pb-2 border-b-2 transition-colors cursor-pointer ${
+                  selectTab === "read"
+                    ? "text-indigo-950 border-indigo-950 font-bold"
+                    : "text-gray-500 border-transparent hover:text-gray-800"
+                }`}
               >
                 Read
               </button>
               <button
+                type="button"
                 onClick={() => handleSelect("unread")}
-                className={` ${selectTab === "unread"
-                  ? "text-indigo-950 font-bold"
-                  : "text-gray-500"
-                  } `}
+                className={`text-base font-semibold pb-2 border-b-2 transition-colors cursor-pointer ${
+                  selectTab === "unread"
+                    ? "text-indigo-950 border-indigo-950 font-bold"
+                    : "text-gray-500 border-transparent hover:text-gray-800"
+                }`}
               >
                 Unread
               </button>
             </div>
           </div>
 
+          {/* Content */}
           {isLoading ? (
-            <div className="mt-4 h-[430px] overflow-y-auto">
-              {Array(4)
-                .fill()
+            <div className="p-6 divide-y divide-gray-100 min-h-[300px]">
+              {Array(5)
+                .fill(0)
                 .map((_, index) => (
-                  <div key={index}>
-                    <div className="flex items-center w-[85%] py-3 border-gray-100">
-                      <div className="bg-white flex p-2 max-w-[95%]">
-                        <div className="py-3 px-2">
-                          <div className="w-[100px] h-[20px] bg-gray-200 rounded animate-pulse mb-2"></div>
-                          <div className="w-[180px] h-[20px] bg-gray-200 rounded animate-pulse"></div>
-                        </div>
-                      </div>
-                      <div className="w-[7%] flex flex-col items-center">
-                        <div className="w-[50px] h-[10px] bg-gray-200 rounded animate-pulse mb-2"></div>
-                      </div>
+                  <div key={index} className="py-4 flex justify-between items-center animate-pulse">
+                    <div className="space-y-2 flex-1 pr-4">
+                      <div className="w-1/3 h-4 bg-gray-200 rounded"></div>
+                      <div className="w-2/3 h-3 bg-gray-200 rounded"></div>
                     </div>
-                    <hr className="h-px my-2 ml-20 w-[90%] bg-gray-100 border" />
+                    <div className="w-24 h-4 bg-gray-200 rounded"></div>
                   </div>
                 ))}
             </div>
           ) : (
             <div>
               {filteredTasks?.length > 0 ? (
-                <div className=" h-[430px] overflow-y-auto ">
-                  {filteredTasks?.map((item, index) => (
+                <div className="divide-y divide-gray-100 px-6 min-h-[300px]">
+                  {filteredTasks.map((item, index) => (
                     <div
-                      className="pl-8 cursor-pointer hover:bg-gray-50 transition-colors"
                       key={item._id || index}
                       onClick={() => handleNotificationClick(item)}
+                      className="flex justify-between items-start py-4 px-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
                     >
-                      <div className="flex justify-between items-center py-2 w-[95%] border-gray-100">
-                        <div className="bg-white flex w-[95%]">
-                          {/* <div className="py-3 px-2 mt-1">
-                  <img
-                    src={task.image}
-                    alt="profile"
-                    className="w-[55px] h-[55px] rounded-full mx-2"
-                  />
-                </div> */}
-
-                          <div className="py-3 px-2">
-                            <h1 className="text-[16px] text-[#787F8C] font-bold">
-                              {item?.title}
-                            </h1>
-                            <p className="text-[16px] text-[#18181880] ">
-                              {item?.description}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="w-[20%] flex flex-col items-center">
-                          <p className="text-[14px] text-[#717171] mb-2">
-                            {item?.createdAt
-                              ? moment(item.createdAt).format("MM-DD-YYYY")
-                              : item?.createdAt}
-                          </p>
-                          {/* unread indicator */}
-                          {!(item?.isRead ?? item?.read) ? (
-                            <span className="bg-indigo-950 rounded-full px-2 text-[14px] text-white">
-                              1
-                            </span>
-                          ) : null}
-                          {/* {unReadLoadingId === item._id ? (
-                        <p className="text-xs text-gray-500">Loading...</p>
-                      ) : (
-                        <span className="flex items-center pt-1">
-                          <p className="text-green-600 pr-1">Mark As Read</p>
-                          <input
-                            type="checkbox"
-                            className="w-5 h-5 accent-[#62466b] rounded cursor-pointer"
-                            onChange={() => handleMarkAsRead(item?._id)}
-                          />
-                        </span>
-                      )} */}
-                        </div>
+                      <div className="flex-1 pr-4">
+                        <h2 className="text-base text-gray-900 font-semibold">
+                          {item?.title}
+                        </h2>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {item?.description || item?.message}
+                        </p>
                       </div>
-                      <hr className="h-px my-2 ml-2 w-[90%] bg-gray-100 border" />
+
+                      <div className="flex flex-col items-end shrink-0 ml-4">
+                        <p className="text-xs text-gray-500 mb-1">
+                          {item?.createdAt
+                            ? moment(item.createdAt).format("MM-DD-YYYY hh:mm A")
+                            : item?.createdAt || ""}
+                        </p>
+                        {!(item?.isRead ?? item?.read) && (
+                          <span className="bg-indigo-950 text-white text-xs font-semibold rounded-full px-2.5 py-0.5 mt-1">
+                            Unread
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="h-[430px] flex items-center justify-center text-gray-500 font-medium">No record found</div>
+                <div className="h-64 flex items-center justify-center text-gray-500 font-medium">
+                  No record found
+                </div>
               )}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {!isLoading && filteredTasks.length > 0 && (
+            <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl mt-4">
+              <div className="text-sm text-gray-500">
+                Showing page <span className="font-semibold text-gray-800">{pagination.currentPage}</span> of{" "}
+                <span className="font-semibold text-gray-800">{pagination.totalPages}</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={pagination.currentPage === 1}
+                  className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage((prev) => Math.min(prev + 1, pagination.totalPages))}
+                  disabled={pagination.currentPage >= pagination.totalPages}
+                  className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
         </div>

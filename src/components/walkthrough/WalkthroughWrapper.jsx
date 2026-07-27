@@ -5,11 +5,11 @@ import CustomTooltip from "./CustomTooltip";
 import { walkthroughSteps } from "./walkthroughSteps";
 
 const WalkthroughWrapper = () => {
-  const [showWelcome, setShowWelcome] = useState(true);
-  const [runTour, setRunTour] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [runTour, setRunTour] = useState(false);
 
   useEffect(() => {
-    // Check if new user signup/onboarding flag is set
+    // Only show the walkthrough if the new-signup flag was explicitly set
     const shouldShow =
       localStorage.getItem("show_welcome_walkthrough") === "true" ||
       localStorage.getItem("is_new_signup") === "true";

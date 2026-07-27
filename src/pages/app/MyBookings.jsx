@@ -249,8 +249,8 @@ const MyBooking = () => {
             <div className="w-[320px] flex">
               <button
                 className={`text-[12px] py-3 px-6 rounded-l-2xl w-full ${activeTab === "bookings"
-                    ? " bg-[#FFFFFF] text-[#222246]"
-                    : " bg-[#222246] text-white"
+                  ? " bg-[#FFFFFF] text-[#222246]"
+                  : " bg-[#222246] text-white"
                   }`}
                 onClick={() => setActiveTab("bookings")}
               >
@@ -259,8 +259,8 @@ const MyBooking = () => {
 
               <button
                 className={`text-[12px] px-6 rounded-r-2xl w-full ${activeTab === "events"
-                    ? "bg-[#FFFFFF] text-[#222246]"
-                    : "bg-[#222246] text-white"
+                  ? "bg-[#FFFFFF] text-[#222246]"
+                  : "bg-[#222246] text-white"
                   }`}
                 onClick={() => setActiveTab("events")}
               >
@@ -269,7 +269,7 @@ const MyBooking = () => {
             </div>
 
             {activeTab === "bookings" ? (
-              <div className="text-white absolute top-40 right-44 z-50 w-[180px]">
+              <div className="text-white absolute top-40 right-44 z-20 w-[180px]">
                 <StatusDropdown
                   value={bookingStatusFilter}
                   onChange={(status) => {
@@ -280,7 +280,7 @@ const MyBooking = () => {
                 />
               </div>
             ) : (
-              <div className="text-white absolute top-40 right-44 z-40 w-[180px]">
+              <div className="text-white absolute top-40 right-44 z-20 w-[180px]">
                 <StatusDropdown
                   value={eventStatusFilter}
                   onChange={(status) => {

@@ -14,7 +14,7 @@ const Navbar = () => {
   const { data: authData } = useAuthMe();
   const { data: notificationsData } = useNotifications();
   const notificationsList = notificationsData?.data || [];
-  console.log("🚀 ~ Navbar ~ notificationsList:", notificationsList)
+
   const unreadCount = notificationsList.filter(
     (n) => n.isRead === false || n.unreadCount > 0
   ).length;
@@ -178,12 +178,12 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`w-full ${isMobileMenuOpen
-        ? "fixed top-0 left-0 min-h-screen bg-[#181818] z-50"
+      className={`w-full relative z-50 ${isMobileMenuOpen
+        ? "fixed top-0 left-0 min-h-screen bg-[#181818]"
         : ""
         } text-[#181818]`}
     >
-      <div className="max-w-7xl border-b border-white/40 mx-auto px-4 py-2 flex z-10 items-center justify-between relative">
+      <div className="max-w-7xl border-b border-white/40 mx-auto px-4 py-2 flex z-50 items-center justify-between relative">
         <div className="md:w-[60%] w-[40%]">
           <img
             src={logoBlack}
@@ -225,7 +225,7 @@ const Navbar = () => {
             {/* Popup content */}
             {isPopupOpen && (
               <div
-                className="absolute top-10 right-0 w-[500px] bg-white shadow-lg rounded-lg py-6 px-6 z-50"
+                className="absolute top-16 right-0 w-[500px] bg-white shadow-lg rounded-lg py-6 px-6 z-50"
                 ref={popupRef}
               >
                 <h3 className="text-lg font-semibold text-black">

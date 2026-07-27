@@ -59,10 +59,10 @@ const BookingsTable = ({ users, onSort, sortConfig }) => {
             <col style={{ width: "17%" }} /> {/* Location */}
             <col style={{ width: "11%" }} /> {/* Date */}
             <col style={{ width: "14%" }} /> {/* Time */}
-            <col style={{ width: "8%" }}  /> {/* Guests */}
+            <col style={{ width: "8%" }} /> {/* Guests */}
             <col style={{ width: "14%" }} /> {/* Seating */}
             <col style={{ width: "11%" }} /> {/* Status */}
-            <col style={{ width: "7%" }}  /> {/* Action */}
+            <col style={{ width: "7%" }} /> {/* Action */}
           </colgroup>
 
           <thead className="sticky top-0 z-0">

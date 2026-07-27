@@ -226,7 +226,7 @@ const Home = () => {
 
       {/* Search Box */}
       <div
-        className="absolute top-[300px] lg:top-[320px] md:top-[280px] left-1/2 -translate-x-1/2 w-full max-w-md md:max-w-xl bg-white rounded-[16px] md:p-4 p-2 px-4 z-50 joyride-search-box"
+        className="absolute top-[300px] lg:top-[320px] md:top-[280px] left-1/2 -translate-x-1/2 w-full max-w-md md:max-w-xl bg-white rounded-[16px] md:p-4 p-2 px-4 z-40 joyride-search-box"
         style={{ boxShadow: "0px 4px 30px rgba(0,0,0,0.25)" }}
       >
         <div className="flex items-end border border-gray-400 text-sm rounded-[12px] overflow-hidden p-[3px]">

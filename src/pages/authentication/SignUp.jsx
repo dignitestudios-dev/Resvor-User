@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { IoCall, IoMail } from "react-icons/io5";
 import { FaIdCard } from "react-icons/fa";
 import { IoMdPerson } from "react-icons/io";
+import Cookies from "js-cookie";
 
 import OnboardingStepper from "../../components/onBoarding/OnboardingSteps";
 import { HiCalendarDateRange } from "react-icons/hi2";
@@ -16,21 +17,18 @@ import { mapOnboardingStepToIndex } from "../../static/onboardingStepMapper";
 import { useAuthMe } from "../../hooks/queries/useQueries";
 import { useNavigate } from "react-router";
 import { clearStoredAuthSession } from "../../lib/authSession";
-import { useLogout } from "../../hooks/mutations/OnboardingMutations";
 import { useQueryClient } from "@tanstack/react-query";
-import { ErrorToast } from "../../components/global/Toaster";
 import useApp from "../../context/AppContext";
 
 export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0);
 
   const { data: authData, isLoading, refetch } = useAuthMe(); // 👈 fetch current step
-  console.log("🚀 ~ SignUp ~ authData:", authData?.data?.onboardingStep);
+
   const { stepName, setStepName } = useApp();
-  console.log("🚀 ~ SignUp ~ stepName:", stepName)
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const logoutMutation = useLogout();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -38,11 +36,10 @@ export default function SignUp() {
       refetch();
     }
   }, [refetch]);
+
   // 👇 once API responds, set the correct step
   useEffect(() => {
     if (authData?.success) {
-      // const queryParams = new URLSearchParams(window.location.search);
-      // const hasSuccessParam = queryParams.get("session_id") || queryParams.get("success") === "true";
       const onboardingCompleteAcknowledged =
         localStorage.getItem("onboarding_complete_acknowledged") === "true" ||
         authData?.data?.isSubscribed || authData?.data?.user?.isSubscribed;
@@ -56,11 +53,6 @@ export default function SignUp() {
           return;
         }
       }
-
-      // if (hasSuccessParam) {
-      //   setCurrentStep(5);
-      //   return;
-      // }
 
       const stepIndex = mapOnboardingStepToIndex(stepName || authData?.data?.onboardingStep);
       setCurrentStep(stepIndex);
@@ -79,7 +71,7 @@ export default function SignUp() {
     { icon: FaClipboardList, title: "Subscription" },
   ];
   const [email, setEmail] = useState("");
-  console.log("🚀 ~ SignUp ~ email:", email);
+
   const steps = providerSteps.map((step, index) => ({
     ...step,
     completed: index < currentStep,
@@ -90,35 +82,38 @@ export default function SignUp() {
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
       if (stepName) {
-        setStepName(stepName)
+        setStepName(stepName);
       }
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await logoutMutation.mutateAsync();
-      queryClient.setQueryData(["auth-me"], null);
-      queryClient.invalidateQueries({ queryKey: ["auth-me"] });
-      queryClient.clear();
-      clearStoredAuthSession();
-      setStepName("");
-
-      navigate("/auth/signup", { replace: true });
-    } catch (error) {
-      if (error?.code === "NO_INTERNET") {
-        ErrorToast(error.message);
-      } else {
-        ErrorToast(
-          error?.response?.data?.message ||
-          "An error occurred during logout. Please try again.",
-        );
-      }
+  const handleClearSessionAndRedirect = () => {
+    // Clear all cookies
+    const allCookies = Cookies.get();
+    if (allCookies) {
+      Object.keys(allCookies).forEach((cookieName) => {
+        Cookies.remove(cookieName);
+        Cookies.remove(cookieName, { path: "/" });
+      });
     }
+
+    // Clear localStorage
+    localStorage.clear();
+
+    // Clear auth session helpers & React Query cache
+    clearStoredAuthSession();
+    queryClient.setQueryData(["auth-me"], null);
+    queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+    queryClient.clear();
+    setStepName("");
+    setCurrentStep(0);
+
+    // Redirect user to signup page
+    navigate("/auth/signup", { replace: true });
   };
 
   const handlePrevious = () => {
-    handleLogout();
+    handleClearSessionAndRedirect();
   };
 
   return (
@@ -137,7 +132,6 @@ export default function SignUp() {
               handleNext={handleNext}
               handlePrevious={handlePrevious}
             />
-
           ) : currentStep === 2 ? (
             <PersonalDetails
               handleNext={handleNext}
