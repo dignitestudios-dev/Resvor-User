@@ -30,6 +30,32 @@ const formatTime = (value) => {
   return String(value);
 };
 
+const statusClasses = (status) => {
+  const s = String(status || "").toLowerCase().replace(/_/g, " ");
+  if (s === "confirmed" || s === "approved" || s === "upcoming") {
+    return "bg-emerald-100 text-emerald-700";
+  }
+  if (s === "pending" || s === "approval") {
+    return "bg-amber-100 text-amber-700";
+  }
+  if (s === "awaiting payment" || s === "awaiting_payment") {
+    return "bg-purple-100 text-purple-700";
+  }
+  if (s === "completed") {
+    return "bg-blue-100 text-blue-700";
+  }
+  if (s === "rejected" || s === "cancelled") {
+    return "bg-rose-100 text-rose-700";
+  }
+  if (s === "expired") {
+    return "bg-orange-100 text-orange-700";
+  }
+  if (s === "refunded") {
+    return "bg-teal-100 text-teal-700";
+  }
+  return "bg-gray-100 text-gray-600";
+};
+
 const EventBookingsTable = ({ events, onSort, sortConfig }) => {
   const navigate = useNavigate();
 
@@ -96,7 +122,15 @@ const EventBookingsTable = ({ events, onSort, sortConfig }) => {
                 <td className="px-4 py-6">{event.guestLimit}</td>
                 <td className="px-4 py-6">{event.eventType}</td>
                 <td className="px-4 py-6">{event.budget}</td>
-                <td className="px-4 py-6">{event.status}</td>
+                <td className="px-4 py-6">
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize ${statusClasses(
+                      event.status
+                    )}`}
+                  >
+                    {event.status}
+                  </span>
+                </td>
                 <td className="px-4 py-6 text-nowrap underline cursor-pointer">
                   <div
                     onClick={() =>
@@ -160,7 +194,13 @@ const EventBookingsTable = ({ events, onSort, sortConfig }) => {
               </div>
               <div className="flex justify-between mb-2">
                 <span className="text-gray-500 text-sm font-medium">Status</span>
-                <span className="text-gray-800">{event.status}</span>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold capitalize ${statusClasses(
+                    event.status
+                  )}`}
+                >
+                  {event.status}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500 text-sm font-medium">Action</span>
