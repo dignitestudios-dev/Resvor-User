@@ -5,11 +5,35 @@ import { AiOutlinePlus } from "react-icons/ai";
 import InputField from "../auth/InputField";
 import Button from "../global/Button";
 import { mapImg, userImage } from "../../assets/export";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import TagsInputField from "../onBoarding/TagsInputField";
 import TagsModal from "../onBoarding/TagsModal";
 import { useUpdateProfile } from "../../hooks/queries/useQueries";
 import { useQueryClient } from "@tanstack/react-query";
+
+import { ErrorToast, SuccessToast } from "../global/Toaster";
+
+const validateImageResolution = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    const img = new Image();
+
+    reader.onload = (e) => {
+      img.onload = () => {
+        if (img.width >= 215 && img.height >= 215) {
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      };
+      img.onerror = () => resolve(false);
+      img.src = e.target.result;
+    };
+
+    reader.onerror = () => resolve(false);
+    reader.readAsDataURL(file);
+  });
+};
 
 const EditProfileModal = ({
   onClose,
@@ -19,6 +43,9 @@ const EditProfileModal = ({
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [dateModalData, setDateModalData] = useState("");
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const fileInputRef = useRef(null);
 
   const queryClient = useQueryClient();
 
@@ -33,9 +60,8 @@ const EditProfileModal = ({
 
   const [formData, setFormData] = useState({
     name:
-      `${initialData?.firstName || ""} ${
-        initialData?.lastName || ""
-      }`.trim(),
+      `${initialData?.firstName || ""} ${initialData?.lastName || ""
+        }`.trim(),
 
     email: initialData?.email || "",
 
@@ -52,6 +78,37 @@ const EditProfileModal = ({
     setModalIsOpen(false);
   };
 
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      // Check file type
+      if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(file.type)) {
+        const errorMsg = "Only JPEG and PNG formats are allowed";
+        ErrorToast(errorMsg);
+        return;
+      }
+
+      // Check file size (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        const errorMsg = "File size must not exceed 10MB";
+        ErrorToast(errorMsg);
+        return;
+      }
+
+      // Check image resolution (215x215)
+      const isValidResolution = await validateImageResolution(file);
+      if (!isValidResolution) {
+        const errorMsg = "Image resolution must be at least 215x215";
+        ErrorToast(errorMsg);
+        return;
+      }
+
+      setSelectedImageFile(file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
 
 
   const handleChange = (e) => {
@@ -66,42 +123,52 @@ const EditProfileModal = ({
 
 
   const handleSave = () => {
-
     const nameParts = formData.name.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
 
+    let payload;
 
-    const payload = {
+    if (selectedImageFile instanceof File) {
+      payload = new FormData();
+      payload.append("firstName", firstName);
+      payload.append("lastName", lastName);
 
-      firstName: nameParts[0] || "",
+      if (formData.birthday) {
+        payload.append("specialDates[0][occasion]", "DOB");
+        payload.append("specialDates[0][date]", formData.birthday);
+      }
 
-      lastName:
-        nameParts.slice(1).join(" ") || "",
-
-
-      specialDates: formData.birthday
-        ? [
+      // payload.append("profilePicture", selectedImageFile);
+      payload.append("profileImage", selectedImageFile);
+    } else {
+      payload = {
+        firstName,
+        lastName,
+        specialDates: formData.birthday
+          ? [
             {
               occasion: "DOB",
               date: formData.birthday,
             },
           ]
-        : [],
-
-    };
+          : [],
+      };
+    }
 
 
     updateProfile(payload, {
 
       onSuccess: () => {
-
-        queryClient.invalidateQueries([
-          "profile",
-        ]);
-
+        SuccessToast("Profile updated successfully!");
+        queryClient.invalidateQueries({
+          queryKey: ["profile"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["auth-me"],
+        });
         onClick?.();
-
         onClose();
-
       },
 
 
@@ -111,6 +178,7 @@ const EditProfileModal = ({
           "Update profile error:",
           error
         );
+        ErrorToast(error?.response?.data?.message || "Failed to update profile.");
 
       },
 
@@ -155,21 +223,32 @@ const EditProfileModal = ({
 
           {/* Profile image */}
 
-          <div className="relative">
+          <div className="relative inline-block">
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              accept="image/*"
+              className="hidden"
+            />
 
             <img
-  src={
-    initialData?.profilePicture?.location ||
-    userImage
-  }
-  alt="avatar"
-  className="w-28 h-28 rounded-full object-cover"
-/>
+              src={
+                previewImage ||
+                initialData?.profilePicture?.location ||
+                userImage
+              }
+              alt="avatar"
+              className="w-28 h-28 rounded-full object-cover cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+            />
 
 
             <button
               type="button"
-              className="absolute bottom-2 left-20 bg-white rounded-full shadow p-2"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-2 left-20 bg-white rounded-full shadow p-2 hover:bg-gray-100 transition cursor-pointer"
             >
 
               <AiOutlinePlus />
@@ -251,7 +330,7 @@ const EditProfileModal = ({
               />
 
 
-
+              {/* 
               <InputField
 
                 label="Location"
@@ -270,7 +349,7 @@ const EditProfileModal = ({
 
                 onChange={handleChange}
 
-              />
+              /> */}
 
 
             </div>
@@ -385,28 +464,28 @@ const EditProfileModal = ({
 
       {modalIsOpen && (
 
-      <TagsModal
-  isOpen={modalIsOpen}
-  onClose={closeModal}
-  setFieldValue={(field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  }}
-  setDateModalData={(data) => {
-    setDateModalData(data);
+        <TagsModal
+          isOpen={modalIsOpen}
+          onClose={closeModal}
+          setFieldValue={(field, value) => {
+            setFormData((prev) => ({
+              ...prev,
+              [field]: value,
+            }));
+          }}
+          setDateModalData={(data) => {
+            setDateModalData(data);
 
-    if (data?.dobDate) {
-      const { day, month, year } = data.dobDate;
+            if (data?.dobDate) {
+              const { day, month, year } = data.dobDate;
 
-      setFormData((prev) => ({
-        ...prev,
-        birthday: `${year}-${month}-${day}`,
-      }));
-    }
-  }}
-/>
+              setFormData((prev) => ({
+                ...prev,
+                birthday: `${year}-${month}-${day}`,
+              }));
+            }
+          }}
+        />
 
       )}
 

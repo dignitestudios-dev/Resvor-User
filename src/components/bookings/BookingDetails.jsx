@@ -204,11 +204,28 @@ const isRenderableImage = (value) =>
     value.startsWith("/"));
 
 const getStatusClasses = (status) => {
-  const s = String(status || "").toLowerCase();
-  if (s === "pending" || s === "awaiting_payment") return "bg-amber-100 text-amber-700";
-  if (s === "approved" || s === "confirmed") return "bg-emerald-100 text-emerald-700";
-  if (s === "completed") return "bg-blue-100 text-blue-700";
-  if (s === "cancelled" || s === "rejected") return "bg-rose-100 text-rose-700";
+  const s = String(status || "").toLowerCase().replace(/_/g, " ");
+  if (s === "confirmed" || s === "approved" || s === "upcoming") {
+    return "bg-emerald-100 text-emerald-700";
+  }
+  if (s === "pending" || s === "approval") {
+    return "bg-amber-100 text-amber-700";
+  }
+  if (s === "awaiting payment" || s === "awaiting_payment") {
+    return "bg-purple-100 text-purple-700";
+  }
+  if (s === "completed") {
+    return "bg-blue-100 text-blue-700";
+  }
+  if (s === "rejected" || s === "cancelled") {
+    return "bg-rose-100 text-rose-700";
+  }
+  if (s === "expired") {
+    return "bg-orange-100 text-orange-700";
+  }
+  if (s === "refunded") {
+    return "bg-teal-100 text-teal-700";
+  }
   return "bg-gray-100 text-gray-700";
 };
 
@@ -494,14 +511,15 @@ export default function BookingDetails() {
                   Dispute Available After Event Ends
                 </button>
               ) : disputeEligibility.expired ? (
-                <button
-                  type="button"
-                  disabled
-                  title="Dispute window expired (24 hours passed after booking end time)"
-                  className="px-5 py-2 rounded-[12px] text-[12px] font-semibold border border-gray-200 bg-white/20 text-gray-300 cursor-not-allowed"
-                >
-                  Dispute Expired
-                </button>
+                // <button
+                //   type="button"
+                //   disabled
+                //   title="Dispute window expired (24 hours passed after booking end time)"
+                //   className="px-5 py-2 rounded-[12px] text-[12px] font-semibold border border-gray-200 bg-white/20 text-gray-300 cursor-not-allowed"
+                // >
+                //   Dispute Expired
+                // </button>
+                null
               ) : null}
 
               <button
@@ -600,7 +618,7 @@ export default function BookingDetails() {
               </div>
 
               {/* Guest details row — Issue #6 children count, Issue #8 no dupe date */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 text-sm pb-5 border-b border-[#0000001A]">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4 text-sm pb-5 border-b border-[#0000001A]">
                 <div className="space-y-1 min-w-0">
                   <p className="font-semibold text-[#000000] text-[15px]">Guests</p>
                   <p className="text-[#505050] text-[14px]">{booking?.guestCount ?? "-"}</p>
@@ -616,9 +634,44 @@ export default function BookingDetails() {
                   <p className="font-semibold text-[#000000] text-[15px]">Seating Area</p>
                   <p className="text-[#505050] text-[14px] break-words">{seatingArea}</p>
                 </div>
-                <div className="space-y-1 min-w-0">
+                {/* <div className="space-y-1 min-w-0">
                   <p className="font-semibold text-[#000000] text-[15px]">Payment</p>
                   <p className="text-[#505050] text-[14px] break-words">{paymentStatusLabel}</p>
+                </div> */}
+              </div>
+              {/* Issue #11 & #12 — financial summary */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm pb-5 border-b border-[#0000001A]">
+                {isAwaitingPayment ? (
+                  // For pending/awaiting payment show Amount Due
+                  <>
+                    <div className="space-y-1 min-w-0">
+                      <p className="font-semibold text-[#000000] text-[15px]">Amount Due</p>
+                      <p className="text-amber-600 font-semibold text-[14px] break-words">
+                        {formatCurrency(totalPrice || amountPaid)}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {amountPaid > 0 && (
+                      <div className="space-y-1 min-w-0">
+                        <p className="font-semibold text-[#000000] text-[15px]">Amount Paid</p>
+                        <p className="text-emerald-600 font-semibold text-[14px] break-words">
+                          {formatCurrency(amountPaid)}
+                        </p>
+                      </div>
+                    )}
+                    {totalPrice > 0 && (
+                      <div className="space-y-1 min-w-0">
+                        <p className="font-semibold text-[#000000] text-[15px]">Total Price</p>
+                        <p className="text-[#505050] text-[14px] break-words">{formatCurrency(totalPrice)}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+                <div className="space-y-1 min-w-0">
+                  <p className="font-semibold text-[#000000] text-[15px]">Booked On</p>
+                  <p className="text-[#505050] text-[14px] break-words">{formatDate(booking?.createdAt)}</p>
                 </div>
               </div>
 
@@ -704,41 +757,7 @@ export default function BookingDetails() {
                   </div>
                 </div>
               )}
-              {/* Issue #11 & #12 — financial summary */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-                {isAwaitingPayment ? (
-                  // For pending/awaiting payment show Amount Due
-                  <>
-                    <div className="space-y-1 min-w-0">
-                      <p className="font-semibold text-[#000000] text-[15px]">Amount Due</p>
-                      <p className="text-amber-600 font-semibold text-[14px] break-words">
-                        {formatCurrency(totalPrice || amountPaid)}
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {amountPaid > 0 && (
-                      <div className="space-y-1 min-w-0">
-                        <p className="font-semibold text-[#000000] text-[15px]">Amount Paid</p>
-                        <p className="text-emerald-600 font-semibold text-[14px] break-words">
-                          {formatCurrency(amountPaid)}
-                        </p>
-                      </div>
-                    )}
-                    {totalPrice > 0 && (
-                      <div className="space-y-1 min-w-0">
-                        <p className="font-semibold text-[#000000] text-[15px]">Total Price</p>
-                        <p className="text-[#505050] text-[14px] break-words">{formatCurrency(totalPrice)}</p>
-                      </div>
-                    )}
-                  </>
-                )}
-                <div className="space-y-1 min-w-0">
-                  <p className="font-semibold text-[#000000] text-[15px]">Booked On</p>
-                  <p className="text-[#505050] text-[14px] break-words">{formatDate(booking?.createdAt)}</p>
-                </div>
-              </div>
+
             </div>
 
             {/* ── Section: User Information — Issue #13 ─────────────────── */}

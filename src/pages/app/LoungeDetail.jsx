@@ -469,7 +469,9 @@ const LoungeDetail = () => {
               }}
             services={eventServices}
             onClick={handleEventSummary}
-            onClose={() => setISEventSummary(false)}
+            // onClose={() => setISEventSummary(false)}
+            onClose={() => setIsEventSubmit(false)}
+
           />
         )}
 

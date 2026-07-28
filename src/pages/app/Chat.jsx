@@ -429,12 +429,12 @@ const Chat = () => {
                 >
                   {otherAvatar}
                 </div>
-                <div>
-                  <h2 className="text-base font-semibold text-gray-900 leading-tight">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-base font-semibold text-gray-900 leading-tight truncate">
                     {loungeName || otherName}
                   </h2>
                   {loungeName && (
-                    <p className="text-xs text-gray-500">{otherName} · Manager</p>
+                    <p className="text-xs text-gray-500 truncate">{otherName} · Manager</p>
                   )}
                 </div>
               </div>
@@ -474,7 +474,7 @@ const Chat = () => {
                     return (
                       <div
                         key={msg._id}
-                        className={`flex items-end gap-2 ${own ? "justify-end" : "justify-start"
+                        className={`flex items-end gap-2 max-w-full ${own ? "justify-end" : "justify-start"
                           }`}
                       >
                         {/* Other avatar */}
@@ -485,16 +485,16 @@ const Chat = () => {
                         )}
 
                         <div
-                          className={`flex flex-col ${own ? "items-end" : "items-start"
-                            } max-w-xs lg:max-w-md`}
+                          className={`flex flex-col min-w-0 max-w-[75%] sm:max-w-[70%] lg:max-w-[65%] ${own ? "items-end" : "items-start"
+                            }`}
                         >
                           {!own && (
-                            <span className="text-xs text-gray-500 mb-1">
+                            <span className="text-xs text-gray-500 mb-1 truncate max-w-full">
                               {otherName}
                             </span>
                           )}
                           <div
-                            className={`rounded-2xl px-4 py-2.5 ${own
+                            className={`rounded-2xl px-4 py-2.5 max-w-full overflow-hidden ${own
                                 ? "bg-gradient-to-br from-[#010067] to-[#000000] text-white rounded-br-sm"
                                 : "bg-[#E6E6E6] text-gray-900 rounded-bl-sm"
                               } ${typeof msg._id === "string" &&
@@ -504,13 +504,15 @@ const Chat = () => {
                               }`}
                           >
                             {text && (
-                              <p className="text-sm leading-relaxed">{text}</p>
+                              <p className="text-sm leading-relaxed break-words break-all whitespace-pre-wrap [overflow-wrap:anywhere]">
+                                {text}
+                              </p>
                             )}
                             {mediaUrl && (
                               <img
                                 src={mediaUrl}
                                 alt="attachment"
-                                className="mt-2 rounded-lg max-h-60 object-cover"
+                                className="mt-2 rounded-lg max-h-60 object-cover max-w-full"
                               />
                             )}
                           </div>

@@ -8,6 +8,7 @@ import SendInvitationModal from "../flayer/SendInvitationModal";
 import { ErrorToast, SuccessToast } from "../global/Toaster";
 import DisputeModal from "./DisputeModal";
 import ViewDisputeModal from "./ViewDisputeModal";
+import RejectedModal from "./RejectedModal";
 import { useCancelEvent, useCreateDispute, useEventDetails } from "../../hooks/queries/useQueries";
 
 // ── dispute eligibility helper ────────────────────────────────────────────────
@@ -16,6 +17,10 @@ const checkDisputeEligibility = (event) => {
 
   if (event?.isDisputed || event?.disputeStatus || event?.dispute) {
     return { eligible: false, message: "Dispute already filed", isDisputed: true };
+  }
+
+  if (["rejected", "cancelled"].includes(event.status)) {
+    return { eligible: false, message: "Dispute can't be filed for this event" };
   }
 
   const rawEndTime = event?.endDateTime || event?.endTime;
@@ -195,24 +200,28 @@ const formatCurrency = (amount, currency = "usd") => {
 };
 
 const getStatusClasses = (status) => {
-  const normalized = String(status || "").toLowerCase();
-
-  if (normalized === "pending") {
-    return "bg-amber-100 text-amber-700";
-  }
-
-  if (normalized === "approved" || normalized === "confirmed") {
+  const s = String(status || "").toLowerCase().replace(/_/g, " ");
+  if (s === "confirmed" || s === "approved" || s === "upcoming") {
     return "bg-emerald-100 text-emerald-700";
   }
-
-  if (normalized === "completed") {
+  if (s === "pending" || s === "approval") {
+    return "bg-amber-100 text-amber-700";
+  }
+  if (s === "awaiting payment" || s === "awaiting_payment") {
+    return "bg-purple-100 text-purple-700";
+  }
+  if (s === "completed") {
     return "bg-blue-100 text-blue-700";
   }
-
-  if (normalized === "cancelled" || normalized === "rejected") {
+  if (s === "rejected" || s === "cancelled") {
     return "bg-rose-100 text-rose-700";
   }
-
+  if (s === "expired") {
+    return "bg-orange-100 text-orange-700";
+  }
+  if (s === "refunded") {
+    return "bg-teal-100 text-teal-700";
+  }
   return "bg-gray-100 text-gray-700";
 };
 
@@ -225,6 +234,7 @@ export default function ReservationDetails() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [showViewDisputeModal, setShowViewDisputeModal] = useState(false);
+  const [showRejectedModal, setShowRejectedModal] = useState(false);
 
   const {
     data: eventResponse,
@@ -284,8 +294,9 @@ export default function ReservationDetails() {
   const endTime = formatTime(event?.endDateTime || event?.endTime);
   const eventType = formatLabel(event?.eventType);
   const eventStatus = formatLabel(event?.status);
-  const paymentStatus = formatLabel(event?.paymentStatus);
+  // const paymentStatus = formatLabel(event?.paymentStatus);
   const currentStatus = String(event?.status || "").toLowerCase();
+  console.log("🚀 ~ ReservationDetails ~ currentStatus:", currentStatus)
   const hideSendInvite = ["rejected", "completed", "cancelled", "expired", "refunded"].includes(
     currentStatus
   );
@@ -438,6 +449,15 @@ export default function ReservationDetails() {
                   Send Invite
                 </button>
               )}
+              {/* {currentStatus === "rejected" && (
+                <button
+                  type="button"
+                  onClick={() => setShowRejectedModal(true)}
+                  className="px-6 py-3 rounded-[12px] text-[12px] font-semibold bg-rose-600 hover:bg-rose-700 text-white transition cursor-pointer shadow-sm"
+                >
+                  View Reason
+                </button>
+              )} */}
               <button
                 type="button"
                 onClick={handleCancelEvent}
@@ -488,6 +508,15 @@ export default function ReservationDetails() {
                     >
                       {eventStatus}
                     </span>
+                    {currentStatus === "rejected" && (
+                      <button
+                        type="button"
+                        onClick={() => setShowRejectedModal(true)}
+                        className="px-3.5 py-1 text-[12px] font-semibold rounded-full bg-rose-100 text-rose-700 hover:bg-rose-200 transition cursor-pointer border border-rose-300"
+                      >
+                        View Reason
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap gap-2 mt-3">
@@ -523,7 +552,7 @@ export default function ReservationDetails() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 text-sm">
                 <div className="space-y-3">
                   <p className="font-semibold text-[#000000] text-[16px]">
                     Event Type
@@ -556,17 +585,23 @@ export default function ReservationDetails() {
                     {event?.guestCount ?? "-"}
                   </p>
                 </div>
-                <div className="space-y-3">
+                {/* <div className="space-y-3">
                   <p className="font-semibold text-[#000000] text-[16px]">
                     Budget
                   </p>
                   <p className="text-[#000000] text-[15px]">
                     {formatCurrency(event?.budget, event?.currency)}
                   </p>
-                </div>
+                </div> */}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-[#0000001A] text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-[#0000001A] text-sm">
+                <div className="min-w-0">
+                  <p className="text-black font-semibold mb-2">Budget</p>
+                  <p className="text-gray-600 text-sm font-semibold break-words">
+                    {formatCurrency(event?.budget, event?.currency)}
+                  </p>
+                </div>
                 <div className="min-w-0">
                   <p className="text-black font-semibold mb-2">Preferred Music</p>
                   <p className="text-gray-600 text-sm font-semibold break-words whitespace-pre-wrap">
@@ -577,12 +612,6 @@ export default function ReservationDetails() {
                   <p className="text-black font-semibold mb-2">Special Request</p>
                   <p className="text-gray-600 text-sm font-semibold break-words whitespace-pre-wrap">
                     {event?.specialRequest || "None"}
-                  </p>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-black font-semibold mb-2">Budget</p>
-                  <p className="text-gray-600 text-sm font-semibold break-words">
-                    {formatCurrency(event?.budget, event?.currency)}
                   </p>
                 </div>
                 <div className="min-w-0">
@@ -705,6 +734,12 @@ export default function ReservationDetails() {
         isOpen={showViewDisputeModal}
         onClose={() => setShowViewDisputeModal(false)}
         disputeId={disputeId}
+      />
+
+      <RejectedModal
+        isOpen={showRejectedModal}
+        onClose={() => setShowRejectedModal(false)}
+        rejectionReason={event?.rejectionReason}
       />
     </>
   );

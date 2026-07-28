@@ -2,13 +2,35 @@
 import { IoIosArrowForward } from "react-icons/io";
 import { useNavigate } from "react-router";
 
+const formatLabel = (value) =>
+  String(value || "-")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (l) => l.toUpperCase());
+
 const statusClasses = (status) => {
-  const s = String(status || "").toLowerCase();
-  if (s === "upcoming") return "bg-emerald-100 text-emerald-700";
-  if (s === "pending") return "bg-amber-100 text-amber-700";
-  if (s === "completed") return "bg-blue-100 text-blue-700";
-  if (s === "rejected" || s === "cancelled") return "bg-rose-100 text-rose-700";
-  return "bg-gray-100 text-gray-600";
+  const s = String(status || "").toLowerCase().replace(/_/g, " ");
+  if (s === "confirmed" || s === "approved" || s === "upcoming") {
+    return "bg-emerald-100 text-emerald-700";
+  }
+  if (s === "pending" || s === "approval") {
+    return "bg-amber-100 text-amber-700";
+  }
+  if (s === "awaiting payment" || s === "awaiting_payment") {
+    return "bg-purple-100 text-purple-700";
+  }
+  if (s === "completed") {
+    return "bg-blue-100 text-blue-700";
+  }
+  if (s === "rejected" || s === "cancelled") {
+    return "bg-rose-100 text-rose-700";
+  }
+  if (s === "expired") {
+    return "bg-orange-100 text-orange-700";
+  }
+  if (s === "refunded") {
+    return "bg-teal-100 text-teal-700";
+  }
+  return "bg-gray-100 text-gray-700";
 };
 
 const formatDate = (value) => {
@@ -125,7 +147,7 @@ const BookingsTable = ({ users }) => {
                       user.status
                     )}`}
                   >
-                    {user.status}
+                    {formatLabel(user.status)}
                   </span>
                 </td>
                 <td className="px-4 py-4">
@@ -177,7 +199,7 @@ const BookingsTable = ({ users }) => {
                   user.status
                 )}`}
               >
-                {user.status}
+                {formatLabel(user.status)}
               </span>
             </div>
             <div className="flex justify-end mt-3">

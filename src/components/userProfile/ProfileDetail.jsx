@@ -126,11 +126,11 @@ const ProfileDetail = ({ user, loading }) => {
         </div>
       </div>
 
-      <div className="bg-white rounded-[12px] p-4">
+      {/* <div className="bg-white rounded-[12px] p-4">
         <p className="text-[14px] font-[500] text-[#9E9E9E]">Location</p>
 
         <p className="text-[16px] text-[#252525]">N/A</p>
-      </div>
+      </div> */}
 
       <div className="bg-white rounded-[12px] p-4">
         <p className="text-[14px] font-[500] text-[#9E9E9E]">

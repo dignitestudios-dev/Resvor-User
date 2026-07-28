@@ -68,28 +68,6 @@ const campaignStatusConfig = (status) => {
   }
 };
 
-const recipientStatusConfig = (status) => {
-  switch ((status || "").toUpperCase()) {
-    case "DELIVERED":
-      return { dot: "#1A9E5C", bg: "#E6F9F0", text: "#1A9E5C" };
-    case "FAILED":
-      return { dot: "#D93025", bg: "#FEE8E8", text: "#D93025" };
-    case "PENDING":
-      return { dot: "#C87D0E", bg: "#FEF3E2", text: "#C87D0E" };
-    default:
-      return { dot: "#9CA3AF", bg: "#F3F4F6", text: "#6B7280" };
-  }
-};
-
-// ── detail row ────────────────────────────────────────────────────────────────
-
-const DetailRow = ({ label, value }) => (
-  <div className="flex flex-col gap-1">
-    <p className="text-[12px] font-semibold text-[#9CA3AF] uppercase tracking-wide">{label}</p>
-    <p className="text-[14px] font-medium text-[#111827]">{value || "-"}</p>
-  </div>
-);
-
 // ── component ─────────────────────────────────────────────────────────────────
 
 export default function CampaignDetail() {
@@ -278,14 +256,14 @@ export default function CampaignDetail() {
                     <h3 className="text-lg font-bold text-gray-800 border-b pb-3">General Information</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
+                      {/* <div>
                         <p className="text-xs text-gray-400 font-semibold uppercase">Campaign Status</p>
                         <div className="flex items-center gap-2 mt-1.5">
                           <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${st.cls}`}>
                             {st.icon} {st.label}
                           </span>
                         </div>
-                      </div>
+                      </div> */}
 
                       <div>
                         <p className="text-xs text-gray-400 font-semibold uppercase">Channel</p>

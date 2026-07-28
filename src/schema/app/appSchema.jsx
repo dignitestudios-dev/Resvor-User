@@ -68,21 +68,33 @@ export const guestbookSchema = Yup.object({
 
   email: Yup.string()
     .required("Email address is required.")
-    .email("Please enter a valid email address.")
-    .max(100, "Email address cannot exceed 100 characters.")
+    .test("no-leading-space", "Email cannot start with a space.", (value) =>
+      value ? value[0] !== " " : false
+    )
+    .test(
+      "no-internal-or-trailing-space",
+      "Email cannot contain spaces.",
+      (value) => (value ? value.trim() === value && !/\s/.test(value) : false)
+    )
     .matches(
-      /^[A-Za-z0-9][A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
-      "Please enter a valid email address."
+      /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
+      "Invalid email format."
+    )
+    .test("no-dot-before-at", "Email cannot have a dot before @.", (value) =>
+      value ? !/\.@/.test(value) : false
     )
     .test(
-      "no-leading-space",
-      "Email cannot start with a space.",
-      (value) => (value ? !value.startsWith(" ") : true),
+      "no-dot-or-hyphen-after-at",
+      "Email cannot start domain with dot or hyphen.",
+      (value) => (value ? !/@[.-]/.test(value) : false)
     )
     .test(
-      "no-html",
-      "HTML or script content is not allowed.",
-      (value) => (value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true),
+      "no-hyphen-start-domain",
+      "Domain cannot start with hyphen.",
+      (value) => {
+        const domain = value?.split("@")[1];
+        return domain ? !domain.startsWith("-") : false;
+      }
     ),
 
   lounge: Yup.string().required("Please select a lounge."),
@@ -126,17 +138,33 @@ export const editGuestbookSchema = Yup.object({
 
   email: Yup.string()
     .required("Email address is required.")
-    .email("Please enter a valid email address.")
-    .max(100, "Email address cannot exceed 100 characters.")
-    .test(
-      "no-leading-space",
-      "Email cannot start with a space.",
-      (value) => (value ? !value.startsWith(" ") : true),
+    .test("no-leading-space", "Email cannot start with a space.", (value) =>
+      value ? value[0] !== " " : false
     )
     .test(
-      "no-html",
-      "HTML or script content is not allowed.",
-      (value) => (value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true),
+      "no-internal-or-trailing-space",
+      "Email cannot contain spaces.",
+      (value) => (value ? value.trim() === value && !/\s/.test(value) : false)
+    )
+    .matches(
+      /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
+      "Invalid email format."
+    )
+    .test("no-dot-before-at", "Email cannot have a dot before @.", (value) =>
+      value ? !/\.@/.test(value) : false
+    )
+    .test(
+      "no-dot-or-hyphen-after-at",
+      "Email cannot start domain with dot or hyphen.",
+      (value) => (value ? !/@[.-]/.test(value) : false)
+    )
+    .test(
+      "no-hyphen-start-domain",
+      "Domain cannot start with hyphen.",
+      (value) => {
+        const domain = value?.split("@")[1];
+        return domain ? !domain.startsWith("-") : false;
+      }
     ),
 
   // lounge: Yup.string().required("Please select a lounge."),

@@ -89,11 +89,11 @@ const DisputeModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               placeholder="e.g. The venue was closed when we arrived."
-              maxLength={500}
+              maxLength={250}
               disabled={loading}
               className={`w-full rounded-[12px] border p-3 text-sm text-[#181818] outline-none transition placeholder:text-gray-400 placeholder:text-[13px] ${formik.touched.reason && formik.errors.reason
-                  ? "border-red-500 focus:ring-1 focus:ring-red-500"
-                  : "border-gray-300 focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900"
+                ? "border-red-500 focus:ring-1 focus:ring-red-500"
+                : "border-gray-300 focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900"
                 }`}
             />
             {formik.touched.reason && formik.errors.reason && (
@@ -102,7 +102,7 @@ const DisputeModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
               </p>
             )}
             <p className="mt-1 text-right text-[11px] text-gray-400">
-              {formik.values.reason.length}/500
+              {formik.values.reason.length}/250
             </p>
           </div>
 

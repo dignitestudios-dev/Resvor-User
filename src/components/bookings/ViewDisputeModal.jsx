@@ -121,7 +121,7 @@ const ViewDisputeModal = ({ isOpen, onClose, disputeId }) => {
             {/* User Reason */}
             <div>
               <p className="text-[13px] font-semibold text-[#181818] mb-1">Reason for Dispute</p>
-              <div className="bg-amber-50/60 border border-amber-200 rounded-[12px] p-3 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+              <div className="bg-amber-50/60 border border-amber-200 rounded-[12px] p-3 text-sm text-gray-800 whitespace-pre-wrap break-words [overflow-wrap:anywhere] max-h-48 overflow-y-auto leading-relaxed">
                 {dispute.reason || "No reason provided."}
               </div>
             </div>
@@ -130,7 +130,7 @@ const ViewDisputeModal = ({ isOpen, onClose, disputeId }) => {
             {dispute.adminNote && (
               <div>
                 <p className="text-[13px] font-semibold text-[#181818] mb-1">Admin Response / Note</p>
-                <div className="bg-blue-50/60 border border-blue-200 rounded-[12px] p-3 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+                <div className="bg-blue-50/60 border border-blue-200 rounded-[12px] p-3 text-sm text-gray-800 whitespace-pre-wrap break-words [overflow-wrap:anywhere] max-h-48 overflow-y-auto leading-relaxed">
                   {dispute.adminNote}
                 </div>
               </div>
@@ -140,7 +140,7 @@ const ViewDisputeModal = ({ isOpen, onClose, disputeId }) => {
             {dispute.managerAppeal?.text && (
               <div>
                 <p className="text-[13px] font-semibold text-[#181818] mb-1">Manager Appeal</p>
-                <div className="bg-purple-50/60 border border-purple-200 rounded-[12px] p-3 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+                <div className="bg-purple-50/60 border border-purple-200 rounded-[12px] p-3 text-sm text-gray-800 whitespace-pre-wrap break-words [overflow-wrap:anywhere] max-h-48 overflow-y-auto leading-relaxed">
                   {dispute.managerAppeal.text}
                 </div>
               </div>

@@ -250,6 +250,7 @@ const TopUpModalContent = ({ onClose }) => {
                   <input
                     type="number"
                     min="1"
+                    max="1000"
                     step="0.01"
                     placeholder="0.00"
                     value={amountDollars}

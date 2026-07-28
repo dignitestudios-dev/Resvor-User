@@ -41,7 +41,7 @@ const formatDisplayLabel = (value) =>
 const formatEventStatus = (value) => {
   const normalized = String(value || "").toLowerCase();
   const statusMap = {
-    pending: "Approval",
+    pending: "Pending",
     approved: "Upcoming",
     confirmed: "Upcoming",
     completed: "Completed",
@@ -163,9 +163,12 @@ const MyBooking = () => {
       status = "Completed";
     } else if (booking.status === "awaiting_payment" || booking.status === "pending") {
       status = "Pending";
-    } else if (booking.status === "confirmed" || booking.status === "approved") {
-      status = "Upcoming";
-    } else if (booking.status === "cancelled" || booking.status === "rejected") {
+    } else if (booking.status === "confirmed") {
+      status = "Confirmed";
+    } else if (booking.status === "approved") {
+      status = "Approved"
+    }
+    else if (booking.status === "cancelled" || booking.status === "rejected") {
       status = "Cancelled";
     }
 
