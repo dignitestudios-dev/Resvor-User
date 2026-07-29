@@ -116,7 +116,7 @@ const BookingsTable = ({ users }) => {
                   colSpan={8}
                   className="text-center py-20 text-[#727272] text-[15px] font-medium"
                 >
-                  No records found.
+                  No Booking Found.
                 </td>
               </tr>
             )}

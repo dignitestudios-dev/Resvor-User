@@ -27,45 +27,42 @@ const checkDisputeEligibility = (booking) => {
   let endDateTime = null;
 
   if (rawEndTime) {
-    let year, month, day, hours = 0, minutes = 0;
-
-    // Extract year, month, day from dateStr or rawEndTime
-    if (dateStr) {
-      const dObj = new Date(dateStr);
-      if (!isNaN(dObj.getTime())) {
-        if (typeof dateStr === "string" && dateStr.includes("T")) {
-          const datePart = dateStr.split("T")[0];
-          const [y, m, d] = datePart.split("-").map(Number);
-          year = y;
-          month = m - 1;
-          day = d;
-        } else {
-          year = dObj.getFullYear();
-          month = dObj.getMonth();
-          day = dObj.getDate();
-        }
+    if (typeof rawEndTime === "string" && (rawEndTime.includes("T") || rawEndTime.includes("Z"))) {
+      const parsed = new Date(rawEndTime);
+      if (!isNaN(parsed.getTime())) {
+        endDateTime = parsed;
+      }
+    } else if (rawEndTime instanceof Date) {
+      if (!isNaN(rawEndTime.getTime())) {
+        endDateTime = rawEndTime;
       }
     }
+  }
 
-    if (typeof rawEndTime === "string" && rawEndTime.includes("T")) {
-      const directDate = new Date(rawEndTime);
-      if (!isNaN(directDate.getTime())) {
-        const datePart = rawEndTime.split("T")[0];
-        const timePart = rawEndTime.split("T")[1];
-        if (datePart && timePart) {
-          const [y, m, d] = datePart.split("-").map(Number);
-          const [h, min] = timePart.split(":").map(Number);
-          year = y;
-          month = m - 1;
-          day = d;
-          hours = h;
-          minutes = min;
-        } else {
-          hours = directDate.getUTCHours();
-          minutes = directDate.getUTCMinutes();
-        }
+  if (!endDateTime && rawEndTime && dateStr) {
+    let year, month, day;
+    if (typeof dateStr === "string" && dateStr.includes("T")) {
+      const d = new Date(dateStr);
+      if (!isNaN(d.getTime())) {
+        year = d.getUTCFullYear();
+        month = d.getUTCMonth();
+        day = d.getUTCDate();
       }
-    } else if (typeof rawEndTime === "string") {
+    } else if (typeof dateStr === "string" && dateStr.includes("-")) {
+      const parts = dateStr.split("T")[0].split("-").map(Number);
+      if (parts.length >= 3) {
+        year = parts[0];
+        month = parts[1] - 1;
+        day = parts[2];
+      }
+    } else if (dateStr instanceof Date) {
+      year = dateStr.getUTCFullYear();
+      month = dateStr.getUTCMonth();
+      day = dateStr.getUTCDate();
+    }
+
+    let hours = 0, minutes = 0;
+    if (typeof rawEndTime === "string") {
       const timeParts = String(rawEndTime).match(/(\d+):(\d+)(?::(\d+))?\s*(AM|PM)?/i);
       if (timeParts) {
         let h = parseInt(timeParts[1], 10);
@@ -81,17 +78,14 @@ const checkDisputeEligibility = (booking) => {
     }
 
     if (year !== undefined && month !== undefined && day !== undefined) {
-      endDateTime = new Date(year, month, day, hours, minutes, 0, 0);
-    } else {
-      const direct = new Date(rawEndTime);
-      if (!isNaN(direct.getTime())) {
-        endDateTime = direct;
-      }
+      endDateTime = new Date(Date.UTC(year, month, day, hours, minutes, 0, 0));
     }
-  } else if (dateStr) {
-    const baseDate = new Date(dateStr);
-    if (!isNaN(baseDate.getTime())) {
-      endDateTime = baseDate;
+  }
+
+  if (!endDateTime && dateStr) {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      endDateTime = d;
     }
   }
 
@@ -577,6 +571,19 @@ export default function BookingDetails() {
                     </span>
                   </div>
 
+                  {/* Issue #14 — lounge tags */}
+                  {loungeTags.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {loungeTags.map((tag, i) => (
+                        <span
+                          key={i}
+                          className="px-3 py-1 rounded-full bg-[#E8E8FF] text-[#222246] text-[12px] font-medium"
+                        >
+                          {typeof tag === "object" ? tag.name || tag.label || JSON.stringify(tag) : tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   {/* <p className="mt-2 text-[13px] text-[#505050] break-all">
                     Booking ID: {booking?._id || id}
                   </p> */}
@@ -601,19 +608,7 @@ export default function BookingDetails() {
                     </div>
                   </div>
 
-                  {/* Issue #14 — lounge tags */}
-                  {loungeTags.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {loungeTags.map((tag, i) => (
-                        <span
-                          key={i}
-                          className="px-3 py-1 rounded-full bg-[#E8E8FF] text-[#222246] text-[12px] font-medium"
-                        >
-                          {typeof tag === "object" ? tag.name || tag.label || JSON.stringify(tag) : tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+
                 </div>
               </div>
 

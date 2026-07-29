@@ -6,6 +6,8 @@ import AuthSuccessModal from "../auth/AuthSuccessModal";
 import { FaQrcode } from "react-icons/fa6";
 import QRCode from "react-qr-code";
 import axios from "../../axios";
+import { useQueryClient } from "@tanstack/react-query";
+import { ErrorToast, SuccessToast } from "../global/Toaster";
 
 const ProfileDetail = ({ user, loading }) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -14,6 +16,58 @@ const ProfileDetail = ({ user, loading }) => {
   const [qrUrl, setQrUrl] = useState("");
   const [qrLoading, setQrLoading] = useState(false);
   const [qrError, setQrError] = useState("");
+  const [updateLoading, setUpdateLoading] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  // ── Update Profile ────────────────────────────────────────────
+  // Builds multipart/form-data and calls PATCH /users/own.
+  // `fields`  – plain object with firstName, lastName, birthday, etc.
+  // `imageFile` – File object (profilePicture) or null (no change)
+  const handleUpdateProfile = async (fields, imageFile) => {
+    setUpdateLoading(true);
+    try {
+      const form = new FormData();
+
+      if (fields.firstName !== undefined)
+        form.append("firstName", fields.firstName);
+      if (fields.lastName !== undefined)
+        form.append("lastName", fields.lastName);
+
+      // specialDates array (e.g. DOB)
+      if (Array.isArray(fields.specialDates)) {
+        fields.specialDates.forEach((item, idx) => {
+          form.append(`specialDates[${idx}][occasion]`, item.occasion);
+          form.append(`specialDates[${idx}][date]`, item.date);
+        });
+      }
+
+      // profilePicture: File → upload, null → clear, undefined → leave as-is
+      if (imageFile instanceof File) {
+        form.append("profilePicture", imageFile);
+      } else if (imageFile === null) {
+        form.append("profilePicture", ""); // signal backend to clear
+      }
+
+      await axios.patch("/users/own", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      SuccessToast("Profile updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+      setIsEditOpen(false);
+      setIsUpdated(true);
+    } catch (error) {
+      console.error("Update profile error:", error);
+      ErrorToast(
+        error?.response?.data?.message || "Failed to update profile."
+      );
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
 
   const handleOpenQrModal = async () => {
     setIsQrCode(true);
@@ -194,10 +248,8 @@ const ProfileDetail = ({ user, loading }) => {
       {isEditOpen && (
         <EditProfileModal
           initialData={user}
-          onClick={() => {
-            setIsEditOpen(false);
-            setIsUpdated(true);
-          }}
+          onSave={handleUpdateProfile}
+          isPending={updateLoading}
           onClose={() => setIsEditOpen(false)}
         />
       )}
