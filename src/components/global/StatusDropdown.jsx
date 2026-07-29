@@ -33,11 +33,11 @@ export default function StatusDropdown({ value, onChange, options }) {
         onClick={toggleDropdown}
         className="border border-[#CACACA] px-4 py-2 rounded-[15px] flex justify-between items-center cursor-pointer text-[#727272]"
       >
-        <span className="text-[14px]">{value || "All"}</span>
+        <span className="text-[14px] text-white">{value || "All"}</span>
         {isOpen ? (
-          <IoIosArrowUp size={26} color="#727272" />
+          <IoIosArrowUp size={22} color="white" />
         ) : (
-          <IoIosArrowDown size={26} color="#727272" />
+          <IoIosArrowDown size={22} color="white" />
         )}
       </div>
 

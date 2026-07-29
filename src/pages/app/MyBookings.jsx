@@ -30,7 +30,7 @@ const formatTimeLabel = (isoValue) => {
       minute: "2-digit",
       hour12: true,
     })
-    .replace(" ", "");
+    .replace(/\u202f/g, " ");
 };
 
 const formatDisplayLabel = (value) =>
@@ -151,7 +151,7 @@ const MyBooking = () => {
           minute: "2-digit",
           hour12: true,
         })
-        .replace(" ", "");
+        .replace(/\u202f/g, " ");
     };
 
     const startTimeStr = fmtTime(booking.startTime);

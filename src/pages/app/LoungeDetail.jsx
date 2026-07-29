@@ -477,6 +477,7 @@ const LoungeDetail = () => {
 
         {isEventConfirmed && (
           <EventConfirmedModal
+            loungeName={lounge?.name}
             onClick={handleEventConfirmed}
             onClose={() => setIsEventConfirmed(false)}
           />

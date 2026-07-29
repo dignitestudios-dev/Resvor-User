@@ -3,7 +3,7 @@
 import { useNavigate } from "react-router";
 import { successCheck } from "../../assets/export";
 
-const EventConfirmedModal = ({ onClick }) => {
+const EventConfirmedModal = ({ onClick, loungeName }) => {
   const navigate = useNavigate("");
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
@@ -17,7 +17,7 @@ const EventConfirmedModal = ({ onClick }) => {
               Reservation Confirmed!
             </p>
             <p className="xxl:text-[26px] text-[16px] text-[#565656] capitalize ">
-              Your Event request at Highbar Roooftop - NYC is confirmed. You’ll
+              Your Event request at {loungeName || "the lounge"} is confirmed. You’ll
               receive an email and in-app notification shortly. Thank You!
             </p>
           </div>
