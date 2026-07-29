@@ -36,7 +36,7 @@ const formatTimeLabel = (isoValue) => {
       minute: "2-digit",
       hour12: true,
     })
-    .replace(" ", "");
+    .replace(/\u202f/g, " ");
 };
 
 // ── History Table ─────────────────────────────────────────────────────────────

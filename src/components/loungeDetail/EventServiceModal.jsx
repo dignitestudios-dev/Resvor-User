@@ -82,18 +82,18 @@ const EventServiceModal = ({ onClose, onNext, loungeServices, eventServices, onC
                overflow-hidden p-[2px] mt-1.5"
               >
                 {/* SERVICES LIST */}
-                <div className="flex flex-wrap py-1 pl-4 w-[80%] text-[#FFFFFF] font-thin text-[14px]">
+                <div className="flex flex-wrap py-1 pl-4 w-[100%] text-[#FFFFFF] font-thin text-[14px]">
                   {serviceModalData.map((service) => {
                     const svcId = service.id || service._id;
                     return (
                       <span
                         key={svcId}
-                        className="bg-blue-950 rounded-full px-3 py-1 mr-2 mb-1 inline-flex items-center gap-2"
+                        className="bg-blue-950 rounded-md px-3 py-1 mr-2 mb-1 flex justify-between items-center gap-2"
                       >
                         {service.title} ({new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format((service.price || 0) / 100)})
                         {/* Small bin icon inside each tag */}
                         <button onClick={() => handleRemoveService(svcId)}>
-                          <img src={binIcon} className="w-4 h-4" alt="remove" />
+                          <img src={binIcon} className="w-5 h-5" alt="remove" />
                         </button>
                       </span>
                     );

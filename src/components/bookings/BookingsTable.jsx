@@ -47,18 +47,18 @@ const formatDate = (value) => {
 
 const formatTime = (value) => {
   if (!value || value === "-") return "-";
-  if (typeof value === "string" && (value.includes("AM") || value.includes("PM"))) return value;
+  let str = String(value);
   if (typeof value === "string" && (value.includes("T") || value.includes("Z"))) {
     const d = new Date(value);
     if (!Number.isNaN(d.getTime())) {
-      return d.toLocaleTimeString("en-US", {
+      str = d.toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
         hour12: true,
       });
     }
   }
-  return String(value);
+  return str.replace(/(\d)\s*(AM|PM)/gi, "$1 $2").replace(/\u202f/g, " ");
 };
 
 const BookingsTable = ({ users }) => {
