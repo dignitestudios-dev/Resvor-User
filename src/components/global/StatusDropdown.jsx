@@ -43,9 +43,8 @@ export default function StatusDropdown({ value, onChange, options }) {
 
       {/* Dropdown */}
       <div
-        className={`transition-all duration-300 overflow-hidden ${
-          isOpen ? "max-h-[200px] mt-2" : "max-h-0"
-        }`}
+        className={`transition-all duration-300 overflow-hidden ${isOpen ? "max-h-[200px] mt-2" : "max-h-0"
+          }`}
       >
         {isOpen && (
           <div className="border border-[#CACACA] rounded-[8px] max-h-[200px] overflow-y-auto text-[#727272] bg-white">
@@ -56,11 +55,10 @@ export default function StatusDropdown({ value, onChange, options }) {
                   onChange(option === "All" ? "" : option);
                   setIsOpen(false);
                 }}
-                className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${
-                  value === option || (option === "All" && value === "")
-                    ? "font-semibold text-black"
-                    : ""
-                }`}
+                className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${value === option || (option === "All" && value === "")
+                  ? "font-semibold text-black"
+                  : ""
+                  }`}
               >
                 {option}
               </div>
