@@ -3,8 +3,8 @@ import { ErrorToast } from "./components/global/Toaster";
 import Cookies from "js-cookie";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
-export const baseUrl = "https://api-staging.resvor.com"
-// export const baseUrl = "https://api-dev.resvor.com";
+// export const baseUrl = "https://api-staging.resvor.com"
+export const baseUrl = "https://api-dev.resvor.com";
 
 
 // Prevent showing multiple offline toasts

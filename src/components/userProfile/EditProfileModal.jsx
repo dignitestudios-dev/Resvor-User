@@ -8,10 +8,7 @@ import { mapImg, userImage } from "../../assets/export";
 import { useState, useRef } from "react";
 import TagsInputField from "../onBoarding/TagsInputField";
 import TagsModal from "../onBoarding/TagsModal";
-import { useUpdateProfile } from "../../hooks/queries/useQueries";
-import { useQueryClient } from "@tanstack/react-query";
-
-import { ErrorToast, SuccessToast } from "../global/Toaster";
+import { ErrorToast } from "../global/Toaster";
 
 const validateImageResolution = (file) => {
   return new Promise((resolve) => {
@@ -37,20 +34,15 @@ const validateImageResolution = (file) => {
 
 const EditProfileModal = ({
   onClose,
-  onClick,
+  onSave,
+  isPending = false,
   initialData = {},
 }) => {
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [dateModalData, setDateModalData] = useState("");
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
-
-  const queryClient = useQueryClient();
-
-  const { mutate: updateProfile, isPending } =
-    useUpdateProfile();
 
 
   const dobData = initialData?.specialDates?.find(
@@ -69,10 +61,27 @@ const EditProfileModal = ({
 
     location: initialData?.location || "",
 
-    birthday: dobData?.date || "",
+    // ISO date string for DOB, e.g. "1995-06-15"
+    birthday: dobData?.date ? new Date(dobData.date).toISOString().split("T")[0] : "",
+
+    // Extra special dates from TagsModal (non-DOB)
+    specialDates: [],
   });
 
-
+  // Pre-fill initialData for TagsModal so existing DOB shows up
+  const tagsModalInitialData = (() => {
+    if (!formData.birthday) return undefined;
+    const d = new Date(formData.birthday);
+    if (isNaN(d.getTime())) return undefined;
+    return {
+      dobDate: {
+        day: String(d.getDate()),
+        month: String(d.getMonth() + 1),
+        year: String(d.getFullYear()),
+      },
+      specialDates: formData.specialDates ?? [],
+    };
+  })();
 
   const closeModal = () => {
     setModalIsOpen(false);
@@ -109,81 +118,58 @@ const EditProfileModal = ({
     }
   };
 
-
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Called by TagsModal when the user clicks "Continue"
+  // payload: { dobDate: { day, month, year }, specialDates: [...] }
+  const handleTagsFieldValue = (field, value) => {
+    if (field === "specialDatesData") {
+      const { dobDate, specialDates } = value ?? {};
 
+      // Parse DOB back to an ISO date string
+      if (dobDate?.day && dobDate?.month) {
+        const year = dobDate.year || new Date().getFullYear();
+        const iso = `${year}-${String(dobDate.month).padStart(2, "0")}-${String(dobDate.day).padStart(2, "0")}`;
+        setFormData((prev) => ({
+          ...prev,
+          birthday: iso,
+          specialDates: specialDates ?? [],
+        }));
+      }
+
+      closeModal();
+    }
+  };
 
   const handleSave = () => {
     const nameParts = formData.name.trim().split(" ");
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
 
-    let payload;
-
-    if (selectedImageFile instanceof File) {
-      payload = new FormData();
-      payload.append("firstName", firstName);
-      payload.append("lastName", lastName);
-
-      if (formData.birthday) {
-        payload.append("specialDates[0][occasion]", "DOB");
-        payload.append("specialDates[0][date]", formData.birthday);
-      }
-
-      // payload.append("profilePicture", selectedImageFile);
-      payload.append("profileImage", selectedImageFile);
-    } else {
-      payload = {
-        firstName,
-        lastName,
-        specialDates: formData.birthday
-          ? [
-            {
-              occasion: "DOB",
-              date: formData.birthday,
-            },
-          ]
-          : [],
-      };
+    // Build specialDates array: DOB first, then any extras
+    const specialDates = [];
+    if (formData.birthday) {
+      specialDates.push({ occasion: "DOB", date: formData.birthday });
+    }
+    if (Array.isArray(formData.specialDates)) {
+      formData.specialDates.forEach((d) => {
+        if (d.title && d.day && d.month) {
+          const year = d.year || new Date().getFullYear();
+          specialDates.push({
+            occasion: d.title,
+            date: `${year}-${String(d.month).padStart(2, "0")}-${String(d.day).padStart(2, "0")}`,
+          });
+        }
+      });
     }
 
+    const fields = { firstName, lastName, specialDates };
 
-    updateProfile(payload, {
-
-      onSuccess: () => {
-        SuccessToast("Profile updated successfully!");
-        queryClient.invalidateQueries({
-          queryKey: ["profile"],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["auth-me"],
-        });
-        onClick?.();
-        onClose();
-      },
-
-
-      onError: (error) => {
-
-        console.log(
-          "Update profile error:",
-          error
-        );
-        ErrorToast(error?.response?.data?.message || "Failed to update profile.");
-
-      },
-
-    });
-
+    // Pass structured fields + raw image file up to ProfileDetail
+    onSave?.(fields, selectedImageFile ?? undefined);
   };
 
 
@@ -463,30 +449,13 @@ const EditProfileModal = ({
 
 
       {modalIsOpen && (
-
         <TagsModal
           isOpen={modalIsOpen}
           onClose={closeModal}
-          setFieldValue={(field, value) => {
-            setFormData((prev) => ({
-              ...prev,
-              [field]: value,
-            }));
-          }}
-          setDateModalData={(data) => {
-            setDateModalData(data);
-
-            if (data?.dobDate) {
-              const { day, month, year } = data.dobDate;
-
-              setFormData((prev) => ({
-                ...prev,
-                birthday: `${year}-${month}-${day}`,
-              }));
-            }
-          }}
+          initialData={tagsModalInitialData}
+          setFieldValue={handleTagsFieldValue}
+          setFieldError={() => { }} // no-op – errors shown inside TagsModal
         />
-
       )}
 
 

@@ -101,7 +101,7 @@ const EventBookingsTable = ({ events }) => {
                   colSpan={9}
                   className="text-center py-20 text-[#727272] text-[15px] font-medium"
                 >
-                  No records found.
+                  No Booking Found.
                 </td>
               </tr>
             )}
@@ -147,7 +147,7 @@ const EventBookingsTable = ({ events }) => {
       <div className="space-y-4 md:hidden">
         {events.length === 0 ? (
           <div className="text-center py-10 text-[#727272] text-[15px] font-medium">
-            No records found.
+            No Booking Found.
           </div>
         ) : (
           events.map((event, index) => (

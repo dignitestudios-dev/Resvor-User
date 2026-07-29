@@ -61,7 +61,7 @@ const FlyerHistoryTable = ({
   if (!rows.length) {
     return (
       <div className="flex justify-center items-center py-20 text-gray-400 font-medium">
-        No history found.
+        No History Found
       </div>
     );
   }
