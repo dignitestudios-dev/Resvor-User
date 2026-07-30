@@ -85,8 +85,13 @@ const createBooking = async (payload) => {
 };
 
 export const useCreateBooking = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: createBooking,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+    },
   });
 };
 
@@ -96,8 +101,13 @@ const createEvent = async (payload) => {
 };
 
 export const useCreateEvent = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: createEvent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
   });
 };
 

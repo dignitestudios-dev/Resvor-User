@@ -1,10 +1,13 @@
 /* eslint-disable react/prop-types */
 
 import { RxCross2 } from "react-icons/rx";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCreateEvent } from "../../hooks/queries/useQueries";
 import { SuccessToast, ErrorToast } from "../global/Toaster";
+import axios from "../../axios";
 
 const EventSummaryModal = ({ onClose, onClick, apiPayload, services }) => {
+  const queryClient = useQueryClient();
   const { mutate: createEvent, isPending } = useCreateEvent();
 
   const handlePayNow = () => {
@@ -14,7 +17,13 @@ const EventSummaryModal = ({ onClose, onClick, apiPayload, services }) => {
     }
 
     createEvent(apiPayload, {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
+        try {
+          await axios.get("/events?page=1&limit=10");
+        } catch (error) {
+          console.error("Failed to fetch events:", error);
+        }
+        queryClient.invalidateQueries({ queryKey: ["events"] });
         SuccessToast("Event request created successfully!");
         if (onClick) onClick(data);
       },

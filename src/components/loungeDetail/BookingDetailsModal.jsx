@@ -1,8 +1,10 @@
 /* eslint-disable react/prop-types */
+import { useQueryClient } from "@tanstack/react-query";
 import { useCreateBooking } from "../../hooks/queries/useQueries";
 import { RxCross2 } from "react-icons/rx";
 import { ErrorToast, SuccessToast } from "../global/Toaster";
 import Button from "../global/Button";
+import axios from "../../axios";
 
 const BookingDetailsModal = ({
   onClose,
@@ -11,6 +13,7 @@ const BookingDetailsModal = ({
   onClickBack,
   bookingServiceData,
 }) => {
+  const queryClient = useQueryClient();
   const { mutate: createBooking, isPending } = useCreateBooking();
 
   const bookingOverview = bookingData?.displayData || bookingData || {};
@@ -90,7 +93,13 @@ const BookingDetailsModal = ({
     }
 
     createBooking(finalPayload, {
-      onSuccess: (response) => {
+      onSuccess: async (response) => {
+        try {
+          await axios.get("/bookings?page=1&limit=10");
+        } catch (error) {
+          console.error("Failed to fetch bookings:", error);
+        }
+        queryClient.invalidateQueries({ queryKey: ["bookings"] });
         SuccessToast(response?.message || "Booking created successfully.");
         if (onNext) {
           onNext(response);
