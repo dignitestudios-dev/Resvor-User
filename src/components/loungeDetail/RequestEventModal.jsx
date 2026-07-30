@@ -469,14 +469,15 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
           <div className="w-full flex items-start gap-2 my-2 px-1">
             <div className="w-full">
               <InputField
-                label="Budget"
+                label="Budget ($)"
                 text="budget"
-                placeholder="Add here"
+                placeholder="0.00"
                 type="text"
                 id={`budget`}
                 name={`budget`}
                 maxLength={5}
                 value={values.budget}
+                prefix="$"
                 onChange={handleBudgetChange}
                 onBlur={handleBlur}
                 error={errors.budget}

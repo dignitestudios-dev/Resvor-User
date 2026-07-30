@@ -70,15 +70,8 @@ const Settings = () => {
   };
 
   // Delete account flow handlers
-  const handleDeleteAccountClick = () => {
-    setDeleteAccountStep("confirmDelete");
-  };
-
-  const handleDeleteContinue = () => {
-    setDeleteAccountStep("verifyOtp");
-  };
-
-  const handleDeleteOtpVerified = () => {
+  const handleDeleteSuccess = () => {
+    setKey("");
     setDeleteAccountStep("success");
   };
 
@@ -187,24 +180,6 @@ const Settings = () => {
       )}
 
       {/* Delete Account Flow */}
-      {deleteAccountStep === "confirmDelete" && (
-        <DeleteAccountModal
-          onClose={() => {
-            setDeleteAccountStep(null);
-            setKey("");
-          }}
-          onNext={handleDeleteContinue}
-        />
-      )}
-      {deleteAccountStep === "verifyOtp" && (
-        <PasswordOtpModal
-          onClose={() => {
-            setDeleteAccountStep(null);
-            setKey("");
-          }}
-          onNext={handleDeleteOtpVerified}
-        />
-      )}
       {deleteAccountStep === "success" && (
         <AuthSuccessModal
           isOpen={deleteAccountStep === "success"}
@@ -235,7 +210,7 @@ const Settings = () => {
           : key === "delete" && deleteAccountStep === null ? (
             <DeleteAccountModal
               onClose={() => setKey("")}
-              onNext={handleDeleteAccountClick}
+              onSuccess={handleDeleteSuccess}
             />
           ) : key === "terms" ? (
             <TermsModal onClose={() => setKey("")} />
