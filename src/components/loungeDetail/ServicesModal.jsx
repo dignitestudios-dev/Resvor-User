@@ -5,6 +5,15 @@ import { RxCross2 } from "react-icons/rx";
 import { Check } from "lucide-react";
 import Button from "../global/Button";
 
+const getInitials = (name) => {
+  if (!name) return "";
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  return name.trim().slice(0, 2).toUpperCase();
+};
+
 const ServicesModal = ({
   isOpen,
   onClose,
@@ -59,6 +68,9 @@ const ServicesModal = ({
                 (service) => (service.id || service._id) === itemId
               );
 
+              const imageUrl =
+                item.images?.[0]?.location || item.images?.[1]?.location;
+
               return (
                 <div
                   key={itemId}
@@ -66,15 +78,17 @@ const ServicesModal = ({
                 >
                   {/* Image */}
                   <div className="relative">
-                    <img
-                      src={
-                        item.images?.[0]?.location ||
-                        item.images?.[1]?.location ||
-                        ""
-                      }
-                      alt={item.name}
-                      className="h-56 w-full object-cover"
-                    />
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={item.name}
+                        className="h-56 w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-56 w-full bg-[#747691] flex items-center justify-center text-white text-4xl font-bold tracking-wider select-none">
+                        {getInitials(item?.name)}
+                      </div>
+                    )}
 
                     {/* Price Badge */}
                     <div className="absolute left-4 top-4 rounded-full bg-white/95 px-4 py-2 text-sm font-bold text-slate-900 shadow-lg">

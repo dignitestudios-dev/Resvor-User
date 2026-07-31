@@ -69,7 +69,7 @@ const AddGuestModal = ({ onClose }) => {
         },
         onError: (error) => {
           console.log("Add guest failed:", error);
-          ErrorToast("Failed to add guest.");
+          ErrorToast(error?.response?.data?.message || error?.message);
         },
       });
     },

@@ -201,28 +201,18 @@ const formatCurrency = (amount, currency = "usd") => {
 
 const getStatusClasses = (status) => {
   const s = String(status || "").toLowerCase().replace(/_/g, " ");
-  if (s === "confirmed" || s === "approved" || s === "upcoming") {
-    return "bg-emerald-100 text-emerald-700";
-  }
-  if (s === "pending" || s === "approval") {
-    return "bg-amber-100 text-amber-700";
-  }
-  if (s === "awaiting payment" || s === "awaiting_payment") {
-    return "bg-purple-100 text-purple-700";
-  }
-  if (s === "completed") {
-    return "bg-blue-100 text-blue-700";
-  }
-  if (s === "rejected" || s === "cancelled") {
-    return "bg-rose-100 text-rose-700";
-  }
-  if (s === "expired") {
-    return "bg-orange-100 text-orange-700";
-  }
-  if (s === "refunded") {
-    return "bg-teal-100 text-teal-700";
-  }
-  return "bg-gray-100 text-gray-700";
+  if (s === "completed") return { backgroundColor: "#DCFCE7", color: "#22C55E" };
+  if (s === "confirmed") return { backgroundColor: "#DBEAFE", color: "#3B82F6" };
+  if (s === "expired") return { backgroundColor: "#F3F4F6", color: "#6B7280" };
+  if (s === "rejected") return { backgroundColor: "#FEE2E2", color: "#EF4444" };
+  if (s === "approved") return { backgroundColor: "#D1FAE5", color: "#10B981" };
+  if (s === "published") return { backgroundColor: "#E0E7FF", color: "#6366F1" };
+  if (s === "cancelled") return { backgroundColor: "#FEE2E2", color: "#DC2626" };
+  if (s === "upcoming") return { backgroundColor: "#EDE9FE", color: "#8B5CF6" };
+  if (s === "pending" || s === "approval") return { backgroundColor: "#FEF3C7", color: "#F59E0B" };
+  if (s === "awaiting payment" || s === "awaiting_payment") return { backgroundColor: "#EDE9FE", color: "#8B5CF6" };
+  if (s === "refunded") return { backgroundColor: "#CCFBF1", color: "#0D9488" };
+  return { backgroundColor: "#F3F4F6", color: "#6B7280" };
 };
 
 export default function ReservationDetails() {
@@ -244,6 +234,7 @@ export default function ReservationDetails() {
   } = useEventDetails(id);
 
   const event = eventResponse?.data;
+  console.log("🚀 ~ ReservationDetails ~ event:", event)
   const { mutate: cancelEvent, isPending: isCancelling } = useCancelEvent();
   const { mutate: createDispute, isPending: isFilingDispute } = useCreateDispute();
 
@@ -282,12 +273,11 @@ export default function ReservationDetails() {
     "N/A";
 
   const eventInstructions =
-    event?.description ||
-    event?.instructions ||
-    event?.additionalInstructions ||
-    event?.specialInstructions ||
-    event?.notes ||
+    event?.specialRequest ||
     "No instructions provided";
+  const eventDescription =
+    event?.description ||
+    "No description provided";
 
   const eventDate = formatDate(event?.startDateTime || event?.date);
   const startTime = formatTime(event?.startDateTime || event?.startTime);
@@ -306,9 +296,7 @@ export default function ReservationDetails() {
     "expired",
     "refunded",
   ].includes(currentStatus);
-  const isCancelable =
-    event &&
-    !["cancelled", "completed", "rejected", "expired", "refunded"].includes(currentStatus);
+  const isCancelable = currentStatus === "confirmed";
 
   const handleCancelEvent = () => {
     if (!isCancelable || isCancelling) return;
@@ -464,21 +452,16 @@ export default function ReservationDetails() {
                   View Reason
                 </button>
               )} */}
-              <button
-                type="button"
-                onClick={handleCancelEvent}
-                disabled={!isCancelable || isCancelling}
-                className={`px-8 py-3 rounded-[12px] text-[12px] font-semibold border transition ${isCancelable && !isCancelling
-                  ? "border-rose-200 bg-white text-rose-600 hover:bg-rose-50"
-                  : "border-gray-200 bg-white text-gray-400 cursor-not-allowed"
-                  }`}
-              >
-                {isCancelling
-                  ? "Cancelling..."
-                  : isCancelable
-                    ? "Cancel Event"
-                    : eventStatus}
-              </button>
+              {currentStatus === "confirmed" && (
+                <button
+                  type="button"
+                  onClick={handleCancelEvent}
+                  disabled={isCancelling}
+                  className="px-8 py-3 rounded-[12px] text-[12px] font-semibold border border-rose-200 bg-white text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                >
+                  {isCancelling ? "Cancelling..." : "Cancel Event"}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -508,9 +491,8 @@ export default function ReservationDetails() {
                       {event?.title || "-"}
                     </h3>
                     <span
-                      className={`px-3 py-1 rounded-full text-[12px] font-semibold capitalize ${getStatusClasses(
-                        event?.status
-                      )}`}
+                      className="px-3 py-1 rounded-full text-[12px] font-semibold capitalize"
+                      style={getStatusClasses(event?.status)}
                     >
                       {eventStatus}
                     </span>
@@ -540,7 +522,9 @@ export default function ReservationDetails() {
                       {event?.loungeId?.name || "-"}
                     </p>
                   </div>
-
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[14px] break-all pt-1">
+                    <p>{eventDescription}</p>
+                  </div>
                   <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-[14px]">
                     <div>
                       <p className="text-[#727272]">Organizer</p>
@@ -601,7 +585,7 @@ export default function ReservationDetails() {
                 </div> */}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-[#0000001A] text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-[#0000001A] text-sm">
                 <div className="min-w-0">
                   <p className="text-black font-semibold mb-2">Budget</p>
                   <p className="text-gray-600 text-sm font-semibold break-words">
@@ -614,12 +598,12 @@ export default function ReservationDetails() {
                     {event?.preferredMusic || "N/A"}
                   </p>
                 </div>
-                <div className="min-w-0">
+                {/* <div className="min-w-0">
                   <p className="text-black font-semibold mb-2">Special Request</p>
                   <p className="text-gray-600 text-sm font-semibold break-words whitespace-pre-wrap">
                     {event?.specialRequest || "None"}
                   </p>
-                </div>
+                </div> */}
                 <div className="min-w-0">
                   <p className="text-black font-semibold mb-2">
                     Ticket at Door{" "}

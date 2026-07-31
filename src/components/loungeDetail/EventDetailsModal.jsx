@@ -27,38 +27,38 @@ const EventDetailsModal = ({
 
 
   const formatTime = (time) => {
-  if (!time) return "-";
+    if (!time) return "-";
 
-  // Already in 12-hour format
-  if (typeof time === "string" && /AM|PM/i.test(time)) {
+    // Already in 12-hour format
+    if (typeof time === "string" && /AM|PM/i.test(time)) {
+      return time;
+    }
+
+    // HH:mm or HH:mm:ss
+    if (typeof time === "string" && time.includes(":") && !time.includes("T")) {
+      const [hours, minutes] = time.split(":");
+      const date = new Date();
+      date.setHours(Number(hours), Number(minutes), 0, 0);
+
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+
+    // ISO date
+    const date = new Date(time);
+    if (!Number.isNaN(date.getTime())) {
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+
     return time;
-  }
-
-  // HH:mm or HH:mm:ss
-  if (typeof time === "string" && time.includes(":") && !time.includes("T")) {
-    const [hours, minutes] = time.split(":");
-    const date = new Date();
-    date.setHours(Number(hours), Number(minutes), 0, 0);
-
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  }
-
-  // ISO date
-  const date = new Date(time);
-  if (!Number.isNaN(date.getTime())) {
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  }
-
-  return time;
-};
+  };
 
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
@@ -92,9 +92,9 @@ const EventDetailsModal = ({
             </div>
             <div className="flex justify-between gap-4 items-start">
               <span className="font-medium text-[#727272] shrink-0">Time</span>
-<span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">
-  {formatTime(startTime)} – {formatTime(endTime)}
-</span>          </div>
+              <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">
+                {formatTime(startTime)} – {formatTime(endTime)}
+              </span>          </div>
             <div className="flex justify-between gap-4 items-start">
               <span className="font-medium text-[#727272] shrink-0">Name</span>
               <span className="text-[#000000] font-semibold text-right break-all max-w-[65%]">{name}</span>
@@ -149,15 +149,15 @@ const EventDetailsModal = ({
                 {serviceData?.selectedPackage?.length > 0 ? (
                   serviceData.selectedPackage.map((item) => (
                     <p
-  key={item.id}
-  className="text-gray-700 text-sm break-words max-w-[150px]"
->
-  {item.title} -{" "}
-  {new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format((item.price || 0) / 100)}
-</p>
+                      key={item.id}
+                      className="text-gray-700 text-sm break-words max-w-[150px]"
+                    >
+                      {item.title} -{" "}
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      }).format((item.price || 0) / 100)}
+                    </p>
                   ))
                 ) : (
                   <p className="text-gray-400 text-xs">None</p>

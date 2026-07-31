@@ -284,11 +284,6 @@ export const requestEventSchema = Yup.object({
     .test("no-html", "HTML or script content is not allowed.", (value) =>
       value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true,
     ),
-  specialRequest: Yup.string()
-    .max(30, "Special request cannot exceed 30 characters.")
-    .test("no-html", "HTML or script content is not allowed.", (value) =>
-      value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true,
-    ),
   budget: Yup.string()
     .required("Budget is required")
     .max(8, "Budget cannot exceed 8 digits.")

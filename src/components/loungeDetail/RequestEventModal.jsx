@@ -77,7 +77,6 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
       phone: eventData?.phone || "",
       guestCount: eventData?.guestCount ? String(eventData.guestCount) : "",
       preferredMusic: eventData?.preferredMusic === "None" ? "" : eventData?.preferredMusic || "",
-      specialRequest: eventData?.specialRequest === "None" ? "" : eventData?.specialRequest || "",
       budget: eventData?.budget ? String(eventData.budget) : "",
       ticketAtDoor: typeof eventData?.ticketAtDoor === "boolean" ? eventData.ticketAtDoor : false,
     },
@@ -130,7 +129,6 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
         phone: phoneToE164(values.phone),
         guestCount: Number(values.guestCount),
         preferredMusic: values.preferredMusic || "None",
-        specialRequest: values.specialRequest || "None",
         budget: Number(values.budget),
         ticketAtDoor: values.ticketAtDoor,
         instructions: values.instructions || "",
@@ -432,7 +430,7 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
               />
             </div>
           </div>
-          <div className="w-full flex items-start gap-2 my-2 px-1">
+          <div className="w-full my-2 px-1">
             <div className="w-full">
               <InputField
                 label="Preferred Music Genre"
@@ -447,22 +445,6 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
                 onBlur={handleBlur}
                 error={errors.preferredMusic}
                 touched={touched.preferredMusic}
-              />
-            </div>
-            <div className="w-full">
-              <InputField
-                label="Special Requests"
-                text="special"
-                placeholder="Add here"
-                type="text"
-                id={`special`}
-                name={`specialRequest`}
-                maxLength={30}
-                value={values.specialRequest}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={errors.specialRequest}
-                touched={touched.specialRequest}
               />
             </div>
           </div>

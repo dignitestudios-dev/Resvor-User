@@ -35,14 +35,6 @@ const BookingServiceModal = ({
     bookingServiceData?.instruction || ""
   );
 
-  console.log("BookingServiceModal props:", { loungeId, bookingData });
-  console.log("Fetching tables with:", {
-    loungeId,
-    date: bookingData?.apiPayload?.bookingDate,
-    startTime: bookingData?.apiPayload?.startTime,
-    endTime: bookingData?.apiPayload?.endTime
-  });
-
   const { data: tablesResponse, isLoading: isLoadingTables } = useAvailableTables(
     loungeId,
     bookingData?.apiPayload?.bookingDate,

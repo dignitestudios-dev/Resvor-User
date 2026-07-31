@@ -127,7 +127,7 @@ const LoungeServicesPackages = ({ lounge }) => {
   }
 
   const services = lounge?.services || [];
-  console.log("🚀 ~ LoungeServicesPackages ~ services:", services)
+
   const currency = lounge?.pricing?.currency?.toUpperCase() || "USD";
 
   if (!services.length) {

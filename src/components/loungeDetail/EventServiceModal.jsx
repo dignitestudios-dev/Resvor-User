@@ -17,9 +17,7 @@ const EventServiceModal = ({ onClose, onNext, loungeServices, eventServices, onC
     eventServices?.selectedSeating || []
   );
 
-  const [instruction, setInstruction] = useState(
-    eventServices?.instruction || ""
-  );
+  const [instruction, setInstruction] = useState("");
   const handleSelectSeating = (option) => {
     const name = option?.name || option;
 
@@ -42,6 +40,7 @@ const EventServiceModal = ({ onClose, onNext, loungeServices, eventServices, onC
       selectedSeating: selectedSeating,
       selectedPackage: serviceModalData,
       instruction: instruction,
+      specialRequest: instruction,
     };
     onNext(eventData);
   };

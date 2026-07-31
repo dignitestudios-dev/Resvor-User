@@ -30,30 +30,27 @@ const formatTime = (value) => {
   return str.replace(/(\d)\s*(AM|PM)/gi, "$1 $2").replace(/\u202f/g, " ");
 };
 
-const statusClasses = (status) => {
+const statusStyle = (status) => {
   const s = String(status || "").toLowerCase().replace(/_/g, " ");
-  if (s === "confirmed" || s === "approved" || s === "upcoming") {
-    return "bg-emerald-100 text-emerald-700";
-  }
-  if (s === "pending" || s === "approval") {
-    return "bg-amber-100 text-amber-700";
-  }
-  if (s === "awaiting payment" || s === "awaiting_payment") {
-    return "bg-purple-100 text-purple-700";
-  }
-  if (s === "completed") {
-    return "bg-blue-100 text-blue-700";
-  }
-  if (s === "rejected" || s === "cancelled") {
-    return "bg-rose-100 text-rose-700";
-  }
-  if (s === "expired") {
-    return "bg-orange-100 text-orange-700";
-  }
-  if (s === "refunded") {
-    return "bg-teal-100 text-teal-700";
-  }
-  return "bg-gray-100 text-gray-600";
+  if (s === "completed") return { backgroundColor: "#DCFCE7", color: "#22C55E" };
+  if (s === "confirmed") return { backgroundColor: "#DBEAFE", color: "#3B82F6" };
+  if (s === "expired") return { backgroundColor: "#F3F4F6", color: "#6B7280" };
+  if (s === "rejected") return { backgroundColor: "#FEE2E2", color: "#EF4444" };
+  if (s === "approved") return { backgroundColor: "#D1FAE5", color: "#10B981" };
+  if (s === "published") return { backgroundColor: "#E0E7FF", color: "#6366F1" };
+  if (s === "cancelled") return { backgroundColor: "#FEE2E2", color: "#DC2626" };
+  if (s === "upcoming") return { backgroundColor: "#EDE9FE", color: "#8B5CF6" };
+  if (s === "pending" || s === "approval") return { backgroundColor: "#FEF3C7", color: "#F59E0B" };
+  if (s === "awaiting payment" || s === "awaiting_payment") return { backgroundColor: "#EDE9FE", color: "#8B5CF6" };
+  if (s === "refunded") return { backgroundColor: "#CCFBF1", color: "#0D9488" };
+  return { backgroundColor: "#F3F4F6", color: "#6B7280" };
+};
+
+const formatBudget = (value) => {
+  if (value === undefined || value === null || value === "" || value === "-") return "-";
+  const num = Number(String(value).replace(/[^0-9.]/g, ""));
+  if (Number.isNaN(num)) return String(value);
+  return `$${num.toFixed(2)}`;
 };
 
 const EventBookingsTable = ({ events }) => {
@@ -118,12 +115,11 @@ const EventBookingsTable = ({ events }) => {
                 <td className="px-4 py-6">{formatTime(event.time)}</td>
                 <td className="px-4 py-6">{event.guestLimit}</td>
                 <td className="px-4 py-6">{event.eventType}</td>
-                <td className="px-4 py-6">{event.budget}</td>
+                <td className="px-4 py-6">{formatBudget(event.budget)}</td>
                 <td className="px-4 py-6">
                   <span
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize ${statusClasses(
-                      event.status
-                    )}`}
+                    className="px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize"
+                    style={statusStyle(event.status)}
                   >
                     {event.status}
                   </span>
@@ -187,14 +183,13 @@ const EventBookingsTable = ({ events }) => {
               </div>
               <div className="flex justify-between mb-2">
                 <span className="text-gray-500 text-sm font-medium">Budget</span>
-                <span className="text-gray-800">{event.budget}</span>
+                <span className="text-gray-800">{formatBudget(event.budget)}</span>
               </div>
               <div className="flex justify-between mb-2">
                 <span className="text-gray-500 text-sm font-medium">Status</span>
                 <span
-                  className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold capitalize ${statusClasses(
-                    event.status
-                  )}`}
+                  className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold capitalize"
+                  style={statusStyle(event.status)}
                 >
                   {event.status}
                 </span>

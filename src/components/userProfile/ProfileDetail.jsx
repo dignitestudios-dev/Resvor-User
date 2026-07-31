@@ -118,13 +118,37 @@ const ProfileDetail = ({ user, loading }) => {
     }
   };
 
-  const formattedBirthday = user?.specialDates?.find(
-    (item) => item.occasion === "DOB",
-  );
-
-  const birthday = formattedBirthday
-    ? new Date(formattedBirthday.date).toLocaleDateString()
-    : "N/A";
+  const formatDateDisplay = (dateStr) => {
+    if (!dateStr) return "";
+    const dStr = String(dateStr).trim();
+    const cleanDateStr = dStr.includes("T") ? dStr.split("T")[0] : dStr;
+    const parts = cleanDateStr.split(/[-/]/);
+    if (parts.length === 3) {
+      let year, month, day;
+      if (parts[0].length === 4) {
+        [year, month, day] = parts;
+      } else {
+        [month, day, year] = parts;
+      }
+      const months = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+      ];
+      const mIdx = parseInt(month, 10) - 1;
+      if (mIdx >= 0 && mIdx < 12) {
+        return `${months[mIdx]} ${parseInt(day, 10)}${year ? `, ${year}` : ""}`;
+      }
+    }
+    const dateObj = new Date(dateStr);
+    if (!isNaN(dateObj.getTime())) {
+      return dateObj.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    }
+    return dateStr;
+  };
 
   if (loading) {
     return (
@@ -171,7 +195,7 @@ const ProfileDetail = ({ user, loading }) => {
           <p className="text-[16px] text-[#252525]">{user?.email || "N/A"}</p>
         </div>
 
-        <div className="bg-white rounded-[12px] p-4">
+        <div className="bg-[#FFFFFF] rounded-[12px] p-4">
           <p className="text-[14px] font-[500] text-[#9E9E9E]">Phone Number</p>
 
           <p className="text-[16px] text-[#252525]">
@@ -186,12 +210,27 @@ const ProfileDetail = ({ user, loading }) => {
         <p className="text-[16px] text-[#252525]">N/A</p>
       </div> */}
 
-      <div className="bg-white rounded-[12px] p-4">
+      <div className="bg-white rounded-[12px] p-4 space-y-2">
         <p className="text-[14px] font-[500] text-[#9E9E9E]">
           Birthday and Special Dates
         </p>
 
-        <p className="text-[16px] text-[#252525]">{birthday}</p>
+        {Array.isArray(user?.specialDates) && user.specialDates.length > 0 ? (
+          <div className="space-y-1.5">
+            {user.specialDates.map((item, index) => (
+              <div key={index} className="flex items-center justify-between gap-4 text-[16px] text-[#252525]">
+                <span className="font-medium text-[#565656] break-all break-words max-w-[65%]">
+                  {item.occasion === "DOB" ? "Birthday" : item.occasion}
+                </span>
+                <span className="font-[600] shrink-0">
+                  {formatDateDisplay(item.date)}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[16px] text-[#252525]">N/A</p>
+        )}
       </div>
 
       <div

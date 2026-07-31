@@ -447,11 +447,11 @@ const LoungeDetail = () => {
                 loungeId: id,
                 title: eventData?.title || eventData?.eventName || "",
                 eventType: normalizeEventType(eventData?.eventType),
+                description: eventData?.description || "",
                 guestCount: Number(eventData?.guestCount),
                 budget: Number(eventData?.budget),
                 preferredMusic: eventData?.preferredMusic,
                 specialRequest:
-                  eventData?.specialRequest ||
                   eventServices?.instruction ||
                   "",
                 startDateTime:
@@ -466,6 +466,9 @@ const LoungeDetail = () => {
                 servicePackageIds: (eventServices?.selectedPackage || []).map(
                   (pkg) => pkg.id || pkg._id
                 ),
+                guestName: eventData?.name || "",
+                guestEmail: eventData?.email || "",
+                guestPhone: eventData?.phone || "",
               }}
             services={eventServices}
             onClick={handleEventSummary}
