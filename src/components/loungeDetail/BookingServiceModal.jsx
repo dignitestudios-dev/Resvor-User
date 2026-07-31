@@ -164,9 +164,9 @@ const BookingServiceModal = ({
                     return (
                       <span
                         key={svcId}
-                        className="bg-blue-950 rounded-full px-3 py-1 mr-2 mb-1 inline-flex items-center gap-2"
+                        className="bg-blue-950 rounded-lg px-3 py-1 mr-2 mb-1 inline-flex items-center gap-2 "
                       >
-                        {service.title} ({new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format((Number(service.price) || 0) / 100)})
+                        {service.title.split("").slice(0, 20).join("")}{service.title.length > 20 && "..."} ({new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format((Number(service.price) || 0) / 100)})
                         {/* Small bin icon inside each tag */}
                         <button onClick={() => handleRemoveService(svcId)}>
                           <img src={binIcon} className="w-4 h-4" alt="remove" />

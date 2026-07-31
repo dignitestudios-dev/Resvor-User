@@ -112,12 +112,22 @@
 
 import Button from "../global/Button";
 
+const getInitials = (name) => {
+  if (!name) return "";
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  return name.trim().slice(0, 2).toUpperCase();
+};
+
 const LoungeServicesPackages = ({ lounge }) => {
   if (!lounge) {
     return <p>Loading services...</p>;
   }
 
   const services = lounge?.services || [];
+  console.log("🚀 ~ LoungeServicesPackages ~ services:", services)
   const currency = lounge?.pricing?.currency?.toUpperCase() || "USD";
 
   if (!services.length) {
@@ -141,29 +151,32 @@ const LoungeServicesPackages = ({ lounge }) => {
         {services.map((service) => (
           <div key={service._id} className="rounded-[16px] p-3 bg-[#f6f5f5]">
             <div>
-              <img
-                src={
-                  service?.images?.[0]?.location ||
-                  "https://via.placeholder.com/300"
-                }
-                className="rounded-[12px] w-full h-[200px] object-cover"
-                alt={service?.name}
-              />
+              {service?.images?.[0]?.location ? (
+                <img
+                  src={service.images[0].location}
+                  className="rounded-[12px] w-full h-[200px] object-cover"
+                  alt={service?.name}
+                />
+              ) : (
+                <div className="rounded-[12px] w-full h-[200px] bg-[#747691] flex items-center justify-center text-white text-4xl font-bold tracking-wider select-none">
+                  {getInitials(service?.name)}
+                </div>
+              )}
             </div>
 
             <div className="my-2">
-              <p className="text-[16px] text-blue-950 font-[600]">
+              <p className="text-[16px] text-blue-950 font-[600] break-all">
                 {service?.name}
               </p>
-              <p className="leading-relaxed text-[14px] font-[500] mt-1 [overflow-wrap:anywhere]">
-  {service?.description}
-</p>
+              <p className="leading-relaxed text-[14px] font-[500] mt-1 [overflow-wrap:anywhere] break-all">
+                {service?.description}
+              </p>
             </div>
 
             <div className="my-2">
               <p className="text-indigo-950 text-[18px] font-[700]">
                 {/* Price: {currency} {service?.price} */}
-Price: ${(service?.price / 100).toFixed(2)}
+                Price: ${(service?.price / 100).toFixed(2)}
               </p>
             </div>
 

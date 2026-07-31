@@ -260,7 +260,7 @@ const MyBooking = () => {
                     setBookingStatusFilter(status);
                     setBookingsPage(1);
                   }}
-                  options={["All", "Completed", "Pending", "Upcoming", "Cancelled"]}
+                  options={["All", "Completed", "Upcoming", "Cancelled"]}
                 />
               </div>
             ) : (
@@ -271,7 +271,7 @@ const MyBooking = () => {
                     setEventStatusFilter(status);
                     setEventsPage(1);
                   }}
-                  options={["All", "Approval", "Upcoming", "Completed", "Rejected", "Cancelled"]}
+                  options={["All", "Pending", "Upcoming", "Completed", "Rejected", "Cancelled"]}
                 />
               </div>
             )}

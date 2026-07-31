@@ -297,9 +297,15 @@ export default function ReservationDetails() {
   // const paymentStatus = formatLabel(event?.paymentStatus);
   const currentStatus = String(event?.status || "").toLowerCase();
   console.log("🚀 ~ ReservationDetails ~ currentStatus:", currentStatus)
-  const hideSendInvite = ["rejected", "completed", "cancelled", "expired", "refunded"].includes(
-    currentStatus
-  );
+  const hideSendInvite = [
+    "pending",
+    "approval",
+    "rejected",
+    "completed",
+    "cancelled",
+    "expired",
+    "refunded",
+  ].includes(currentStatus);
   const isCancelable =
     event &&
     !["cancelled", "completed", "rejected", "expired", "refunded"].includes(currentStatus);

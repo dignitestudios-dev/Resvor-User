@@ -54,11 +54,10 @@ const LoungeDetailTabs = ({ tabs, setActiveTab, activeTab }) => {
               className={`
                   px-3 py-2 text-[16px] transition-all duration-200
                   border-b-2 whitespace-nowrap
-                  ${
-                    activeTab === tab.key
-                      ? "border-indigo-900 text-blue-950 font-[600]"
-                      : "border-transparent text-[#727272] hover:text-gray-700 hover:border-[#727272]"
-                  }
+                  ${activeTab === tab.key
+                  ? "border-indigo-900 text-blue-950 font-[600]"
+                  : "border-transparent text-[#727272] hover:text-gray-700 hover:border-[#727272]"
+                }
                 `}
             >
               {tab.label}

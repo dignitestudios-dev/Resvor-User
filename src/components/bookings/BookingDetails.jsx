@@ -239,6 +239,17 @@ const formatTable = (table, index) => {
   return `${typeLabel}${identifier}`.trim() || `Table ${index + 1}`;
 };
 
+const getFormattedTableCode = (t) => {
+  if (!t) return "";
+  if (typeof t === "string") return t;
+  if (typeof t === "object") {
+    if (t.code) return t.code;
+    if (t.tableNumber !== undefined && t.tableNumber !== null) return `T${t.tableNumber}`;
+    if (t.name) return t.name;
+  }
+  return formatTable(t);
+};
+
 // ── component ──────────────────────────────────────────────────────────────────
 
 export default function BookingDetails() {
@@ -259,7 +270,6 @@ export default function BookingDetails() {
   const { mutate: createDispute, isPending: isFilingDispute } = useCreateDispute();
 
   const booking = bookingResponse?.data ?? bookingResponse;
-  console.log("🚀 ~ BookingDetails ~ booking:", booking);
 
   const disputeId =
     (typeof booking?.disputeId === "object" ? booking?.disputeId?._id : booking?.disputeId) ||
@@ -285,8 +295,24 @@ export default function BookingDetails() {
         : endTime;
 
   // ── seating ────────────────────────────────────────────────────────────────
-  const tableIds = Array.isArray(booking?.tableIds) ? booking.tableIds : [];
-  const seatingArea = tableIds.length > 0 ? tableIds.map(formatTable).join(", ") : "-";
+  const tables = Array.isArray(booking?.tableIds)
+    ? booking.tableIds
+    : Array.isArray(booking?.tables)
+      ? booking.tables
+      : [];
+
+  const vipTables = tables.filter((t) => {
+    if (typeof t === "object" && t !== null) {
+      const type = String(t.type || t.category || "").toLowerCase();
+      return t.isVip || type.includes("vip");
+    }
+    if (typeof t === "string") {
+      return t.toLowerCase().includes("vip");
+    }
+    return false;
+  });
+
+  const regularTables = tables.filter((t) => !vipTables.includes(t));
 
   // ── Issue #13 — prefer booking-level contact fields over populated userId ──
   const contactName =
@@ -625,14 +651,48 @@ export default function BookingDetails() {
                     <p className="text-[#505050] text-[14px]">{booking.childrenCount}</p>
                   </div>
                 )}
-                <div className="space-y-1 min-w-0">
-                  <p className="font-semibold text-[#000000] text-[15px]">Seating Area</p>
-                  <p className="text-[#505050] text-[14px] break-words">{seatingArea}</p>
-                </div>
+
                 {/* <div className="space-y-1 min-w-0">
                   <p className="font-semibold text-[#000000] text-[15px]">Payment</p>
                   <p className="text-[#505050] text-[14px] break-words">{paymentStatusLabel}</p>
                 </div> */}
+              </div>
+              <div className="grid sm:grid-cols-3 gap-4 grid-cols-1 pb-5 border-b border-[#0000001A]">
+                <div className="space-y-1 min-w-0 col-span-2 sm:col-span-1">
+                  <p className="font-semibold text-[#000000] text-[15px]">Table Details</p>
+                  {tables.length > 0 ? (
+                    <div className="flex flex-wrap items-center gap-3 pt-1">
+                      {vipTables.length > 0 && (
+                        <div>
+                          <span className="text-xs font-bold text-amber-800 bg-amber-100 inline-block px-2.5 py-0.5 rounded-md uppercase tracking-wide mb-1">
+                            VIP Tables ({vipTables.length})
+                          </span>
+                          <p className="text-black font-semibold text-sm leading-relaxed break-words">
+                            {vipTables
+                              .map(getFormattedTableCode)
+                              .filter(Boolean)
+                              .join(", ")}
+                          </p>
+                        </div>
+                      )}
+                      {regularTables.length > 0 && (
+                        <div>
+                          <span className="text-xs font-bold text-blue-800 bg-blue-100 inline-block px-2.5 py-0.5 rounded-md uppercase tracking-wide mb-1">
+                            Regular Tables ({regularTables.length})
+                          </span>
+                          <p className="text-black font-semibold text-sm leading-relaxed break-words">
+                            {regularTables
+                              .map(getFormattedTableCode)
+                              .filter(Boolean)
+                              .join(", ")}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-[#505050] text-[14px]">N/A</p>
+                  )}
+                </div>
               </div>
               {/* Issue #11 & #12 — financial summary */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm pb-5 border-b border-[#0000001A]">

@@ -385,7 +385,7 @@ const Wallet = () => {
             </p>
           </div>
           <div className="mt-4 border-t border-gray-200 pt-4">
-            <p className="text-gray-500 text-sm font-medium">Completed</p>
+            <p className="text-green-600 text-sm font-medium">Completed</p>
             <p className="text-2xl font-bold text-green-600 mt-1">
               {isLoadingTx
                 ? "—"

@@ -62,7 +62,7 @@ const ServicesModal = ({
               return (
                 <div
                   key={itemId}
-                  className="group overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
+                  className="group h-full overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl"
                 >
                   {/* Image */}
                   <div className="relative">
@@ -95,11 +95,11 @@ const ServicesModal = ({
                   {/* Content */}
                   <div className="flex h-[240px] flex-col justify-between p-6">
                     <div>
-                      <h3 className="text-xl font-bold text-slate-900">
+                      <h3 className="text-xl font-bold text-slate-900 truncate">
                         {item.name}
                       </h3>
 
-                      <p className="mt-3 line-clamp-4 text-sm leading-6 text-gray-500">
+                      <p className="mt-3 line-clamp-4 text-sm leading-6 text-gray-500 ">
                         {item.description}
                       </p>
                     </div>
