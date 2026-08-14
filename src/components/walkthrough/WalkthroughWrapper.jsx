@@ -69,6 +69,9 @@ const WalkthroughWrapper = () => {
         steps={walkthroughSteps}
         run={runTour}
         continuous={true}
+        options={{
+          skipBeacon: true,
+        }}
         showSkipButton={true}
         showProgress={false}
         disableOverlayClose={true}
