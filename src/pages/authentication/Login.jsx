@@ -115,7 +115,7 @@ const Login = () => {
                 type="email"
                 id="email"
                 name="email"
-                maxLength={30}
+                maxLength={60}
                 value={values.email}
                 onChange={(e) => {
                   handleChange(e);
@@ -136,7 +136,7 @@ const Login = () => {
                 id="password"
                 name="password"
                 showToggle={true}
-                maxLength={64}
+                maxLength={60}
                 value={values.password}
                 onChange={(e) => {
                   handleChange(e);

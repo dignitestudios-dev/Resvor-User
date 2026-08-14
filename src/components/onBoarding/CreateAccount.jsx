@@ -105,7 +105,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
               type={"email"}
               id={"email"}
               name={"email"}
-              maxLength={30}
+              maxLength={60}
               value={values.email}
               onChange={handleChange}
               onBlur={handleBlur}
@@ -137,7 +137,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
               id={"password"}
               name={"password"}
               showToggle={true}
-              maxLength={64}
+              maxLength={60}
               value={values.password}
               onChange={handleChange}
               onBlur={handleBlur}
@@ -154,7 +154,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
               id={"confPassword"}
               name={"confPassword"}
               showToggle={true}
-              maxLength={250}
+              maxLength={60}
               // value={values.confPassword}
               onChange={handleChange}
               onBlur={handleBlur}
