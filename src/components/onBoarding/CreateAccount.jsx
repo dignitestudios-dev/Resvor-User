@@ -163,40 +163,76 @@ const CreateAccount = ({ handleNext, setEmail }) => {
             />
           </div>
         </div>
-        <div className="mt-6 flex items-start gap-2 text-[12px] text-[#CACACA]">
-          <input
-            type="checkbox"
-            checked={values.acceptedPolicy}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            id="acceptedPolicy"
-            name="acceptedPolicy"
-            className="mt-[2px] h-3 w-3 cursor-pointer accent-indigo-600"
-          />
+        <div className="mt-6 xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px]">
+          <label
+            htmlFor="acceptedPolicy"
+            className="flex items-start gap-3 cursor-pointer select-none"
+          >
+            <div className="relative flex items-center justify-center shrink-0 mt-[1px]">
+              <input
+                type="checkbox"
+                checked={values.acceptedPolicy}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                id="acceptedPolicy"
+                name="acceptedPolicy"
+                className="sr-only peer"
+              />
+              <div
+                className={`w-[20px] h-[20px] min-w-[20px] min-h-[20px] box-border rounded-[4px] border border-white flex items-center justify-center transition-colors ${
+                  values.acceptedPolicy ? "bg-white/20" : "bg-transparent"
+                }`}
+              >
+                {values.acceptedPolicy && (
+                  <svg
+                    className="w-3.5 h-3.5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                )}
+              </div>
+            </div>
 
-          <div className="flex flex-col gap-1 flex-1">
-            <span>
-              I accept the{" "}
+            <div className="flex-1 text-[13px] font-[500] leading-[18px] tracking-[-0.0041em] text-white">
+              I agree to the{" "}
               <span
-                className="text-[#E6E6E6] font-semibold cursor-pointer hover:underline"
-                onClick={() => navigate("/auth/terms")}
+                className="underline cursor-pointer hover:text-[#E6E6E6]"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate("/auth/terms");
+                }}
               >
                 Terms & Conditions
               </span>{" "}
               and{" "}
               <span
-                className="text-[#E6E6E6] font-semibold cursor-pointer hover:underline"
-                onClick={() => navigate("/auth/privacy")}
+                className="underline cursor-pointer hover:text-[#E6E6E6]"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate("/auth/privacy");
+                }}
               >
                 Privacy Policy
-              </span>
-            </span>
-            {errors.acceptedPolicy && touched.acceptedPolicy && (
-              <p className="text-red-500 text-[11px] font-medium mb-2">
-                {errors.acceptedPolicy}
-              </p>
-            )}
-          </div>
+              </span>{" "}
+              and authorize the collection and use of my phone number for Two-Factor Authentication.
+            </div>
+          </label>
+
+          {errors.acceptedPolicy && touched.acceptedPolicy && (
+            <p className="text-red-500 text-[11px] font-medium mt-1 ml-[32px]">
+              {errors.acceptedPolicy}
+            </p>
+          )}
         </div>
         <div className="mt-1 ">
           <div className="xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-1 mb-4">

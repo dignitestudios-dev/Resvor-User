@@ -14,9 +14,9 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
   const inputs = useRef([]);
   const verifyPhoneMutation = useVerifyPhone();
 
-  const [otp, setOtp] = useState(Array(6).fill(""));
+  const [otp, setOtp] = useState(Array(5).fill(""));
   const isOtpComplete = otp.every((digit) => digit !== "");
-  const isValidOtp = otp.join("").length === 6;
+  const isValidOtp = otp.join("").length === 5;
 
   const [isActive, setIsActive] = useState(true);
   const [seconds, setSeconds] = useState(30);
@@ -108,7 +108,7 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
 
   const handleResendOtp = async () => {
     try {
-      setOtp(Array(6).fill("")); // Reset OTP fields
+      setOtp(Array(5).fill("")); // Reset OTP fields
       handleRestart();
     } catch (err) {
       console.log("🚀 ~ handleResendOtp ~ err:", err);
@@ -150,8 +150,8 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[460px] md:w-[550px] w-[320px] mt-4">
-            <div className="xxl:w-[600px] xxl:m-4 grid grid-cols-6 sm:gap-20 gap-4 xl:w-[340px] lg:w-[360px] md:w-[550px] w-full ">
+          <div className="xxl:space-y-8 space-y-6 xxl:w-[650px] lg:w-[400px] md:w-[550px] w-[320px] mt-4">
+            <div className="xxl:w-[600px] xxl:m-4 grid grid-cols-5 sm:gap-20 gap-4 xl:w-[340px] lg:w-[360px] md:w-[550px] w-full ">
               {otp.map((digit, index) => (
                 <input
                   inputMode="numeric"
