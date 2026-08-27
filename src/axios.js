@@ -2,6 +2,7 @@ import axios from "axios";
 import { ErrorToast } from "./components/global/Toaster";
 import Cookies from "js-cookie";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
+import { clearStoredAuthSession } from "./lib/authSession";
 
 export const baseUrl = "https://api-staging.resvor.com"
 // export const baseUrl = "https://api-dev.resvor.com";
@@ -89,6 +90,28 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Prevent duplicate simultaneous logout redirects/toasts
+let isAuthRedirecting = false;
+
+const handleAuthLogout = (message) => {
+  if (isAuthRedirecting) return;
+  isAuthRedirecting = true;
+
+  ErrorToast(message || "Unauthorized access. Please log in again.");
+  clearStoredAuthSession();
+
+  if (
+    typeof window !== "undefined" &&
+    !window.location.pathname.startsWith("/auth")
+  ) {
+    window.location.href = "/auth/login";
+  }
+
+  setTimeout(() => {
+    isAuthRedirecting = false;
+  }, 3000);
+};
+
 // ==================== RESPONSE INTERCEPTOR ====================
 instance.interceptors.response.use(
   (response) => {
@@ -121,10 +144,6 @@ instance.interceptors.response.use(
       }
     }
 
-    if (error.code === "ECONNABORTED") {
-      ErrorToast("Your internet connection is slow. Please try again.");
-    }
-
     // ====================
     // Request Timeout
     // ====================
@@ -134,30 +153,32 @@ instance.interceptors.response.use(
     }
 
     // ====================
-    // Unauthorized
+    // 401 Unauthorized (Session Expired / Invalid Token)
     // ====================
     if (error.response?.status === 401) {
       const hasToken =
         Cookies.get("token") || localStorage.getItem("token");
 
       if (hasToken) {
-        ErrorToast("Session expired. Please relogin");
-
-        Cookies.remove("token");
-        Cookies.remove("tokenType");
-        Cookies.remove("token_type");
-
-        localStorage.removeItem("token");
-        localStorage.removeItem("tokenType");
-        localStorage.removeItem("resvor_auth_token_type");
-
-        if (
-          typeof window !== "undefined" &&
-          !window.location.pathname.startsWith("/auth")
-        ) {
-          window.location.href = "/auth/login";
-        }
+        handleAuthLogout(error.response?.data?.message || "Session expired. Please relogin");
       }
+      return Promise.reject(error);
+    }
+
+    // ====================
+    // 403 Forbidden (Access Denied / Role Mismatch)
+    // ====================
+    if (error.response?.status === 403) {
+      const hasToken =
+        Cookies.get("token") || localStorage.getItem("token");
+
+      if (hasToken) {
+        handleAuthLogout(
+          error.response?.data?.message ||
+          "Access denied. You do not have permission to access this resource."
+        );
+      }
+      return Promise.reject(error);
     }
 
     return Promise.reject(error);

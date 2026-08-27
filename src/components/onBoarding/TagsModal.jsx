@@ -76,7 +76,9 @@ const TagsModal = ({
           newSpecErrors[index] = undefined;
         }
       }
-      const hasRemaining = newSpecErrors.some((item) => item && Object.keys(item).length > 0);
+      const hasRemaining = newSpecErrors.some(
+        (item) => item && Object.keys(item).length > 0
+      );
       return {
         ...prev,
         specialDates: hasRemaining ? newSpecErrors : undefined,
@@ -84,26 +86,30 @@ const TagsModal = ({
     });
   };
 
-  const handleChange = (index, field, value) => {
+  const handleTitleChange = (index, value) => {
     const updated = [...specialDates];
     updated[index] = {
       ...updated[index],
-      [field]: value,
+      title: value,
     };
     setSpecialDates(updated);
-
-    if (field === "title") {
-      clearSpecialDateError(index, "title");
-    } else if (field === "day" || field === "month") {
-      clearSpecialDateError(index, "date");
-    }
+    clearSpecialDateError(index, "title");
   };
 
-  const handleDobChange = (field, value) => {
-    setDobDate((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const handleSpecialDateDateChange = (index, dateObj) => {
+    const updated = [...specialDates];
+    updated[index] = {
+      ...updated[index],
+      day: dateObj.day,
+      month: dateObj.month,
+      year: dateObj.year,
+    };
+    setSpecialDates(updated);
+    clearSpecialDateError(index, "date");
+  };
+
+  const handleDobDateChange = (dateObj) => {
+    setDobDate(dateObj);
     if (errors.dob) {
       setErrors((prev) => ({
         ...prev,
@@ -138,7 +144,9 @@ const TagsModal = ({
 
     if (errors.specialDates) {
       const updatedErrors = errors.specialDates.filter((_, i) => i !== index);
-      const hasRemaining = updatedErrors.some((item) => item && Object.keys(item).length > 0);
+      const hasRemaining = updatedErrors.some(
+        (item) => item && Object.keys(item).length > 0
+      );
       setErrors((prev) => ({
         ...prev,
         specialDates: hasRemaining ? updatedErrors : undefined,
@@ -198,40 +206,17 @@ const TagsModal = ({
             <span className="text-[#CACACA]"> (required)</span>
           </label>
 
-          <div className="flex justify-between items-center gap-2 p-1">
+          <div className="px-1">
             <DateInput
-              text="month"
-              placeholder="Month"
-              type="text"
-              id="month"
-              name="month"
-              maxLength={2}
-              value={dobDate.month}
-              onChange={(e) => handleDobChange("month", e.target.value)}
+              placeholder="Select Birthday"
+              id="dobDate"
+              name="dobDate"
+              value={dobDate}
+              onChange={handleDobDateChange}
               hasError={!!errors.dob}
-            />
-
-            <DateInput
-              text="day"
-              placeholder="Day"
-              type="text"
-              id="day"
-              name="day"
-              maxLength={2}
-              value={dobDate.day}
-              onChange={(e) => handleDobChange("day", e.target.value)}
-              hasError={!!errors.dob}
-            />
-
-            <DateInput
-              text="year"
-              placeholder="Year (optional)"
-              type="text"
-              id="year"
-              name="year"
-              maxLength={4}
-              value={dobDate.year}
-              onChange={(e) => handleDobChange("year", e.target.value)}
+              maxDate={new Date()}
+              startYear={1920}
+              endYear={new Date().getFullYear()}
             />
           </div>
           {errors.dob && (
@@ -259,7 +244,7 @@ const TagsModal = ({
                   maxLength={100}
                   value={date.title}
                   onChange={(e) =>
-                    handleChange(index, "title", e.target.value)
+                    handleTitleChange(index, e.target.value)
                   }
                   error={errors.specialDates?.[index]?.title}
                   touched={!!errors.specialDates?.[index]?.title}
@@ -271,46 +256,22 @@ const TagsModal = ({
                 <span className="text-[#CACACA]"> (required)</span>
               </label>
 
-              <div className="flex justify-between items-center gap-2 p-1">
+              <div className="px-1">
                 <DateInput
-                  text="month"
-                  placeholder="Month"
-                  type="text"
-                  id={`month-${index}`}
-                  name={`month-${index}`}
-                  maxLength={2}
-                  value={date.month}
-                  onChange={(e) =>
-                    handleChange(index, "month", e.target.value)
+                  placeholder="Select Date"
+                  id={`specialDate-date-${index}`}
+                  name={`specialDate-date-${index}`}
+                  value={{
+                    day: date.day,
+                    month: date.month,
+                    year: date.year,
+                  }}
+                  onChange={(newDate) =>
+                    handleSpecialDateDateChange(index, newDate)
                   }
                   hasError={!!errors.specialDates?.[index]?.date}
-                />
-
-                <DateInput
-                  text="day"
-                  placeholder="Day"
-                  type="text"
-                  id={`day-${index}`}
-                  name={`day-${index}`}
-                  maxLength={2}
-                  value={date.day}
-                  onChange={(e) =>
-                    handleChange(index, "day", e.target.value)
-                  }
-                  hasError={!!errors.specialDates?.[index]?.date}
-                />
-
-                <DateInput
-                  text="year"
-                  placeholder="Year (optional)"
-                  type="text"
-                  id={`year-${index}`}
-                  name={`year-${index}`}
-                  maxLength={4}
-                  value={date.year}
-                  onChange={(e) =>
-                    handleChange(index, "year", e.target.value)
-                  }
+                  startYear={1950}
+                  endYear={new Date().getFullYear() + 10}
                 />
               </div>
               {errors.specialDates?.[index]?.date && (
@@ -322,7 +283,7 @@ const TagsModal = ({
               <button
                 type="button"
                 onClick={() => handleRemove(index)}
-                className="text-red-500 text-sm mt-2"
+                className="text-red-500 text-sm mt-2 cursor-pointer"
               >
                 Remove
               </button>
@@ -349,7 +310,7 @@ const TagsModal = ({
             <button
               type="button"
               onClick={handleDateData}
-              className="bg-gradient-to-l from-[#012C57] to-[#061523] text-white text-[13px] px-4 py-3 rounded-[12px] w-[97%]"
+              className="bg-gradient-to-l from-[#012C57] to-[#061523] text-white text-[13px] px-4 py-3 rounded-[12px] w-[97%] cursor-pointer hover:opacity-95 transition"
             >
               Continue
             </button>

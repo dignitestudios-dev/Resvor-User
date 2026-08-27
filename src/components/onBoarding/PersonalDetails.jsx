@@ -6,7 +6,8 @@ import AuthInput from "../auth/AuthInput";
 import { binIcon, mapImg, uploadIcon } from "../../assets/export";
 import { useState } from "react";
 import TagsInputField from "./TagsInputField";
-import { LogOutIcon } from "lucide-react";
+import { LogOutIcon, Sparkles, Trash2 } from "lucide-react";
+import { IoCalendarOutline } from "react-icons/io5";
 import TagsModal from "./TagsModal";
 import { personalDetailValues } from "../../init/onBoarding/onBoardValues";
 import { personalDetailSchema } from "../../schema/onBoarding/onBoardSchema";
@@ -17,10 +18,18 @@ import { phoneFormatter, phoneToE164 } from "../../lib/helpers";
 import Cookies from "js-cookie";
 import { setStoredTokenType } from "../../lib/authSession";
 
+const formatDateMMDDYY = (dateObj) => {
+  if (!dateObj || !dateObj.day || !dateObj.month) return "";
+  const mm = String(dateObj.month).padStart(2, "0");
+  const dd = String(dateObj.day).padStart(2, "0");
+  if (!dateObj.year) return `${mm}/${dd}`;
+  const yyyy = String(dateObj.year);
+  return `${mm}/${dd}/${yyyy}`;
+};
+
 const PersonalDetails = ({ handleNext, handlePrevious }) => {
   // const [dateModalData, setDateModalData] = useState("");
   const [fieldError, setFieldError] = useState("");
-  console.log("🚀 ~ PersonalDetails ~ fieldError:", fieldError)
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [imageError, setImageError] = useState("");
@@ -102,7 +111,6 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
       }
     },
   });
-  console.log("🚀 ~ PersonalDetails ~ errors:", errors)
 
   const validateImageResolution = (file) => {
     return new Promise((resolve) => {
@@ -251,48 +259,83 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
 
             <TagsInputField setModalIsOpen={setModalIsOpen} />
 
-            {values?.specialDatesData && (
-              <div className="border border-gray-400 rounded-[13px] overflow-hidden mt-2 divide-y divide-gray-700">
+            {values?.specialDatesData &&
+              ((values.specialDatesData.dobDate?.day &&
+                values.specialDatesData.dobDate?.month) ||
+                (Array.isArray(values.specialDatesData.specialDates) &&
+                  values.specialDatesData.specialDates.length > 0)) && (
+                <div className="bg-white/10 backdrop-blur-[28.9px] border border-white/20 rounded-[15px] p-2 space-y-2 mt-3 shadow-lg">
+                  {/* DOB Row */}
+                  {values.specialDatesData?.dobDate?.day &&
+                    values.specialDatesData?.dobDate?.month && (
+                      <div className="flex items-center justify-between px-3 py-2.5 rounded-[12px] bg-black/20 border border-white/10 transition hover:bg-black/30">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-300 flex items-center justify-center flex-shrink-0">
+                            <IoCalendarOutline className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-white text-[13px] font-medium leading-tight">
+                              Birthday
+                            </p>
+                          </div>
+                        </div>
 
-                {/* DOB Row */}
-                {values.specialDatesData?.dobDate && (
-                  <div className="flex items-center justify-between px-4 py-2.5">
-                    <div className="text-[#FFFFFF] text-[14px] font-thin">
-                      <span className=" mr-2"> Birthday</span>
-                      {values.specialDatesData.dobDate.day}-
-                      {values.specialDatesData.dobDate.month}
-                      {values.specialDatesData.dobDate.year ? `-${values.specialDatesData.dobDate.year}` : ""}
-                    </div>
-                    {/* DOB is required so no delete button, or add one if needed */}
-                  </div>
-                )}
-
-                {/* Special Dates Rows */}
-                {Array.isArray(values.specialDatesData?.specialDates) &&
-                  values.specialDatesData.specialDates.map((date, index) => (
-                    <div key={index} className="flex items-center justify-between px-4 py-2.5">
-                      <div className="text-[#FFFFFF] text-[14px] font-thin">
-                        <span className=" mr-2">{date.title}</span>
-                        {date.day} - {date.month}
-                        {date.year ? ` - ${date.year}` : ""}
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-medium text-white bg-white/15 px-3 py-1 rounded-[10px] border border-white/15 tracking-wide">
+                            {formatDateMMDDYY(values.specialDatesData.dobDate)}
+                          </span>
+                        </div>
                       </div>
+                    )}
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updated = values.specialDatesData.specialDates.filter((_, i) => i !== index);
-                          setFieldValue("specialDatesData", {
-                            ...values.specialDatesData,
-                            specialDates: updated,
-                          });
-                        }}
+                  {/* Special Dates Rows */}
+                  {Array.isArray(values.specialDatesData?.specialDates) &&
+                    values.specialDatesData.specialDates.map((date, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between px-3 py-2.5 rounded-[12px] bg-black/20 border border-white/10 transition hover:bg-black/30"
                       >
-                        <img src={binIcon} alt="bin" className="w-5" />
-                      </button>
-                    </div>
-                  ))}
-              </div>
-            )}
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center flex-shrink-0">
+                            <Sparkles className="w-4 h-4 text-amber-300" />
+                          </div>
+                          <div>
+                            <p className="text-white text-[13px] font-medium leading-tight capitalize">
+                              {date.title || "Special Date"}
+                            </p>
+                            {/* <p className="text-[#A3A3A3] text-[11px]">
+                              Special Occasion
+                            </p> */}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-[13px] font-medium text-white bg-white/15 px-3 py-1 rounded-[10px] border border-white/15 tracking-wide">
+                            {formatDateMMDDYY(date)}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated =
+                                values.specialDatesData.specialDates.filter(
+                                  (_, i) => i !== index
+                                );
+                              setFieldValue("specialDatesData", {
+                                ...values.specialDatesData,
+                                specialDates: updated,
+                              });
+                            }}
+                            className="text-gray-400 hover:text-red-400 hover:bg-red-500/10 p-1.5 rounded-lg transition cursor-pointer"
+                            title="Remove special date"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
 
             {fieldError && (
               <p className="text-red-600 text-[12px] mt-1">{fieldError}</p>

@@ -184,6 +184,7 @@ const Navbar = () => {
     { label: "My Bookings", path: "/app/bookings" },
     { label: "Invite Friends", path: "/app/flyers" },
     { label: "Messages", path: "/app/chat" },
+    { label: "Wallet", path: "/app/wallet" },
   ];
 
   return (
@@ -310,10 +311,22 @@ const Navbar = () => {
               >
                 <span
                   className="block font-[400] py-1 text-sm border-b  border-[#E4E4E4] cursor-pointer"
-                  onClick={() => navigate("/app/user-profile")}
+                  onClick={() => {
+                    setUserPopup(false);
+                    navigate("/app/user-profile");
+                  }}
                 >
                   View Profile
                 </span>
+                {/* <span
+                  className="block font-[400] py-1 border-b border-[#E4E4E4] text-sm cursor-pointer"
+                  onClick={() => {
+                    setUserPopup(false);
+                    navigate("/app/wallet");
+                  }}
+                >
+                  Wallet
+                </span> */}
                 <span
                   className="block font-[400] py-1 border-b border-[#E4E4E4] text-sm cursor-pointer"
                   onClick={() => {
@@ -430,10 +443,22 @@ const Navbar = () => {
                 <div className="bg-white text-black right-4 w-[200px] rounded absolute shadow-lg p-4 space-y-2 mt-2">
                   <span
                     className="block text-sm cursor-pointer"
-                    onClick={() => navigate("/app/user-profile")}
+                    onClick={() => {
+                      setUserPopup(false);
+                      navigate("/app/user-profile");
+                    }}
                   >
                     View Profile
                   </span>
+                  {/* <span
+                    className="block text-sm cursor-pointer"
+                    onClick={() => {
+                      setUserPopup(false);
+                      navigate("/app/wallet");
+                    }}
+                  >
+                    Wallet
+                  </span> */}
                   <span
                     className="block text-sm cursor-pointer"
                     onClick={() => {

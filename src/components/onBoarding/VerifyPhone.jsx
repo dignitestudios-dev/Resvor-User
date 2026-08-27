@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import AuthButton from "../auth/AuthButton";
 import { forgotLogo } from "../../assets/export";
 import TextCountDown from "./TextCountDown";
@@ -21,6 +21,21 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
   const [isActive, setIsActive] = useState(true);
   const [seconds, setSeconds] = useState(30);
   const [requestSendModal, setRequestSendModal] = useState(false);
+
+  const handleCloseSuccessModal = () => {
+    setRequestSendModal(false);
+    handleNext("complete_preferences");
+  };
+
+  useEffect(() => {
+    let timer;
+    if (requestSendModal) {
+      timer = setTimeout(() => {
+        handleCloseSuccessModal();
+      }, 2500);
+    }
+    return () => clearTimeout(timer);
+  }, [requestSendModal]);
 
   const handleChange = (e, index) => {
     const { value } = e.target;
@@ -208,10 +223,7 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
       {requestSendModal && (
         <AuthSuccessModal
           isOpen={requestSendModal}
-          onClick={() => {
-            setRequestSendModal(false);
-            handleNext("complete_preferences");
-          }}
+          onClick={handleCloseSuccessModal}
           title="Number verified"
           description="Your number has been verified successfully."
         />

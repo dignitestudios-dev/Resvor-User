@@ -8,6 +8,7 @@ import {
   useListChats,
   useGetMessages,
   useSendMessage,
+  useMarkChatAsRead,
 } from "../../hooks/queries/useQueries";
 import { useSocket } from "../../context/SocketContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -87,6 +88,8 @@ const Chat = () => {
   const queryClient = useQueryClient();
   const { socket } = useSocket();
   const messagesContainerRef = useRef(null);
+  // Always-current ref so socket handlers never close over a stale chatId
+  const selectedChatIdRef = useRef(null);
 
   // Route state injected by LoungeDetail on initiate chat
   const routeState = location.state;
@@ -102,11 +105,14 @@ const Chat = () => {
   const chatList = useMemo(() => chatsResponse?.data || [], [chatsResponse]);
 
   const selectedChatId = selectedChat?._id;
+  // Keep the ref in sync with state
+  useEffect(() => { selectedChatIdRef.current = selectedChatId; }, [selectedChatId]);
 
   const { data: messagesResponse, isLoading: isMessagesLoading } =
     useGetMessages(selectedChatId, 1, 50);
 
   const { mutate: sendMessageMutate, isPending: isSending } = useSendMessage();
+  const { mutate: markAsRead } = useMarkChatAsRead();
 
   // Initialise messages whenever the query data changes for the selected chat
   useEffect(() => {
@@ -139,9 +145,11 @@ const Chat = () => {
       const found = chatList.find((c) => c._id === routeState.chatId);
       if (found) {
         setSelectedChat(found);
+        markAsRead(found._id);
       } else if (routeState.chat) {
         // The chat may not be in the list yet (just created); use the raw object
         setSelectedChat(routeState.chat);
+        if (routeState.chat._id) markAsRead(routeState.chat._id);
       }
     }
   }, [routeState, chatList]);
@@ -165,8 +173,9 @@ const Chat = () => {
       const incomingChatId =
         (message.chatId || message.chat)?._id || message.chatId || message.chat;
 
-      // Only append if it belongs to the currently open chat
-      if (incomingChatId?.toString() === selectedChatId?.toString()) {
+      // Use the ref so this handler always sees the latest selected chat
+      // without needing to be re-registered every time the chat changes.
+      if (incomingChatId?.toString() === selectedChatIdRef.current?.toString()) {
         setLocalMessages((prev) => {
           // deduplicate by _id
           if (prev.some((m) => m._id === message._id)) return prev;
@@ -197,7 +206,9 @@ const Chat = () => {
     return () => {
       socket.off("new_message", handleNewMessage);
     };
-  }, [socket, selectedChatId, queryClient]);
+  // Only re-run when the socket instance itself changes, not on every chat switch.
+  // selectedChatId is read via selectedChatIdRef to avoid stale closures.
+  }, [socket, queryClient]);
 
   // ── Socket: mark_as_read listener ────────────────────────────
   useEffect(() => {
@@ -292,6 +303,8 @@ const Chat = () => {
   const handleSelectChat = (chat) => {
     setSelectedChat(chat);
     setLocalMessages([]);
+    // Mark the chat as read so the unread badge disappears
+    if (chat._id) markAsRead(chat._id);
   };
 
   // ── Render ────────────────────────────────────────────────────

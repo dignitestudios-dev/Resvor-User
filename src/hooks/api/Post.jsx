@@ -80,7 +80,13 @@ export const submitLogout = async (payload = {}) => {
     localStorage.getItem("fcm_token") ||
     undefined;
 
-  const body = fcmToken ? { fcmToken, ...payload } : payload;
+  if (!fcmToken) {
+    localStorage.removeItem("fcmToken");
+    localStorage.removeItem("fcm_token");
+    return { success: true, message: "Logged out locally" };
+  }
+
+  const body = { fcmToken, ...payload };
 
   const { data } = await axios.post("/auth/logout", body);
 

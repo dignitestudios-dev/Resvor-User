@@ -140,7 +140,7 @@ const FlyerCard = ({ formData, selectedCard, flyerRef }) => {
                 <span className="text-[13px] text-white/60 font-semibold font-sans min-w-[60px] shrink-0">
                   Location:
                 </span>
-                <span className="text-[13px] text-white/90 font-sans leading-snug break-words">
+                <span className="text-[13px] text-white/90 font-sans leading-snug break-all min-w-0">
                   {locationStr || "—"}
                 </span>
               </div>
@@ -182,6 +182,7 @@ const CreateFlyer = () => {
   const [openField, setOpenField] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [pendingRecipients, setPendingRecipients] = useState([]);
 
   /* ── useFormik Setup ── */
   const {
@@ -211,14 +212,17 @@ const CreateFlyer = () => {
   });
 
   /* ── Modal flow ── */
+  // Step 1: ProceedFlayerModal → SendInvitationModal
   const handleProceedInvitation = () => {
     setSendProceed(false);
-    setIsFlayerFee(true);
+    setSendInvitationModal(true);
   };
 
-  const handleFlayerFee = () => {
-    setIsFlayerFee(false);
-    setSendInvitationModal(true);
+  // Step 2: SendInvitationModal → FlayerFeeModal (recipients collected)
+  const handleSendInvitationProceed = (recipients) => {
+    setPendingRecipients(recipients);
+    setSendInvitationModal(false);
+    setIsFlayerFee(true);
   };
 
   /* ── Capture flyer → store blob → open Proceed modal ── */
@@ -345,6 +349,7 @@ const CreateFlyer = () => {
                   placeholder="Select event type"
                   options={eventTypes}
                   value={values.eventType}
+                  isMulti={false}
                   onChange={(option) => {
                     setFieldValue("eventType", [option]);
                     setFieldTouched("eventType", true, false);
@@ -369,6 +374,7 @@ const CreateFlyer = () => {
                 onBlur={handleBlur}
                 error={errors.eventTitle}
                 touched={touched.eventTitle}
+                autoComplete="off"
               />
 
               {/* Event Type & Date */}
@@ -430,27 +436,34 @@ const CreateFlyer = () => {
               <div>
                 <h3 className="text-[16px] font-bold text-[#181818] mb-3">Location</h3>
                 <div className="space-y-4">
-                  <InputField
-                    label="Address"
-                    text="address"
-                    placeholder="Enter address"
-                    type="text"
-                    id="address"
-                    name="address"
-                    maxLength={120}
-                    value={values.address}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={errors.address}
-                    touched={touched.address}
-                  />
+                  <div>
+                    <label className="block text-[14px] font-[500] text-[#181818] mb-2">
+                      Address
+                    </label>
+                    <textarea
+                      id="event_address"
+                      name="address"
+                      autoComplete="off"
+                      rows={2}
+                      maxLength={200}
+                      placeholder="Enter address"
+                      value={values.address}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={`w-full px-4 py-2.5 text-sm rounded-[15px] bg-transparent ring-1 ring-[#CACACA] focus:ring-2 focus:ring-gray-200 focus:outline-none placeholder:font-light placeholder:text-[12px] placeholder:text-[#727272] resize-none transition-all}`}
+                    />
+                    {touched.address && errors.address && (
+                      <p className="text-red-600 text-[12px] ">{errors.address}</p>
+                    )}
+                  </div>
                   <InputField
                     label="City (Optional)"
                     text="city"
                     placeholder="Enter city"
                     type="text"
-                    id="city"
+                    id="event_city"
                     name="city"
+                    autoComplete="off"
                     maxLength={50}
                     value={values.city}
                     onChange={handleChange}
@@ -612,20 +625,16 @@ const CreateFlyer = () => {
             onClick={handleProceedInvitation}
           />
         )}
-        {isFlayerFee && (
-          <FlayerFeeModal
-            onClick={handleFlayerFee}
-            onClose={() => setIsFlayerFee(false)}
-          />
-        )}
         {sendInvitationModal && (
           <SendInvitationModal
-            onClick={handleSubmitCampaign}
             onClose={() => setSendInvitationModal(false)}
-            handleSuccess={() => {
-              setSendInvitationModal(false);
-              setIsSuccess(true);
-            }}
+            onProceed={handleSendInvitationProceed}
+          />
+        )}
+        {isFlayerFee && (
+          <FlayerFeeModal
+            onClick={() => handleSubmitCampaign(pendingRecipients)}
+            onClose={() => setIsFlayerFee(false)}
             isLoading={isSendingCampaign}
           />
         )}

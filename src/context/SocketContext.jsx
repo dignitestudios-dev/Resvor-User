@@ -7,7 +7,9 @@ import { baseUrl } from "../axios";
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
-  const socketRef = useRef(null);
+  // Store the socket instance in STATE so consumers re-render when it's ready.
+  // Using only a ref means consumers get null on mount and never update.
+  const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
@@ -16,37 +18,38 @@ export const SocketProvider = ({ children }) => {
 
     if (!token) return;
 
-    const socket = io(baseUrl, {
+    const socketInstance = io(baseUrl, {
       auth: { token: `Bearer ${token}` },
       transports: ["websocket"],
       reconnectionAttempts: 5,
       reconnectionDelay: 2000,
     });
 
-    socketRef.current = socket;
+    // Put the instance in state so all consumers re-render with the real socket
+    setSocket(socketInstance);
 
-    socket.on("connect", () => {
-      console.log("🟢 Socket connected:", socket.id);
+    socketInstance.on("connect", () => {
+      console.log("🟢 Socket connected:", socketInstance.id);
       setIsConnected(true);
     });
 
-    socket.on("disconnect", (reason) => {
+    socketInstance.on("disconnect", (reason) => {
       console.log("🔴 Socket disconnected:", reason);
       setIsConnected(false);
     });
 
-    socket.on("connect_error", (err) => {
+    socketInstance.on("connect_error", (err) => {
       console.error("❌ Socket connection error:", err.message);
     });
 
     return () => {
-      socket.disconnect();
-      socketRef.current = null;
+      socketInstance.disconnect();
+      setSocket(null);
     };
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket: socketRef.current, isConnected }}>
+    <SocketContext.Provider value={{ socket, isConnected }}>
       {children}
     </SocketContext.Provider>
   );

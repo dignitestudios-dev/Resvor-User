@@ -65,7 +65,7 @@ const Footer = () => {
             <h4 className="font-semibold text-[19px] pt-10 mb-2">
               We’re always happy to help.
             </h4>
-            <a href="mailto:info@codeclean.com" className="text-white">
+            <a href="mailto:info@resvor.com" className="text-white">
               info@resvor.com
             </a>
           </div>

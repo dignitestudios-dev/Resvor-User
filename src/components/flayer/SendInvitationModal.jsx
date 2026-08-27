@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useCampaignContacts } from "../../hooks/queries/useQueries";
 import { ErrorToast } from "../../components/global/Toaster";
 
-const SendInvitationModal = ({ onClose, onClick, handleSuccess, isLoading }) => {
+const SendInvitationModal = ({ onClose, onProceed }) => {
   const [email, setEmail] = useState("");
   const [selectedGuests, setSelectedGuests] = useState([]);
 
@@ -67,7 +67,7 @@ const SendInvitationModal = ({ onClose, onClick, handleSuccess, isLoading }) => 
 
   const handleSend = () => {
     if (selectedGuests.length > 0) {
-      onClick(selectedGuests);
+      onProceed(selectedGuests);
     }
   };
 
@@ -99,24 +99,32 @@ const SendInvitationModal = ({ onClose, onClick, handleSuccess, isLoading }) => 
           {/* Email Input */}
           <div className="flex flex-col gap-3">
             <label className="text-sm font-medium text-black">Email</label>
-            <div className="flex gap-2">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAddEmail();
+              }}
+              className="flex gap-2"
+              autoComplete="off"
+            >
               <input
                 type="email"
+                id="inviteGuestEmail"
+                name="inviteGuestEmail"
+                autoComplete="off"
                 placeholder="Enter Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleAddEmail()}
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-xl outline-none focus:border-blue-500 text-gray-700 placeholder-gray-400"
               />
               <button
-                type="button"
-                onClick={handleAddEmail}
+                type="submit"
                 disabled={!email.trim()}
-                className="px-4 py-2 rounded-xl bg-[#0B0E52] text-white text-sm font-semibold disabled:opacity-40 hover:opacity-90 transition"
+                className="px-4 py-2 rounded-xl bg-[#0B0E52] text-white text-sm font-semibold disabled:opacity-40 hover:opacity-90 transition cursor-pointer"
               >
                 Add
               </button>
-            </div>
+            </form>
 
             {/* Selected email tags */}
             {selectedGuests.length > 0 && (
@@ -228,9 +236,9 @@ const SendInvitationModal = ({ onClose, onClick, handleSuccess, isLoading }) => 
         {/* Footer */}
         <div className="px-8 py-4 border-t border-gray-200 bg-white">
           <Button
-            text={isLoading ? "Sending…" : "Send Invitation"}
+            text="Proceed to Payment"
             onClick={handleSend}
-            disabled={selectedGuests.length === 0 || isLoading}
+            disabled={selectedGuests.length === 0}
             type="button"
           />
         </div>

@@ -13,25 +13,34 @@ const LogOutModal = ({ isOpen, setIsOpen, onConfirm, loading = false }) => {
   const logoutMutation = useLogout();
   const queryClient = useQueryClient();
 
-const handleConfirmLogout = async () => {
-    try {
-      await logoutMutation.mutateAsync();
+  const handleConfirmLogout = async () => {
+    const fcmToken =
+      localStorage.getItem("fcmToken") ||
+      localStorage.getItem("fcm_token") ||
+      null;
+
+    // If no FCM token exists, skip backend API call, clear all storage/cookies and redirect
+    if (!fcmToken) {
       queryClient.setQueryData(["auth-me"], null);
-      
+      queryClient.clear();
+      clearStoredAuthSession();
+      onConfirm();
+      return;
+    }
+
+    try {
+      await logoutMutation.mutateAsync({ fcmToken });
+      queryClient.setQueryData(["auth-me"], null);
+      queryClient.clear();
       clearStoredAuthSession();
       onConfirm(); // Call the onConfirm callback to clear client-side auth state
-      
     } catch (error) {
       console.error("Logout error:", error);
-      if (error.code === "NO_INTERNET") {
-        ErrorToast(error.message);
-      } else {
-        ErrorToast(
-          error.response?.data?.message ||
-            "An error occurred during logout. Please try again.",
-        );
-      }
-      // setIsLogoutModalOpen(false);
+      // Even if API errors, clear auth session so user can log out
+      queryClient.setQueryData(["auth-me"], null);
+      queryClient.clear();
+      clearStoredAuthSession();
+      onConfirm();
     }
   };
 

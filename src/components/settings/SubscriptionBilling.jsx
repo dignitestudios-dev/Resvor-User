@@ -1,13 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import Billing from "./Billing";
 import UpdatePlan from "./UpdatePlan";
 import Wallet from "./Wallet";
 
 const SubscriptionBilling = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("wallet");
+  const location = useLocation();
+
+  const getInitialTab = () => {
+    if (location.state?.tab) return location.state.tab;
+    if (location.pathname.includes("wallet")) return "wallet";
+    return "wallet";
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    } else if (location.pathname.includes("wallet")) {
+      setActiveTab("wallet");
+    }
+  }, [location.pathname, location.state]);
 
   const tabs = [
     // { key: "billing", label: "Billing" },
@@ -19,11 +35,11 @@ const SubscriptionBilling = () => {
     <>
       <div className="flex items-center pt-[16px] pb-[18em] homeSectionImage">
         <div className="flex items-center px-5 lg:px-40 gap-3">
-          <button type="button" onClick={() => navigate("/app/settings")}>
+          <button type="button" onClick={() => navigate(-1)}>
             <FaArrowLeftLong color="white" size={20} />
           </button>
           <h2 className="text-white text-[30px] mt-0 font-bold leading-[48px] capitalize">
-            Subscription Plan
+            {activeTab === "wallet" ? "Wallet" : "Subscription Plan"}
           </h2>
         </div>
       </div>

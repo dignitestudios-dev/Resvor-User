@@ -2,7 +2,7 @@
 
 import { RxCross2 } from "react-icons/rx";
 
-const FlayerFeeModal = ({ onClose, onClick }) => {
+const FlayerFeeModal = ({ onClose, onClick, isLoading }) => {
   return (
     <div className="fixed inset-0 bg-[#0A150F80] bg-opacity-0 z-50 flex items-center justify-center">
       <div className="bg-white rounded-[12px] w-[440px] pb-2 overflow-y-auto ">
@@ -44,9 +44,10 @@ const FlayerFeeModal = ({ onClose, onClick }) => {
           <div className="mt-4 flex justify-center">
             <button
               onClick={onClick}
-              className="bg-gradient-to-l from-[#012C57] to-[#061523] text-white text-[13px] font-bold px-4 py-3 rounded-[12px] w-[97%]"
+              disabled={isLoading}
+              className="bg-gradient-to-l from-[#012C57] to-[#061523] text-white text-[13px] font-bold px-4 py-3 rounded-[12px] w-[97%] disabled:opacity-60"
             >
-              Pay Now
+              {isLoading ? "Processing…" : "Pay Now"}
             </button>
           </div>
         </div>

@@ -27,12 +27,25 @@ export const setStoredTokenType = (tokenType) => {
 export const clearStoredAuthSession = () => {
   if (typeof window === "undefined") return;
 
+  // Clear specific known keys and full localStorage & sessionStorage
   localStorage.removeItem(AUTH_TOKEN_TYPE_KEY);
   localStorage.removeItem("token");
   localStorage.removeItem("tokenType");
-  Cookies.remove("token");
-  Cookies.remove("tokenType");
-  Cookies.remove("token_type");
+  localStorage.removeItem("fcmToken");
+  localStorage.removeItem("fcm_token");
+  localStorage.removeItem("onboarding_complete_acknowledged");
+  localStorage.removeItem("show_welcome_walkthrough");
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // Clear all cookies
+  const allCookies = Cookies.get();
+  if (allCookies) {
+    Object.keys(allCookies).forEach((cookieName) => {
+      Cookies.remove(cookieName);
+      Cookies.remove(cookieName, { path: "/" });
+    });
+  }
 };
 
 export const isAccessTokenSession = () => getStoredTokenType() === "access_token";

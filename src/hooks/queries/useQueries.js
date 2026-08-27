@@ -494,6 +494,41 @@ export const useSendMessage = () => {
   });
 };
 
+const markChatAsRead = async (chatId) => {
+  const { data } = await axios.post(`/chats/${chatId}/read`);
+  return data;
+};
+
+export const useMarkChatAsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: markChatAsRead,
+    onMutate: async (chatId) => {
+      // Optimistically zero out the unread count in the cached chat list
+      await queryClient.cancelQueries({ queryKey: ["chats"] });
+      const previous = queryClient.getQueryData(["chats"]);
+      queryClient.setQueryData(["chats"], (old) => {
+        if (!old) return old;
+        const list = old?.data ?? old;
+        if (!Array.isArray(list)) return old;
+        const updated = list.map((c) =>
+          c._id === chatId ? { ...c, unreadCount: 0 } : c
+        );
+        return Array.isArray(old) ? updated : { ...old, data: updated };
+      });
+      return { previous };
+    },
+    onError: (_err, _chatId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["chats"], context.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
+    },
+  });
+};
+
 const fetchNotifications = async (page = 1, limit = 10) => {
   const { data } = await axios.get("/notifications", {
     params: { page, limit },

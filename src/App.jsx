@@ -140,6 +140,7 @@ function App() {
             <Route path="user-profile" element={<UserProfile />} />
             <Route path="settings" element={<Settings />} />
             <Route path="subscription-billing" element={<SubscriptionBilling />} />
+            <Route path="wallet" element={<SubscriptionBilling />} />
             <Route path="terms" element={<TermsAndConditions />} />
             <Route path="privacy" element={<PrivacyPolicy />} />
             <Route path="notifications" element={<Notifications />} />

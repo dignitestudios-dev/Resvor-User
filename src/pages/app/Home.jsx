@@ -148,6 +148,7 @@ const Home = () => {
   const [services, setServices] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const updateFcmMutation = useUpdateFcmToken();
 
@@ -167,12 +168,15 @@ const Home = () => {
   }, []);
 
   const handleSearch = () => {
+    setCurrentPage(1);
     setActiveSearch(searchTerm);
   };
 
-  const queryParams = activeSearch.trim()
-    ? { name: activeSearch.trim() }
-    : {};
+  const queryParams = {
+    page: currentPage,
+    limit: 9,
+    ...(activeSearch.trim() ? { name: activeSearch.trim() } : {}),
+  };
 
   const { data: loungesResponse, isLoading } = useLounges(queryParams);
   const { data: favoritesResponse } = useFavorites({
@@ -180,8 +184,19 @@ const Home = () => {
   });
 
   const lounges = loungesResponse?.data || [];
+  const pagination = loungesResponse?.pagination;
+  const totalPages = pagination?.totalPages || 1;
+  const totalItems = pagination?.totalItems ?? lounges.length;
   const favoriteLounges = favoritesResponse?.data || [];
   const favoriteIds = new Set(favoriteLounges.map((lounge) => lounge._id));
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+  };
 
   const [selectedFilters, setSelectedFilters] = useState({
     location: "",
@@ -218,8 +233,8 @@ const Home = () => {
       maxPrice: "",
       guestCapacity: 1,
     });
-
     setServices([]);
+    setCurrentPage(1);
   };
 
   return (
@@ -283,7 +298,7 @@ const Home = () => {
             <p className="xxl:text-[48px] text-[32px] text-[#181818] font-[600] capitalize">
               Top Lounges Near You{" "}
               <span className="bg-[#010067] rounded-full px-6 py-1.5 text-white text-[13px]">
-                {lounges.length}
+                {isLoading ? "..." : totalItems}
               </span>
             </p>
 
@@ -357,6 +372,36 @@ const Home = () => {
             </div>
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {!isLoading && lounges.length > 0 && (
+          <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl mt-4">
+            <div className="text-sm text-gray-500">
+              Showing page{" "}
+              <span className="font-semibold text-gray-800">{currentPage}</span>{" "}
+              of{" "}
+              <span className="font-semibold text-gray-800">{totalPages}</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                onClick={handleNextPage}
+                disabled={currentPage >= totalPages}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

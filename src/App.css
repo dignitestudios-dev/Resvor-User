@@ -159,4 +159,63 @@ input.text-white:-webkit-autofill:focus {
     opacity: 1;
     transform: translateY(0);
   }
-}
+}
+
+/* Custom DatePicker Styling for Resvor */
+.resvor-datepicker-popper {
+  z-index: 9999 !important;
+}
+
+.resvor-datepicker {
+  font-family: inherit;
+  border-radius: 16px !important;
+  border: 1px solid #E5E7EB !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  overflow: hidden;
+  background-color: #FFFFFF !important;
+}
+
+.resvor-datepicker .react-datepicker__header {
+  background: linear-gradient(to left, #012C57, #061523) !important;
+  border-bottom: none !important;
+  padding-top: 10px !important;
+  padding-bottom: 8px !important;
+}
+
+.resvor-datepicker .react-datepicker__current-month,
+.resvor-datepicker .react-datepicker__day-name {
+  color: #E2E8F0 !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+}
+
+.resvor-datepicker .react-datepicker__day {
+  color: #1E293B !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  margin: 2px !important;
+  transition: all 0.15s ease-in-out;
+}
+
+.resvor-datepicker .react-datepicker__day:hover {
+  background-color: #EEF2FF !important;
+  color: #012C57 !important;
+}
+
+.resvor-datepicker .react-datepicker__day--selected,
+.resvor-datepicker .react-datepicker__day--keyboard-selected {
+  background: linear-gradient(to left, #012C57, #061523) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+}
+
+.resvor-datepicker .react-datepicker__day--disabled {
+  color: #CBD5E1 !important;
+  cursor: not-allowed !important;
+}
+
+.resvor-datepicker .react-datepicker__day--today {
+  font-weight: 700 !important;
+  border: 1px solid #012C57 !important;
+}
+

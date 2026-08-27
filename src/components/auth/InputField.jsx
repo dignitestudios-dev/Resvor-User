@@ -18,6 +18,9 @@ export default function InputField({
   maxLength,
   disabled,
   required = false,
+  autoComplete,
+  id,
+  ...props
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -28,6 +31,7 @@ export default function InputField({
       </label>
       <div className="relative">
         <input
+          id={id}
           disabled={disabled}
           type={showToggle ? (showPassword ? "text" : "password") : type}
           value={value}
@@ -37,9 +41,11 @@ export default function InputField({
           onBlur={onBlur}
           maxLength={maxLength}
           required={required}
+          autoComplete={autoComplete}
           className={`w-full px-4 py-2 text-sm rounded-[15px] bg-transparent ring-1 ring-[#CACACA] 
             focus:ring-2 focus:ring-gray-200 focus:outline-none pr-4 placeholder:font-light placeholder:text-[12px] placeholder:text-[#727272] ${className || ""
             }`}
+          {...props}
         />
         {showToggle && (
           <button
