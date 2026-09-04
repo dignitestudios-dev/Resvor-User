@@ -31,6 +31,14 @@ export const submitVerifyPhone = async (payload) => {
   return data;
 };
 
+export const submitUpdateOnboardingPhone = async (payload) => {
+  const { data } = await axios.patch(
+    "/auth/onboarding/phone-number",
+    payload,
+  );
+  return data;
+};
+
 export const submitPersonalDetails = async (payload) => {
   for (let [key, value] of payload.entries()) {
     console.log("32 Resvor -User5 ====> ~ ~ ~ ", key, value);

@@ -76,6 +76,9 @@ export default function SignUp() {
     { icon: FaClipboardList, title: "Subscription" },
   ];
   const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState(
+    () => localStorage.getItem("user_phone_number") || ""
+  );
 
   const steps = providerSteps.map((step, index) => ({
     ...step,
@@ -141,10 +144,19 @@ export default function SignUp() {
             <PersonalDetails
               handleNext={handleNext}
               handlePrevious={handlePrevious}
+              setPhoneNumber={setPhoneNumber}
             />
           ) : currentStep === 3 ? (
             <VerifyPhone
               email={email}
+              phoneNumber={
+                phoneNumber ||
+                authData?.data?.user?.phoneNumber ||
+                authData?.data?.phoneNumber ||
+                localStorage.getItem("user_phone_number") ||
+                ""
+              }
+              setPhoneNumber={setPhoneNumber}
               handleNext={handleNext}
               handlePrevious={handlePrevious}
             />

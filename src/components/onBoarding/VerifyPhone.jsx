@@ -9,10 +9,25 @@ import { useVerifyPhone } from "../../hooks/mutations/OnboardingMutations";
 import { ErrorToast } from "../global/Toaster";
 import Cookies from "js-cookie";
 import { setStoredTokenType } from "../../lib/authSession";
+import { phoneFormatter } from "../../lib/helpers";
+import ChangePhoneModal from "./ChangePhoneModal";
 
-const VerifyPhone = ({ handleNext, handlePrevious }) => {
+const VerifyPhone = ({ handleNext, handlePrevious, phoneNumber, setPhoneNumber }) => {
   const inputs = useRef([]);
   const verifyPhoneMutation = useVerifyPhone();
+
+  const [currentPhone, setCurrentPhone] = useState(
+    () => phoneNumber || localStorage.getItem("user_phone_number") || ""
+  );
+  const [isChangePhoneOpen, setIsChangePhoneOpen] = useState(false);
+
+  useEffect(() => {
+    if (phoneNumber) {
+      setCurrentPhone(phoneNumber);
+    }
+  }, [phoneNumber]);
+
+  const displayPhone = currentPhone ? (phoneFormatter(currentPhone) || currentPhone) : "";
 
   const [otp, setOtp] = useState(Array(5).fill(""));
   const isOtpComplete = otp.every((digit) => digit !== "");
@@ -135,6 +150,15 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
     setIsActive(true);
   };
 
+  const handlePhoneUpdated = (newPhone) => {
+    setCurrentPhone(newPhone);
+    if (setPhoneNumber) {
+      setPhoneNumber(newPhone);
+    }
+    setOtp(Array(5).fill(""));
+    handleRestart();
+  };
+
   return (
     <div className="grid lg:grid-cols-1 grid-cols-1 w-full text-white">
       <div className=" absolute top-4 right-4">
@@ -155,12 +179,20 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
         <div>
           <img src={forgotLogo} alt="logo" className="w-[220px]" />
         </div>
-        <div className="mt-4 py-4 space-y-3 xxl:w-[400px] xxl:ml-12 text-center">
+        <div className="mt-4 py-4 space-y-3 xxl:w-[450px] xxl:ml-12 text-center">
           <p className=" xxl:text-[48px] text-[32px] font-[600] capitalize">
             verification
           </p>
-          <p className="xxl:text-[26px] text-[16px] text-[#E6E6E6] w-[384px] ">
-            Please enter OTP sent to your phone.
+          <p className="text-[14px] sm:text-[16px] lg:text-[18px] text-[#E6E6E6] max-w-[440px]">
+            {displayPhone ? (
+              <>
+                A One-Time Password (OTP) has been sent to your registered phone{" "}
+                <span className="font-semibold text-white">{displayPhone}</span>.
+                Please enter it to proceed.
+              </>
+            ) : (
+              "Please enter OTP sent to your phone."
+            )}
           </p>
         </div>
 
@@ -208,13 +240,19 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
               </p>
             </div>
             <div className="w-full flex justify-center pl-4 mt-3 space-y-4 ">
-              <div className="w-[360px] ">
+              <div className="w-[360px] space-y-3">
                 <AuthButton
                   text="Verify"
                   loading={verifyPhoneMutation.isPending}
                   disabled={!isOtpComplete || !isValidOtp || verifyPhoneMutation.isPending}
                 />
-
+                <button
+                  type="button"
+                  onClick={() => setIsChangePhoneOpen(true)}
+                  className="w-full text-center text-[14px] text-[#CACACA] hover:text-white underline font-[500] transition cursor-pointer"
+                >
+                  Change phone number
+                </button>
               </div>
             </div>
           </div>
@@ -226,6 +264,14 @@ const VerifyPhone = ({ handleNext, handlePrevious }) => {
           onClick={handleCloseSuccessModal}
           title="Number verified"
           description="Your number has been verified successfully."
+        />
+      )}
+      {isChangePhoneOpen && (
+        <ChangePhoneModal
+          isOpen={isChangePhoneOpen}
+          onClose={() => setIsChangePhoneOpen(false)}
+          currentPhoneNumber={currentPhone}
+          onSuccess={handlePhoneUpdated}
         />
       )}
     </div>

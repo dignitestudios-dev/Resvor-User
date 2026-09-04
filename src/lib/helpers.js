@@ -32,8 +32,13 @@ export const phoneToE164 = (formattedPhone, countryCode = "+1") => {
   if (!formattedPhone || typeof formattedPhone !== "string") {
     return "";
   }
-  const digits = formattedPhone.replace(/\D/g, ""); // Strip all non-numeric chars
+  const trimmed = formattedPhone.trim();
+  if (trimmed.startsWith("+")) {
+    return `+${trimmed.slice(1).replace(/\D/g, "")}`;
+  }
+  const digits = trimmed.replace(/\D/g, ""); // Strip all non-numeric chars
   // Remove leading 0 if present (e.g. 03001234567 → 3001234567)
   const normalized = digits.startsWith("0") ? digits.slice(1) : digits;
   return `${countryCode}${normalized}`;
 };
+

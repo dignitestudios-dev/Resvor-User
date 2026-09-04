@@ -130,7 +130,7 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
       );
     }
   };
-
+console.log(email,"email===")
   return (
     <div className="grid lg:grid-cols-1 grid-cols-1 w-full text-white">
       <div className=" absolute top-4 right-4">
@@ -156,7 +156,7 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
             verification
           </p>
           <p className="text-[14px] sm:text-[16px] lg:text-[18px] text-[#E6E6E6] w-[440px]">
-            A One-Time Password (OTP) has been sent to your registered email.
+            A One-Time Password (OTP) has been sent to your registered email {email}.
             Please enter it to proceed.
           </p>
         </div>

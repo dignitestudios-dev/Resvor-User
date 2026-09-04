@@ -1,5 +1,5 @@
 import { deleteGuest } from "../api/Delete";
-import { submitLogin, submitSignUp, submitVerifyEmail, submitPersonalDetails, submitVerifyPhone, submitPreferences, submitForgotPassword, submitVerifyForgotOtp, submitResetPassword, getLounges, resendEmailVerificationOtp, submitLogout, addGuest, updateGuest, submitCampaign, submitWalletTopup, submitUpdateFcmToken, submitChangePassword } from "../api/Post";
+import { submitLogin, submitSignUp, submitVerifyEmail, submitPersonalDetails, submitVerifyPhone, submitUpdateOnboardingPhone, submitPreferences, submitForgotPassword, submitVerifyForgotOtp, submitResetPassword, getLounges, resendEmailVerificationOtp, submitLogout, addGuest, updateGuest, submitCampaign, submitWalletTopup, submitUpdateFcmToken, submitChangePassword } from "../api/Post";
 import { useMutation } from "@tanstack/react-query";
 
 export const useChangePassword = () => {
@@ -58,6 +58,12 @@ export const useResendEmailOtp = () => {
 export const useVerifyPhone = () => {
   return useMutation({
     mutationFn: submitVerifyPhone,
+  });
+};
+
+export const useUpdateOnboardingPhone = () => {
+  return useMutation({
+    mutationFn: submitUpdateOnboardingPhone,
   });
 };
 

@@ -27,7 +27,7 @@ const formatDateMMDDYY = (dateObj) => {
   return `${mm}/${dd}/${yyyy}`;
 };
 
-const PersonalDetails = ({ handleNext, handlePrevious }) => {
+const PersonalDetails = ({ handleNext, handlePrevious, setPhoneNumber }) => {
   // const [dateModalData, setDateModalData] = useState("");
   const [fieldError, setFieldError] = useState("");
 
@@ -86,9 +86,23 @@ const PersonalDetails = ({ handleNext, handlePrevious }) => {
 
 
 
+        const enteredPhone = phoneToE164(values.number) || values.number;
+        if (setPhoneNumber) {
+          setPhoneNumber(values.number || enteredPhone);
+        }
+        if (values.number || enteredPhone) {
+          localStorage.setItem("user_phone_number", values.number || enteredPhone);
+        }
+
         const response = await personalDetailsMutation.mutateAsync(formData);
 
         if (response?.success) {
+          const apiPhone = response?.data?.user?.phoneNumber || response?.data?.phoneNumber;
+          if (apiPhone) {
+            setPhoneNumber?.(apiPhone);
+            localStorage.setItem("user_phone_number", apiPhone);
+          }
+
           // Persist any token returned by this step
           const token = response?.data?.token || response?.data?.accessToken;
           const tokenType = response?.data?.tokenType;
