@@ -20,6 +20,8 @@ import { clearStoredAuthSession } from "../../lib/authSession";
 import { useQueryClient } from "@tanstack/react-query";
 import useApp from "../../context/AppContext";
 
+import { submitLogout } from "../../hooks/api/Post";
+
 export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -95,7 +97,19 @@ export default function SignUp() {
     }
   };
 
-  const handleClearSessionAndRedirect = () => {
+  const handleClearSessionAndRedirect = async () => {
+    try {
+      const fcmToken =
+        localStorage.getItem("fcmToken") ||
+        localStorage.getItem("fcm_token") ||
+        null;
+      if (fcmToken) {
+        await submitLogout({ fcmToken });
+      }
+    } catch (e) {
+      console.error("Logout error:", e);
+    }
+
     // Clear all cookies
     const allCookies = Cookies.get();
     if (allCookies) {
@@ -105,19 +119,20 @@ export default function SignUp() {
       });
     }
 
-    // Clear localStorage
+    // Clear localStorage & sessionStorage
     localStorage.clear();
+    sessionStorage.clear();
 
     // Clear auth session helpers & React Query cache
     clearStoredAuthSession();
     queryClient.setQueryData(["auth-me"], null);
-    queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+    queryClient.removeQueries({ queryKey: ["auth-me"] });
     queryClient.clear();
     setStepName("");
     setCurrentStep(0);
 
     // Redirect user to signup page
-    navigate("/auth/signup", { replace: true });
+    window.location.href = "/auth/signup";
   };
 
   const handlePrevious = () => {

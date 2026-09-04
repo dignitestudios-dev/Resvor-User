@@ -19,6 +19,19 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
   const [isActive, setIsActive] = useState(true);
   const [seconds, setSeconds] = useState(30);
   const [requestSendModal, setRequestSendModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleChangeEmail = async () => {
+    setIsLoggingOut(true);
+    try {
+      if (handlePrevious) {
+        await handlePrevious();
+      }
+    } catch (err) {
+      console.error("Change email error:", err);
+      setIsLoggingOut(false);
+    }
+  };
 
 
   const handleChange = (e, index) => {
@@ -130,14 +143,14 @@ const VerifyEmail = ({ handleNext, handlePrevious, email }) => {
       );
     }
   };
-console.log(email,"email===")
   return (
     <div className="grid lg:grid-cols-1 grid-cols-1 w-full text-white">
       <div className=" absolute top-4 right-4">
         <button
-          className="group relative bg-white rounded-md p-2 cursor-pointer"
+          className="group relative bg-white rounded-md p-2 cursor-pointer disabled:opacity-50"
           type="button"
-          onClick={() => handlePrevious()}
+          disabled={isLoggingOut}
+          onClick={handleChangeEmail}
         >
           {/* Tooltip text */}
           <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 scale-0 rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 transition-all group-hover:scale-100 group-hover:opacity-100">
@@ -205,26 +218,22 @@ console.log(email,"email===")
               </p>
             </div>
             <div className="w-full flex justify-center pl-4 mt-4 space-y-4 ">
-              <div className="w-[360px] ">
-                <AuthButton text="Verify" loading={verifyEmailMutation.isPending}
-                  disabled={!isOtpComplete || !isValidOtp || verifyEmailMutation.isPending}
-
-
+              <div className="w-[360px] space-y-3">
+                <AuthButton
+                  text="Verify"
+                  loading={verifyEmailMutation.isPending}
+                  disabled={!isOtpComplete || !isValidOtp || verifyEmailMutation.isPending || isLoggingOut}
                 />
+                <button
+                  type="button"
+                  disabled={isLoggingOut}
+                  onClick={handleChangeEmail}
+                  className="w-full text-center text-[14px] text-[#CACACA] hover:text-white underline font-[500] transition cursor-pointer disabled:opacity-50"
+                >
+                  {isLoggingOut ? "Logging out..." : "Change Email"}
+                </button>
               </div>
             </div>
-            {/* <div className="w-full flex justify-center pl-4 mt-4 space-y-4 ">
-              <button
-                onClick={() => handlePrevious()}
-                type="button"
-                className="w-[360px] px-4 py-2 text-sm font-semibold text-red-500 
-             border border-red-400 rounded-lg 
-             hover:bg-red-50 hover:text-red-600 
-             transition-colors duration-200 ease-in-out"
-              >
-                Wrong email? Change it
-              </button>
-            </div> */}
           </div>
         </form>
       </div>
