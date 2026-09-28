@@ -116,9 +116,9 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
         eventType: values.eventType,
         description: values.description || values.eventName,
         date: values.startDate.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
+          month: "2-digit",
           day: "2-digit",
+          year: "numeric",
         }),
         startTime: values.startTime,
         endTime: values.endTime,

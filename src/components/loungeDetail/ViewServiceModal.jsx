@@ -56,9 +56,9 @@ const ViewServiceModal = ({ service, onClose }) => {
 
   const formattedDate = service?.createdAt
     ? new Date(service.createdAt).toLocaleDateString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
         year: "numeric",
-        month: "long",
-        day: "numeric",
       })
     : "N/A";
 

@@ -230,25 +230,25 @@ export const guests = [
 
 export const invoices = [
   {
-    date: "Feb 19, 2024",
+    date: "02/19/2024",
     description: "Subscription plan",
     total: "$150.00",
     status: "Paid",
   },
   {
-    date: "Feb 07, 2024",
+    date: "02/07/2024",
     description: "Subscription plan",
     total: "$150.00",
     status: "Paid",
   },
   {
-    date: "Feb 02, 2024",
+    date: "02/02/2024",
     description: "Subscription plan",
     total: "$150.00",
     status: "Paid",
   },
   {
-    date: "Jan 30, 2024",
+    date: "01/30/2024",
     description: "Subscription plan",
     total: "$150.00",
     status: "Paid",

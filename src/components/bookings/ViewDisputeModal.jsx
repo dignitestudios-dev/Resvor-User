@@ -7,9 +7,9 @@ const formatDate = (isoStr) => {
   const d = new Date(isoStr);
   if (Number.isNaN(d.getTime())) return String(isoStr);
   return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
+    month: "2-digit",
     day: "2-digit",
+    year: "numeric",
   });
 };
 

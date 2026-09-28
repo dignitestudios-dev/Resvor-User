@@ -433,7 +433,7 @@ const EditProfileModal = ({
           onClose={closeModal}
           initialData={specialDatesData}
           setFieldValue={handleTagsFieldValue}
-          setFieldError={() => {}}
+          setFieldError={() => { }}
         />
       )}
 

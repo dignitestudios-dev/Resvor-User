@@ -33,7 +33,11 @@ const formatSidebarTime = (dateStr) => {
   if (diffMin < 60) return `${diffMin} min ago`;
   const diffHr = Math.floor(diffMin / 60);
   if (diffHr < 24) return `${diffHr} hr ago`;
-  return d.toLocaleDateString();
+  return d.toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  });
 };
 
 const getOtherParticipant = (chat, myId) => {

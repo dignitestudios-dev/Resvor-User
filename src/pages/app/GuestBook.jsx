@@ -79,6 +79,17 @@ const GuestBook = () => {
     }
   };
 
+  const formatGuestDate = (dateVal) => {
+    if (!dateVal) return "-";
+    const d = new Date(dateVal);
+    if (Number.isNaN(d.getTime())) return String(dateVal);
+    return d.toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
+
   return (
     <>
       <div className="flex items-center pt-[16px] pb-[18em] homeSectionImage">
@@ -160,13 +171,15 @@ const GuestBook = () => {
                         <td className="pl-8 pr-4 py-6 font-semibold break-words">
                           {user.loungeId?.name || "N/A"}
                         </td>
-                        <td className="px-4 py-6">{user.fullName.slice(0,20)}</td>
+                        <td className="px-4 py-6">{user.fullName.slice(0, 20)}</td>
                         <td className="px-4 py-6">{user.email}</td>
 
                         <td className="px-4 py-6 break-words">
-                          {user.specialDates?.length > 0
-                            ? user.specialDates[0]
-                            : new Date(user.createdAt).toLocaleDateString()}
+                          {formatGuestDate(
+                            user.specialDates?.length > 0
+                              ? user.specialDates[0]
+                              : user.createdAt
+                          )}
                         </td>
                         <td className="px-4 py-6 text-nowrap">
                           <div className="flex items-center gap-2">
@@ -232,9 +245,11 @@ const GuestBook = () => {
                   <div className="flex justify-between mb-2">
                     <span className="text-gray-500 text-sm font-medium">Date</span>
                     <span className="text-gray-800">
-                      {user.specialDates?.length > 0
-                        ? user.specialDates[0]
-                        : new Date(user.createdAt).toLocaleDateString()}
+                      {formatGuestDate(
+                        user.specialDates?.length > 0
+                          ? user.specialDates[0]
+                          : user.createdAt
+                      )}
                     </span>
                   </div>
 

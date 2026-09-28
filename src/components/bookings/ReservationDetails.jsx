@@ -135,9 +135,9 @@ const formatDate = (value) => {
   if (Number.isNaN(dateValue.getTime())) return "-";
 
   return dateValue.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
+    month: "2-digit",
     day: "2-digit",
+    year: "numeric",
   });
 };
 

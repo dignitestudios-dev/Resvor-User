@@ -141,7 +141,7 @@ const Notifications = () => {
                       <div className="flex flex-col items-end shrink-0 ml-4">
                         <p className="text-xs text-gray-500 mb-1">
                           {item?.createdAt
-                            ? moment(item.createdAt).format("MM-DD-YYYY hh:mm A")
+                            ? moment(item.createdAt).format("MM/DD/YYYY hh:mm A")
                             : item?.createdAt || ""}
                         </p>
                         {!(item?.isRead ?? item?.read) && (

@@ -21,9 +21,11 @@ const centsToDollars = (cents) => (cents / 100).toFixed(2);
 
 const formatDate = (iso) => {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
     year: "numeric",
   });
 };

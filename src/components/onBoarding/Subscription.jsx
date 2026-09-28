@@ -117,7 +117,7 @@ const Subscription = ({ handlePrevious }) => {
               Subscription Plans
             </p>
             <p className="text-[14px] sm:text-[16px] text-gray-300">
-              Choose Your Plan to Start Creating Events.
+              Choose Your Plans to Start Creating Events.
             </p>
           </div>
 

@@ -27,18 +27,16 @@ const CustomInput = forwardRef(
       onClick={disabled ? undefined : onClick}
       id={id}
       data-name={name}
-      className={`w-full px-4 py-2.5 text-sm rounded-[14px] bg-transparent ring-1 cursor-pointer flex items-center justify-between transition select-none ${
-        hasError
+      className={`w-full px-4 py-2.5 text-sm rounded-[14px] bg-transparent ring-1 cursor-pointer flex items-center justify-between transition select-none ${hasError
           ? "ring-red-500 focus:ring-red-500"
           : "ring-[#CACACA] hover:ring-gray-400"
-      } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+        } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       <span
-        className={`${
-          value
+        className={`${value
             ? "text-[#181818] font-normal text-[13px]"
             : "text-[#CACACA] font-light text-[12px]"
-        }`}
+          }`}
       >
         {value || placeholder}
       </span>

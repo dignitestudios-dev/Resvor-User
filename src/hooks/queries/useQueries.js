@@ -399,6 +399,21 @@ export const useRetryCampaign = () => {
   });
 };
 
+const createCampaign = async (payload) => {
+  const { data } = await axios.post("/campaigns", payload, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return data;
+};
+
+export const useCreateCampaign = () => {
+  return useMutation({
+    mutationFn: createCampaign,
+  });
+};
+
 
 
 const fetchMe = async () => {

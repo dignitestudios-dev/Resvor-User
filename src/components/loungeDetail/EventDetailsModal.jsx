@@ -12,7 +12,7 @@ const EventDetailsModal = ({
   console.log("🚀 ~ EventDetailsModal ~ serviceData:", serviceData);
   const {
     eventType = "Birthday Party",
-    date = "26 Dec, 2024",
+    date = "12/26/2024",
     startTime = "06:00 PM",
     endTime = "06:00 PM",
     name = "Mike Smith",

@@ -1,28 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { flyerData } from "../../static/MockData";
 import { useFlyerHistory } from "../../hooks/queries/useQueries";
 import { IoIosArrowForward } from "react-icons/io";
+import { FiPlus } from "react-icons/fi";
+import AddCustomFlyerModal from "../../components/flayer/AddCustomFlyerModal";
+import SendInvitationForm from "../../components/flayer/SendInvitationForm";
+import ConfirmPopup from "../../components/flayer/ConfirmPopup";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 const formatDateLabel = (isoValue) => {
-  // if (!isoValue) return "-";
-  // const d = new Date(isoValue);
-  // if (Number.isNaN(d.getTime())) return "-";
-  // return d.toLocaleDateString("en-US", {
-  //   year: "numeric",
-  //   month: "2-digit",
-  //   day: "2-digit",
-  // });
   if (!isoValue) return "—";
-  return new Date(isoValue).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
+  const d = new Date(isoValue);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 };
 
@@ -191,7 +188,42 @@ const FlyerHistoryTable = ({
 
 const Flyers = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("flyers");
+  const location = useLocation();
+  const queryClient = useQueryClient();
+
+  const [activeTab, setActiveTab] = useState(location.state?.tab || "flyers");
+
+  // Custom flyer & campaign modals state
+  const [isAddCustomFlyerOpen, setIsAddCustomFlyerOpen] = useState(false);
+  const [isSendInvitationOpen, setIsSendInvitationOpen] = useState(false);
+  const [isConfirmPopupOpen, setIsConfirmPopupOpen] = useState(false);
+  const [customFlyerFile, setCustomFlyerFile] = useState(null);
+
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    }
+  }, [location.state]);
+
+  // Step 3: When flyer is picked, close upload modal and open send invitation form
+  const handleAddFlyerFile = (file) => {
+    setCustomFlyerFile(file);
+    setIsAddCustomFlyerOpen(false);
+    setIsSendInvitationOpen(true);
+  };
+
+  // Step 6: On success, close form and show ConfirmPopup, invalidate query
+  const handleCampaignSuccess = () => {
+    setIsSendInvitationOpen(false);
+    setIsConfirmPopupOpen(true);
+    queryClient.invalidateQueries({ queryKey: ["flyer-history"] });
+  };
+
+  const handleConfirmClose = () => {
+    setIsConfirmPopupOpen(false);
+    setCustomFlyerFile(null);
+    setActiveTab("history");
+  };
 
   // Pagination for history
   const [historyPage, setHistoryPage] = useState(1);
@@ -274,26 +306,74 @@ const Flyers = () => {
       {/* ── Content Card ── */}
       <div className="px-5 lg:px-40">
         <div
-          className="mx-auto bg-white rounded-2xl -mt-[16em]  min-h-[200px]"
+          className="mx-auto bg-white rounded-2xl -mt-[16em] min-h-[200px]"
           style={{ boxShadow: "0px 4px 30px 0px #00000026" }}
         >
           {activeTab === "flyers" ? (
-            /* ── Flyers Grid (original) ── */
-            <div className="grid grid-cols-5 p-4 gap-4">
-              {flyerData.map((item) => (
-                <div
-                  onClick={() => navigate(`/app/create-flyer/${item.id}`)}
-                  key={item.id}
-                  className="space-y-2 cursor-pointer"
-                >
-                  <div className="border border-[#F4F4F4] rounded-[10px]">
-                    <img src={item.image} alt="flyer" className="h-[273px]" />
-                  </div>
-                  <p className="text-[#202224] text-center text-[16px] font-[600]">
-                    {item.name}
+            <div className="p-6">
+              {/* Header Action Row */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 gap-4 border-b border-gray-100">
+                <div>
+                  <h3 className="text-[20px] font-bold text-[#202224]">
+                    Select a Template or Upload Your Own
+                  </h3>
+                  <p className="text-[13px] text-gray-500 mt-0.5">
+                    Pick from our curated templates or upload your custom flyer image
                   </p>
                 </div>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => setIsAddCustomFlyerOpen(true)}
+                  className="bg-gradient-to-l from-[#012C57] to-[#061523] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:opacity-90 transition flex items-center gap-2 cursor-pointer shadow-md shrink-0"
+                >
+                  <FiPlus className="text-lg" />
+                  Add Custom Flyer
+                </button>
+              </div>
+
+              {/* Flyers Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 pt-6 gap-5">
+                {/* Custom Flyer Upload Tile */}
+                <div
+                  onClick={() => setIsAddCustomFlyerOpen(true)}
+                  className="space-y-2 cursor-pointer group"
+                >
+                  <div className="border-2 border-dashed border-[#012C57]/30 hover:border-[#012C57] bg-blue-50/20 hover:bg-blue-50/60 rounded-[10px] h-[273px] flex flex-col items-center justify-center text-center p-4 transition">
+                    <div className="w-12 h-12 rounded-full bg-[#012C57] text-white flex items-center justify-center mb-3 group-hover:scale-110 transition shadow-sm">
+                      <FiPlus className="text-2xl" />
+                    </div>
+                    <p className="text-[#012C57] font-semibold text-[14px]">
+                      Add Custom Flyer
+                    </p>
+                    <p className="text-gray-400 text-[11px] mt-1">
+                      Upload .jpeg, .jpg, .png
+                    </p>
+                  </div>
+                  <p className="text-[#202224] text-center text-[15px] font-[600]">
+                    Custom Flyer
+                  </p>
+                </div>
+
+                {/* Predefined Templates */}
+                {flyerData.map((item) => (
+                  <div
+                    onClick={() => navigate(`/app/create-flyer/${item.id}`)}
+                    key={item.id}
+                    className="space-y-2 cursor-pointer group"
+                  >
+                    <div className="border border-[#F4F4F4] rounded-[10px] overflow-hidden group-hover:shadow-md transition">
+                      <img
+                        src={item.image}
+                        alt="flyer"
+                        className="h-[273px] w-full object-cover group-hover:scale-105 transition duration-300"
+                      />
+                    </div>
+                    <p className="text-[#202224] text-center text-[16px] font-[600]">
+                      {item.name}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
             /* ── History Table ── */
@@ -309,6 +389,30 @@ const Flyers = () => {
           )}
         </div>
       </div>
+
+      {/* Step 2: Add Custom Flyer Modal */}
+      <AddCustomFlyerModal
+        isOpen={isAddCustomFlyerOpen}
+        onClose={() => setIsAddCustomFlyerOpen(false)}
+        onAdd={handleAddFlyerFile}
+      />
+
+      {/* Step 4 & 5: Send Invitation Form */}
+      <SendInvitationForm
+        isOpen={isSendInvitationOpen}
+        onClose={() => setIsSendInvitationOpen(false)}
+        flyerFile={customFlyerFile}
+        onSuccess={handleCampaignSuccess}
+      />
+
+      {/* Step 6: Confirmation Success Popup */}
+      <ConfirmPopup
+        isOpen={isConfirmPopupOpen}
+        onClose={handleConfirmClose}
+        title="Invitation Sent"
+        description="Your invitation has been sent successfully."
+        buttonText="View Campaign History"
+      />
     </>
   );
 };

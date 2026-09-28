@@ -393,7 +393,7 @@ const BookingModal = ({ onClose, onNext, loungeId, operatingHours, bookingData }
       name: formData.name,
       email: formData.email,
       phone: phoneFormatter(formData.phone),
-      date: startDate ? startDate.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" }) : "",
+      date: startDate ? startDate.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" }) : "",
       time: startTime,
       endTime: endTime,
       guestCount: `${formData.guestCount} Guests`,

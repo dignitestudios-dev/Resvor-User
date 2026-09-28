@@ -130,20 +130,14 @@ const ProfileDetail = ({ user, loading }) => {
       } else {
         [month, day, year] = parts;
       }
-      const months = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-      ];
-      const mIdx = parseInt(month, 10) - 1;
-      if (mIdx >= 0 && mIdx < 12) {
-        return `${months[mIdx]} ${parseInt(day, 10)}${year ? `, ${year}` : ""}`;
-      }
+      const pad = (n) => String(parseInt(n, 10)).padStart(2, "0");
+      return `${pad(month)}/${pad(day)}/${year || ""}`;
     }
     const dateObj = new Date(dateStr);
     if (!isNaN(dateObj.getTime())) {
       return dateObj.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
+        month: "2-digit",
+        day: "2-digit",
         year: "numeric",
       });
     }

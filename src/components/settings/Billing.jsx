@@ -10,7 +10,7 @@ const Billing = () => {
             Next Invoice Issue Date
           </p>
           <h3 className="text-[25.66px] font-semibold text-[#181818]">
-            Dec 29, 2024
+            12/29/2024
           </h3>
         </div>
         <div className="py-6 px-8 border rounded-[7px] ">
