@@ -131,23 +131,23 @@ const GuestBook = () => {
                   <tr className="bg-[#E8E8FF] text-[14.82px]">
                     <th
                       onClick={() => requestSort("loungeId")}
-                      className="w-1/5 pl-8 pr-4 py-5 text-left font-[500] cursor-pointer break-words"
+                      className="w-[20%] pl-8 pr-4 py-5 text-left font-[500] cursor-pointer"
                     >
                       Lounge
                     </th>
                     <th
                       onClick={() => requestSort("fullName")}
-                      className="w-1/5 px-4 py-5 text-left font-[500] cursor-pointer break-words"
+                      className="w-[28%] px-4 py-5 text-left font-[500] cursor-pointer"
                     >
                       Full Name
                     </th>
-                    <th className="w-1/5 px-4 py-5 text-left font-[500] break-words">
+                    <th className="w-[24%] px-4 py-5 text-left font-[500]">
                       Email
                     </th>
-                    <th className="w-1/5 px-4 py-5 text-left font-[500] break-words">
+                    <th className="w-[16%] px-4 py-5 text-left font-[500]">
                       Created Date
                     </th>
-                    <th className="w-1/5 px-4 py-5 text-left font-[500] break-words">
+                    <th className="w-[12%] px-4 py-5 text-left font-[500]">
                       Action
                     </th>
                   </tr>
@@ -163,50 +163,108 @@ const GuestBook = () => {
                       </td>
                     </tr>
                   ) : (
-                    sortedUsers.map((user) => (
-                      <tr
-                        key={user._id}
-                        className="border-b border-[#D4D4D4] text-[14.82px]"
-                      >
-                        <td className="pl-8 pr-4 py-6 font-semibold break-words">
-                          {user.loungeId?.name || "N/A"}
-                        </td>
-                        <td className="px-4 py-6">{user.fullName.slice(0, 20)}</td>
-                        <td className="px-4 py-6">{user.email}</td>
+                    sortedUsers.map((user) => {
+                      const displayName =
+                        user.fullName ||
+                        `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+                        "Guest";
 
-                        <td className="px-4 py-6 break-words">
-                          {formatGuestDate(
-                            user.specialDates?.length > 0
-                              ? user.specialDates[0]
-                              : user.createdAt
-                          )}
-                        </td>
-                        <td className="px-4 py-6 text-nowrap">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => setEditGuest(user)}
-                              type="button"
+                      const photoUrl =
+                        typeof user?.photo === "object" && user?.photo?.location
+                          ? user.photo.location
+                          : typeof user?.photo === "string"
+                          ? user.photo
+                          : null;
+
+                      const initials = (
+                        (user?.firstName?.[0] || "") +
+                        (user?.lastName?.[0] || displayName?.[0] || "G")
+                      ).toUpperCase();
+
+                      return (
+                        <tr
+                          key={user._id}
+                          className="border-b border-[#D4D4D4] text-[14.82px]"
+                        >
+                          <td className="pl-8 pr-4 py-6 font-semibold">
+                            <div
+                              className="truncate max-w-[180px]"
+                              title={user.loungeId?.name || "N/A"}
                             >
-                              <img
-                                src={editIcon}
-                                alt="edit"
-                                className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
-                              />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setGuestToDelete(user)}
+                              {user.loungeId?.name || "N/A"}
+                            </div>
+                          </td>
+                          <td className="px-4 py-6">
+                            <div className="flex items-center gap-3 min-w-0">
+                              {photoUrl ? (
+                                <img
+                                  src={photoUrl}
+                                  alt={displayName}
+                                  className="w-10 h-10 rounded-full object-cover border border-gray-200 shrink-0"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-[#0F2232] text-white flex items-center justify-center font-bold text-xs uppercase shrink-0">
+                                  {initials}
+                                </div>
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <p
+                                  className="font-semibold text-gray-900 leading-tight truncate"
+                                  title={displayName}
+                                >
+                                  {displayName}
+                                </p>
+                                {user.phoneNumber && (
+                                  <p className="text-xs text-gray-500 mt-1 truncate">
+                                    {user.phoneNumber}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-6 text-gray-700">
+                            <div
+                              className="truncate max-w-[200px]"
+                              title={user.email}
                             >
-                              <img
-                                src={binIcon}
-                                alt="delete"
-                                className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
-                              />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                              {user.email || "-"}
+                            </div>
+                          </td>
+
+                          <td className="px-4 py-6 text-gray-700">
+                            {formatGuestDate(
+                              user.specialDates?.length > 0
+                                ? (user.specialDates[0]?.date || user.specialDates[0])
+                                : user.createdAt
+                            )}
+                          </td>
+                          <td className="px-4 py-6 text-nowrap">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => setEditGuest(user)}
+                                type="button"
+                              >
+                                <img
+                                  src={editIcon}
+                                  alt="edit"
+                                  className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
+                                />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setGuestToDelete(user)}
+                              >
+                                <img
+                                  src={binIcon}
+                                  alt="delete"
+                                  className="w-5 hover:bg-slate-50 hover:p-[1px] hover:rounded-full"
+                                />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -220,52 +278,88 @@ const GuestBook = () => {
             ) : sortedUsers.length === 0 ? (
               <div className="text-center py-10">Nothing here yet. Add a new guest to get started</div>
             ) : (
-              sortedUsers.map((user) => (
-                <div
-                  key={user._id}
-                  className="border rounded-xl p-4 shadow-sm bg-gray-50 hover:bg-white transition"
-                >
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-500 text-sm font-medium">Lounge</span>
-                    <span className="text-gray-800 font-semibold">
-                      {user.loungeId?.name || "N/A"}
-                    </span>
-                  </div>
+              sortedUsers.map((user) => {
+                const displayName =
+                  user.fullName ||
+                  `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+                  "Guest";
 
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-500 text-sm font-medium">Full Name</span>
-                    <span className="text-gray-800">{user.fullName}</span>
-                  </div>
+                const photoUrl =
+                  typeof user?.photo === "object" && user?.photo?.location
+                    ? user.photo.location
+                    : typeof user?.photo === "string"
+                    ? user.photo
+                    : null;
 
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-500 text-sm font-medium">Email</span>
-                    <span className="text-gray-800">{user.email}</span>
-                  </div>
+                const initials = (
+                  (user?.firstName?.[0] || "") +
+                  (user?.lastName?.[0] || displayName?.[0] || "G")
+                ).toUpperCase();
 
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-500 text-sm font-medium">Date</span>
-                    <span className="text-gray-800">
-                      {formatGuestDate(
-                        user.specialDates?.length > 0
-                          ? user.specialDates[0]
-                          : user.createdAt
+                return (
+                  <div
+                    key={user._id}
+                    className="border rounded-xl p-4 shadow-sm bg-gray-50 hover:bg-white transition"
+                  >
+                    <div className="flex items-center gap-3 mb-3 pb-3 border-b border-gray-200">
+                      {photoUrl ? (
+                        <img
+                          src={photoUrl}
+                          alt={displayName}
+                          className="w-10 h-10 rounded-full object-cover border border-gray-200 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-[#0F2232] text-white flex items-center justify-center font-bold text-xs uppercase shrink-0">
+                          {initials}
+                        </div>
                       )}
-                    </span>
-                  </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-gray-900 font-semibold truncate" title={displayName}>
+                          {displayName}
+                        </h4>
+                        {user.phoneNumber && (
+                          <p className="text-xs text-gray-500 truncate">{user.phoneNumber}</p>
+                        )}
+                      </div>
+                    </div>
 
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm font-medium">Action</span>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setEditGuest(user)} type="button">
-                        <img src={editIcon} alt="edit" className="w-5" />
-                      </button>
-                      <button type="button" onClick={() => setGuestToDelete(user)}>
-                        <img src={binIcon} alt="delete" className="w-5" />
-                      </button>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-500 text-sm font-medium">Lounge</span>
+                      <span className="text-gray-800 font-semibold truncate max-w-[200px]">
+                        {user.loungeId?.name || "N/A"}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-500 text-sm font-medium">Email</span>
+                      <span className="text-gray-800 truncate max-w-[200px]">{user.email || "-"}</span>
+                    </div>
+
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-500 text-sm font-medium">Date</span>
+                      <span className="text-gray-800">
+                        {formatGuestDate(
+                          user.specialDates?.length > 0
+                            ? (user.specialDates[0]?.date || user.specialDates[0])
+                            : user.createdAt
+                        )}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between mt-3 pt-2 border-t border-gray-100">
+                      <span className="text-gray-500 text-sm font-medium">Action</span>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => setEditGuest(user)} type="button">
+                          <img src={editIcon} alt="edit" className="w-5" />
+                        </button>
+                        <button type="button" onClick={() => setGuestToDelete(user)}>
+                          <img src={binIcon} alt="delete" className="w-5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 

@@ -51,10 +51,15 @@ export const useLoungeDetails = (loungeId) => {
   });
 };
 
-export const useGuestBook = (page, limit) => {
+export const useGuestBook = (pageOrParams = 1, limit = 20, filters = {}) => {
+  const params =
+    typeof pageOrParams === "object" && pageOrParams !== null
+      ? pageOrParams
+      : { page: pageOrParams, limit, ...filters };
+
   return useQuery({
-    queryKey: ["guestbook", page, limit],
-    queryFn: () => getGuestBook(page, limit),
+    queryKey: ["guestbook", params],
+    queryFn: () => getGuestBook(params),
   });
 };
 

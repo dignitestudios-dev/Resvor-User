@@ -31,143 +31,67 @@ export const changePasswordSchema = Yup.object().shape({
 });
 
 export const guestbookSchema = Yup.object({
-  name: Yup.string()
-    .required("Full name is required.")
-    .min(2, "Full name must be at least 2 characters.")
-    .max(100, "Full name cannot exceed 100 characters.")
-    .trim()
-    .test(
-      "not-empty-after-trim",
-      "Full name cannot be empty or only spaces.",
-      (value) => value?.trim().length > 0,
-    )
-    .test(
-      "no-leading-space",
-      "Full name cannot start with a space.",
-      (value) => (value ? !value.startsWith(" ") : true),
-    )
-    .test(
-      "no-multiple-spaces",
-      "Full name cannot contain multiple consecutive spaces.",
-      (value) => (value ? !/ {2,}/.test(value) : true),
-    )
-    .matches(
-      /^[\p{L}' -]+$/u,
-      "Full name can only contain letters, spaces, hyphens (-), and apostrophes (').",
-    )
-    .test(
-      "no-numbers",
-      "Full name cannot contain numbers.",
-      (value) => (value ? !/\d/.test(value) : true),
-    )
-    .test(
-      "no-html",
-      "HTML or script content is not allowed.",
-      (value) => (value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true),
-    ),
-
+  firstName: Yup.string()
+    .required("First name is required.")
+    .min(2, "First name must be at least 2 characters.")
+    .max(40, "First name cannot exceed 40 characters.")
+    .trim(),
+  lastName: Yup.string()
+    .required("Last name is required.")
+    .min(2, "Last name must be at least 2 characters.")
+    .max(40, "Last name cannot exceed 40 characters.")
+    .trim(),
   email: Yup.string()
     .required("Email address is required.")
-    .test("no-leading-space", "Email cannot start with a space.", (value) =>
-      value ? value[0] !== " " : false
-    )
-    .test(
-      "no-internal-or-trailing-space",
-      "Email cannot contain spaces.",
-      (value) => (value ? value.trim() === value && !/\s/.test(value) : false)
-    )
+    .max(60, "Email cannot exceed 60 characters.")
     .matches(
       /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
       "Invalid email format."
-    )
-    .test("no-dot-before-at", "Email cannot have a dot before @.", (value) =>
-      value ? !/\.@/.test(value) : false
-    )
-    .test(
-      "no-dot-or-hyphen-after-at",
-      "Email cannot start domain with dot or hyphen.",
-      (value) => (value ? !/@[.-]/.test(value) : false)
-    )
-    .test(
-      "no-hyphen-start-domain",
-      "Domain cannot start with hyphen.",
-      (value) => {
-        const domain = value?.split("@")[1];
-        return domain ? !domain.startsWith("-") : false;
-      }
     ),
-
+  phoneNumber: Yup.string()
+    .test(
+      "valid-phone",
+      "Please enter a valid 10-digit phone number.",
+      (value) => !value || value.replace(/\D/g, "").length === 10
+    )
+    .nullable(),
+  birthMonth: Yup.string().nullable(),
+  details: Yup.string()
+    .max(300, "Details cannot exceed 300 characters.")
+    .nullable(),
   lounge: Yup.string().required("Please select a lounge."),
 });
 
 export const editGuestbookSchema = Yup.object({
-  name: Yup.string()
-    .required("Full name is required.")
-    .min(2, "Full name must be at least 2 characters.")
-    .max(100, "Full name cannot exceed 100 characters.")
-    .trim()
-    .test(
-      "not-empty-after-trim",
-      "Full name cannot be empty or only spaces.",
-      (value) => value?.trim().length > 0,
-    )
-    .test(
-      "no-leading-space",
-      "Full name cannot start with a space.",
-      (value) => (value ? !value.startsWith(" ") : true),
-    )
-    .test(
-      "no-multiple-spaces",
-      "Full name cannot contain multiple consecutive spaces.",
-      (value) => (value ? !/ {2,}/.test(value) : true),
-    )
-    .matches(
-      /^[\p{L}' -]+$/u,
-      "Full name can only contain letters, spaces, hyphens (-), and apostrophes (').",
-    )
-    .test(
-      "no-numbers",
-      "Full name cannot contain numbers.",
-      (value) => (value ? !/\d/.test(value) : true),
-    )
-    .test(
-      "no-html",
-      "HTML or script content is not allowed.",
-      (value) => (value ? !/<[^>]*>|<\/[^>]*>/g.test(value) : true),
-    ),
-
+  firstName: Yup.string()
+    .required("First name is required.")
+    .min(2, "First name must be at least 2 characters.")
+    .max(40, "First name cannot exceed 40 characters.")
+    .trim(),
+  lastName: Yup.string()
+    .required("Last name is required.")
+    .min(2, "Last name must be at least 2 characters.")
+    .max(40, "Last name cannot exceed 40 characters.")
+    .trim(),
   email: Yup.string()
     .required("Email address is required.")
-    .test("no-leading-space", "Email cannot start with a space.", (value) =>
-      value ? value[0] !== " " : false
-    )
-    .test(
-      "no-internal-or-trailing-space",
-      "Email cannot contain spaces.",
-      (value) => (value ? value.trim() === value && !/\s/.test(value) : false)
-    )
+    .max(60, "Email cannot exceed 60 characters.")
     .matches(
       /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
       "Invalid email format."
-    )
-    .test("no-dot-before-at", "Email cannot have a dot before @.", (value) =>
-      value ? !/\.@/.test(value) : false
-    )
-    .test(
-      "no-dot-or-hyphen-after-at",
-      "Email cannot start domain with dot or hyphen.",
-      (value) => (value ? !/@[.-]/.test(value) : false)
-    )
-    .test(
-      "no-hyphen-start-domain",
-      "Domain cannot start with hyphen.",
-      (value) => {
-        const domain = value?.split("@")[1];
-        return domain ? !domain.startsWith("-") : false;
-      }
     ),
-
-  // lounge: Yup.string().required("Please select a lounge."),
+  phoneNumber: Yup.string()
+    .test(
+      "valid-phone",
+      "Please enter a valid 10-digit phone number.",
+      (value) => !value || value.replace(/\D/g, "").length === 10
+    )
+    .nullable(),
+  birthMonth: Yup.string().nullable(),
+  details: Yup.string()
+    .max(300, "Details cannot exceed 300 characters.")
+    .nullable(),
+  lounge: Yup.string().nullable(),
 });
 
 export const requestEventSchema = Yup.object({

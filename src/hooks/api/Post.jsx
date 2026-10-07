@@ -105,12 +105,92 @@ export const submitLogout = async (payload = {}) => {
 };
 
 export const addGuest = async (payload) => {
-  const { data } = await axios.post("/guestbook", payload);
+  let dataToSend = payload;
+
+  if (
+    payload &&
+    !(payload instanceof FormData) &&
+    typeof payload === "object"
+  ) {
+    const hasFile = Object.values(payload).some(
+      (val) => val instanceof File || val instanceof Blob
+    );
+
+    if (hasFile || payload.photo) {
+      const formData = new FormData();
+
+      Object.keys(payload).forEach((key) => {
+        const val = payload[key];
+
+        if (val !== undefined && val !== null) {
+          if (
+            typeof val === "object" &&
+            !(val instanceof File) &&
+            !(val instanceof Blob)
+          ) {
+            formData.append(key, JSON.stringify(val));
+          } else {
+            formData.append(key, val);
+          }
+        }
+      });
+
+      dataToSend = formData;
+    }
+  }
+
+  const { data } = await axios.post("/guestbook", dataToSend, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
   return data;
 };
-
 export const updateGuest = async ({ entryId, payload }) => {
-  const { data } = await axios.patch(`/guestbook/${entryId}`, payload);
+  let dataToSend = payload;
+
+  if (
+    payload &&
+    !(payload instanceof FormData) &&
+    typeof payload === "object"
+  ) {
+    const hasFile = Object.values(payload).some(
+      (val) => val instanceof File || val instanceof Blob
+    );
+
+    if (hasFile || payload.photo) {
+      const formData = new FormData();
+
+      Object.keys(payload).forEach((key) => {
+        const val = payload[key];
+
+        if (val !== undefined && val !== null) {
+          if (
+            typeof val === "object" &&
+            !(val instanceof File) &&
+            !(val instanceof Blob)
+          ) {
+            formData.append(key, JSON.stringify(val));
+          } else {
+            formData.append(key, val);
+          }
+        }
+      });
+
+      dataToSend = formData;
+    }
+  }
+
+  const { data } = await axios.patch(
+    `/guestbook/${entryId}`,
+    dataToSend,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
 
   return data;
 };

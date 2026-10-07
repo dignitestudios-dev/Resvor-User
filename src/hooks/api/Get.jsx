@@ -31,15 +31,21 @@ const useUsers = (url, currentPage = 1) => {
 export { useUsers };
 
 
-// export const getGuestBook = async () => {
-//   const response = await axios.get("/guestbook");
-//   return response.data;
-// };
+export const getGuestBook = async (paramsOrPage = 1, limit = 20, filters = {}) => {
+  let queryParams = {};
+  if (typeof paramsOrPage === "object" && paramsOrPage !== null) {
+    queryParams = { ...paramsOrPage };
+  } else {
+    queryParams = {
+      page: paramsOrPage,
+      limit,
+      ...filters,
+    };
+  }
 
-export const getGuestBook = async (page, limit) => {
-  const response = await axios.get(
-    `/guestbook?page=${page}&limit=${limit}`
-  );
+  const response = await axios.get("/guestbook", {
+    params: queryParams,
+  });
 
   return response.data;
 };
