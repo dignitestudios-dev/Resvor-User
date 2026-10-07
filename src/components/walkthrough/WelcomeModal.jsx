@@ -70,13 +70,13 @@ const WelcomeModal = ({ isOpen, onStart, onSkip }) => {
 
         {/* Title */}
         <h2 className="text-[30px] font-bold text-[#181818] tracking-tight leading-tight">
-          Welcome To Resvor!
+          Welcome To ResVor!
         </h2>
 
         {/* Description */}
         <p className="text-[#555555] text-[15px] font-normal leading-relaxed max-w-[380px]">
           Here’s a quick walkthrough to help you manage bookings, track guests,
-          and maximize Resvor’s tools.
+          and maximize ResVor’s tools.
         </p>
 
         {/* Buttons */}

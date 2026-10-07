@@ -346,27 +346,28 @@ export default function CampaignDetail() {
                 </div>
 
                 {/* Right Column - Image / Flyer Preview */}
-                <div className="space-y-6">
-                  <div className="bg-white rounded-2xl p-6 space-y-4">
-                    <h3 className="text-lg font-bold text-gray-800 border-b pb-3">Flyer Preview</h3>
+               <div className="rounded-2xl bg-white p-6 shadow-sm">
+  <h2 className="text-xl font-semibold text-[#16395F]">
+    Flyer Preview
+  </h2>
 
-                    {getCampaignImage(campaign.image) ? (
-                      <div className="rounded-xl overflow-hidden border bg-gray-50 flex items-center justify-center">
-                        <img
-                          src={getCampaignImage(campaign.image)}
-                          alt="Campaign Flyer"
-                          className="w-full h-auto object-cover max-h-[500px]"
-                        />
-                      </div>
-                    ) : (
-                      <div className="border border-dashed rounded-xl h-64 flex flex-col items-center justify-center text-gray-400 bg-gray-50">
-                        <MdEmail className="w-12 h-12 mb-2 text-gray-300" />
-                        <span className="text-sm">No flyer image attached</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+  <div className="my-5 h-px bg-gray-200" />
 
+  {getCampaignImage(campaign.image) ? (
+    <div className="w-full overflow-hidden rounded-xl border bg-gray-50">
+      <img
+        src={getCampaignImage(campaign.image)}
+        alt="Campaign Flyer"
+        className="block h-auto w-full object-contain"
+      />
+    </div>
+  ) : (
+    <div className="flex h-64 flex-col items-center justify-center rounded-xl border border-dashed bg-gray-50 text-gray-400">
+      <MdEmail className="mb-2 h-12 w-12 text-gray-300" />
+      <span className="text-sm">No flyer image attached</span>
+    </div>
+  )}
+</div>
               </div>
             </div>
           </div>
