@@ -179,9 +179,8 @@ const CreateAccount = ({ handleNext, setEmail }) => {
                 className="sr-only peer"
               />
               <div
-                className={`w-[20px] h-[20px] min-w-[20px] min-h-[20px] box-border rounded-[4px] border border-white flex items-center justify-center transition-colors ${
-                  values.acceptedPolicy ? "bg-white/20" : "bg-transparent"
-                }`}
+                className={`w-[20px] h-[20px] min-w-[20px] min-h-[20px] box-border rounded-[4px] border border-white flex items-center justify-center transition-colors ${values.acceptedPolicy ? "bg-white/20" : "bg-transparent"
+                  }`}
               >
                 {values.acceptedPolicy && (
                   <svg
@@ -201,19 +200,10 @@ const CreateAccount = ({ handleNext, setEmail }) => {
               </div>
             </div>
 
+
             <div className="flex-1 text-[13px] font-[500] leading-[18px] tracking-[-0.0041em] text-white">
-              I agree to the{" "}
-              <span
-                className="underline cursor-pointer hover:text-[#E6E6E6]"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigate("/auth/terms");
-                }}
-              >
-                Terms & Conditions
-              </span>{" "}
-              and{" "}
+              I agree to receive SMS from Resvor (Lladner Business Solutions, LLC.): 2FA codes and account alerts, 1-3 msgs per event. Msg & data rates may apply. Reply STOP to cancel, HELP for help. Not required to sign up.{" "}
+
               <span
                 className="underline cursor-pointer hover:text-[#E6E6E6]"
                 onClick={(e) => {
@@ -224,15 +214,27 @@ const CreateAccount = ({ handleNext, setEmail }) => {
               >
                 Privacy Policy
               </span>{" "}
-              and authorize the collection and use of my phone number for Two-Factor Authentication.
+              and{" "}
+              <span
+                className="underline cursor-pointer hover:text-[#E6E6E6]"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate("/auth/terms");
+                }}
+              >
+                Terms & Conditions
+              </span>
+              .
             </div>
-          </label>
 
+          </label>
+          {/* 
           {errors.acceptedPolicy && touched.acceptedPolicy && (
             <p className="text-red-500 text-[11px] font-medium mt-1 ml-[32px]">
               {errors.acceptedPolicy}
             </p>
-          )}
+          )} */}
         </div>
         <div className="mt-1 ">
           <div className="xxl:w-[650px] lg:w-[350px] md:w-[550px] w-[320px] mt-1 mb-4">

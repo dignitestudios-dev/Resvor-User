@@ -11,7 +11,7 @@ export const logInSchema = Yup.object({
       "Email cannot contain spaces.",
       (value) => (value ? value.trim() === value && !/\s/.test(value) : false)
     )
-     .matches(
+    .matches(
       /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
       "Invalid email format.",
     )
@@ -27,10 +27,10 @@ export const logInSchema = Yup.object({
       }
     ),
   password: Yup.string()
-  .required("Please enter your password")
-  .min(8, "Password must contain at least 8 alphanumeric characters.")
-  .max(64, "Password must not exceed 64 characters.")
-  .matches(/^\S+$/, "Password cannot contain spaces."),
+    .required("Please enter your password")
+    .min(8, "Password must contain at least 8 alphanumeric characters.")
+    .max(64, "Password must not exceed 64 characters.")
+    .matches(/^\S+$/, "Password cannot contain spaces."),
 });
 
 export const forgotPasswordSchema = Yup.object({
@@ -111,7 +111,7 @@ export const signUpSchema = Yup.object({
       "Email cannot contain spaces.",
       (value) => (value ? value.trim() === value && !/\s/.test(value) : false)
     )
-     .matches(
+    .matches(
       /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
       "Invalid email format.",
     )
@@ -153,9 +153,9 @@ export const signUpSchema = Yup.object({
     .required("Please confirm your password")
     .oneOf([Yup.ref("password")], "Password does not match"),
 
-  acceptedPolicy: Yup.boolean()
-    .required("You must accept the Terms & Conditions and Privacy Policy")
-    .oneOf([true], "You must accept the Terms & Conditions and Privacy Policy"),
+  // acceptedPolicy: Yup.boolean()
+  //   .required("You must accept the Terms & Conditions and Privacy Policy")
+  //   .oneOf([true], "You must accept the Terms & Conditions and Privacy Policy"),
 });
 
 
