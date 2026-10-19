@@ -8,6 +8,8 @@ const CancelSubscriptionModal = ({
   setIsOpen,
   onConfirm,
   loading = false,
+  title = "Cancel Subscription",
+  description = "Are you sure you want to cancel this subscription plan?",
 }) => {
   return (
     <Modal
@@ -34,10 +36,10 @@ const CancelSubscriptionModal = ({
             <img src={danger} className="w-20" />
           </div>
           <h2 className="text-[#181818] font-bold text-[20px]">
-            Cancel Subscription
+            {title}
           </h2>
-          <p className="text-[#565656] text-[13px]">
-            Are you sure you want to cancel this subscription plan?
+          <p className="text-[#565656] text-[13px] text-center">
+            {description}
           </p>
 
           <div className="flex gap-3 items-center mt-3">

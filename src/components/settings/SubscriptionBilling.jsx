@@ -3,6 +3,7 @@ import { FaArrowLeftLong } from "react-icons/fa6";
 import { useLocation, useNavigate } from "react-router";
 import Billing from "./Billing";
 import UpdatePlan from "./UpdatePlan";
+import VipSubscription from "./VipSubscription";
 import Wallet from "./Wallet";
 
 const SubscriptionBilling = () => {
@@ -11,6 +12,11 @@ const SubscriptionBilling = () => {
 
   const getInitialTab = () => {
     if (location.state?.tab) return location.state.tab;
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "vip" || tabParam === "vip-subscription") return "vip-subscription";
+    if (tabParam === "plan" || tabParam === "plans") return "plan";
+    if (tabParam === "wallet") return "wallet";
     if (location.pathname.includes("wallet")) return "wallet";
     return "wallet";
   };
@@ -20,15 +26,24 @@ const SubscriptionBilling = () => {
   useEffect(() => {
     if (location.state?.tab) {
       setActiveTab(location.state.tab);
-    } else if (location.pathname.includes("wallet")) {
-      setActiveTab("wallet");
+    } else {
+      const searchParams = new URLSearchParams(location.search);
+      const tabParam = searchParams.get("tab");
+      if (tabParam === "vip" || tabParam === "vip-subscription") {
+        setActiveTab("vip-subscription");
+      } else if (tabParam === "plan" || tabParam === "plans") {
+        setActiveTab("plan");
+      } else if (location.pathname.includes("wallet")) {
+        setActiveTab("wallet");
+      }
     }
-  }, [location.pathname, location.state]);
+  }, [location.pathname, location.search, location.state]);
 
   const tabs = [
     // { key: "billing", label: "Billing" },
     { key: "wallet", label: "Wallet" },
     { key: "plan", label: "Plans" },
+    { key: "vip-subscription", label: "Vip Subscription" },
   ];
 
   return (
@@ -39,7 +54,11 @@ const SubscriptionBilling = () => {
             <FaArrowLeftLong color="white" size={20} />
           </button>
           <h2 className="text-white text-[30px] mt-0 font-bold leading-[48px] capitalize">
-            {activeTab === "wallet" ? "Wallet" : "Subscription Plans"}
+            {activeTab === "wallet"
+              ? "Wallet"
+              : activeTab === "vip-subscription"
+              ? "VIP Subscription"
+              : "Subscription Plans"}
           </h2>
         </div>
       </div>
@@ -74,6 +93,8 @@ const SubscriptionBilling = () => {
           {
             activeTab === "plan" ? (
               <UpdatePlan />
+            ) : activeTab === "vip-subscription" ? (
+              <VipSubscription />
             ) : (
               <Wallet />
             )}

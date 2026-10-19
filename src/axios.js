@@ -4,7 +4,8 @@ import Cookies from "js-cookie";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 import { clearStoredAuthSession } from "./lib/authSession";
 
-export const baseUrl = "https://api-staging.resvor.com"
+export const baseUrl =
+  import.meta.env.VITE_APP_API_URL || "https://api-staging.resvor.com";
 // export const baseUrl = "https://api-dev.resvor.com";
 
 

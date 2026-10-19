@@ -316,6 +316,80 @@ export const useGetMySubscription = () => {
   });
 };
 
+// ── Venue Memberships (VIP & Elite VIP) ──────────────────────────
+const fetchVenueMembershipPlans = async () => {
+  const { data } = await axios.get("/venue-memberships/plans");
+  return data;
+};
+
+export const useVenueMembershipPlans = () => {
+  return useQuery({
+    queryKey: ["venue-membership-plans"],
+    queryFn: fetchVenueMembershipPlans,
+    retry: false,
+  });
+};
+
+const purchaseVenueMembership = async ({ planId, payload = {} }) => {
+  const { data } = await axios.post(`/venue-memberships/purchase/${planId}`, payload);
+  return data;
+};
+
+export const usePurchaseVenueMembership = () => {
+  return useMutation({
+    mutationFn: purchaseVenueMembership,
+  });
+};
+
+const fetchMyVenueMembership = async () => {
+  try {
+    const { data } = await axios.get("/venue-memberships/my");
+    return data?.data !== undefined ? data.data : data;
+  } catch (error) {
+    if (error?.response?.status === 404 || error?.response?.status === 400) {
+      return null;
+    }
+    return null;
+  }
+};
+
+export const useGetMyVenueMembership = () => {
+  return useQuery({
+    queryKey: ["my-venue-membership"],
+    queryFn: fetchMyVenueMembership,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: false,
+  });
+};
+
+const changeVenueMembershipPlan = async ({ newPlanId }) => {
+  const { data } = await axios.post("/venue-memberships/change-plan", {
+    newPlanId,
+  });
+  return data;
+};
+
+export const useChangeVenueMembershipPlan = () => {
+  return useMutation({
+    mutationFn: changeVenueMembershipPlan,
+  });
+};
+
+const cancelVenueMembership = async (payload = {}) => {
+  const { data } = await axios.delete("/venue-memberships/cancel", {
+    data: payload,
+  });
+  return data;
+};
+
+export const useCancelVenueMembership = () => {
+  return useMutation({
+    mutationFn: cancelVenueMembership,
+  });
+};
+
 const fetchCampaignContacts = async ({ channel = "email", page = 1, limit = 10 } = {}) => {
   const { data } = await axios.get("/campaigns/contacts", {
     params: { channel, page, limit },
