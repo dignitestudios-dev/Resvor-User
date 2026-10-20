@@ -42,6 +42,7 @@ const Navbar = () => {
       navigate("/app/notifications");
     }
   };
+  // test
 
   const getProfilePicture = (profilePicture) => {
     if (!profilePicture) return userImage;
