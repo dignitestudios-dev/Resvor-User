@@ -26,6 +26,7 @@ const UpdatePlan = ({ setSubscriptionModal, subscriptionModal }) => {
   const vipPlan = plans.find((plan) => plan.key === "vip");
 
   const hasActiveSub = !!(mySubData?.isActive && mySubData?.subscription?.status === "active");
+  const isCancelled = Boolean(mySubData?.subscription?.cancelAtPeriodEnd);
   const activePlanId = hasActiveSub
     ? (typeof mySubData?.subscription?.planId === "object"
         ? mySubData?.subscription?.planId?._id
@@ -112,13 +113,19 @@ const UpdatePlan = ({ setSubscriptionModal, subscriptionModal }) => {
               </div>
               <div className="mt-auto">
                 {isActive ? (
-                  <button
-                    type="button"
-                    onClick={() => setCancelSubscriptionModal(true)}
-                    className="w-full bg-[#E8E8E8] text-red-500 text-[14px] rounded-[8px] py-2.5 font-semibold hover:bg-[#D8D8D8] transition"
-                  >
-                    Cancel Subscription
-                  </button>
+                  isCancelled ? (
+                    <div className="w-full text-center py-2.5 rounded-[8px] bg-red-50 border border-red-200 text-red-700 text-xs font-bold">
+                      Already Cancelled
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setCancelSubscriptionModal(true)}
+                      className="w-full bg-[#E8E8E8] text-red-500 text-[14px] rounded-[8px] py-2.5 font-semibold hover:bg-[#D8D8D8] transition"
+                    >
+                      Cancel Subscription
+                    </button>
+                  )
                 ) : (
                   <button
                     type="button"
@@ -168,13 +175,19 @@ const UpdatePlan = ({ setSubscriptionModal, subscriptionModal }) => {
 
           <div className="mt-6">
             {activePlanId === vipPlan._id ? (
-              <button
-                type="button"
-                onClick={() => setCancelSubscriptionModal(true)}
-                className="w-full bg-[#E8E8E8] text-red-500 text-[14px] rounded-[8px] py-2.5 font-semibold hover:bg-[#D8D8D8] transition"
-              >
-                Cancel Subscription
-              </button>
+              isCancelled ? (
+                <div className="w-full text-center py-2.5 rounded-[8px] bg-red-50 border border-red-200 text-red-700 text-xs font-bold">
+                  Already Cancelled
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setCancelSubscriptionModal(true)}
+                  className="w-full bg-[#E8E8E8] text-red-500 text-[14px] rounded-[8px] py-2.5 font-semibold hover:bg-[#D8D8D8] transition"
+                >
+                  Cancel Subscription
+                </button>
+              )
             ) : (
               <button
                 type="button"

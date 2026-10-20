@@ -34,7 +34,11 @@ export default function SignUp() {
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
-    if (queryParams.get("session_id") || queryParams.get("success") === "true") {
+    if (
+      queryParams.get("session_id") ||
+      queryParams.get("success") === "true" ||
+      queryParams.get("membership_success") === "true"
+    ) {
       // Coming back from Stripe payment — mark walkthrough to show on home
       localStorage.setItem("show_welcome_walkthrough", "true");
       refetch();
@@ -143,9 +147,15 @@ export default function SignUp() {
     <div className={`grid grid-cols-12 gap-6 h-full w-full`}>
       <OnboardingStepper steps={steps} currentStep={currentStep} />
 
-      <div className="col-span-12 lg:col-span-8 px-5 md:px-10 h-full flex justify-center items-center">
+      <div
+        className={`col-span-12 lg:col-span-8 px-2 sm:px-6 md:px-10 h-full flex justify-center ${
+          currentStep === 5 ? "items-start py-4 sm:py-6" : "items-center"
+        }`}
+      >
         <div
-          className={`w-full relative flex justify-center flex-col items-center h-full `}
+          className={`w-full relative flex justify-center flex-col items-center ${
+            currentStep === 5 ? "h-auto" : "h-full"
+          }`}
         >
           {currentStep === 0 ? (
             <CreateAccount setEmail={setEmail} handleNext={handleNext} />

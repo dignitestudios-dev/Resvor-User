@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { logoBlack, userImage, vipTag } from "../../assets/export";
 import { IoNotificationsOutline } from "react-icons/io5";
 import LogOutModal from "../global/LogoutModal";
-import { useAuthMe, useNotifications } from "../../hooks/queries/useQueries";
+import { useAuthMe, useGetMyVenueMembership, useNotifications } from "../../hooks/queries/useQueries";
 import moment from "moment";
 
 const Navbar = () => {
@@ -13,6 +13,8 @@ const Navbar = () => {
   const currentPath = location.pathname;
   const { data: authData } = useAuthMe();
   const { data: notificationsData } = useNotifications();
+  const { data: membershipData } = useGetMyVenueMembership();
+
   const notificationsList = notificationsData?.data || [];
 
   const unreadCount = notificationsList.filter(
@@ -21,7 +23,9 @@ const Navbar = () => {
 
   const user = authData?.data?.user || authData?.data;
   const isSubscribed = Boolean(
-    authData?.data?.isSubscribed ?? authData?.data?.user?.isSubscribed
+    membershipData?.membership ||
+    authData?.data?.isSubscribed ||
+    authData?.data?.user?.isSubscribed
   );
 
   const handleNotificationClick = (item) => {
@@ -292,22 +296,23 @@ const Navbar = () => {
               </div>
             )}
           </div>
-          <div>
-            <img
-              ref={avatarRef}
-              src={profilePicSrc}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = userImage;
-              }}
-              className="h-10 w-10 object-cover rounded-full cursor-pointer border-2 joyride-navbar-profile"
-              onClick={toggleUserpopup}
-              alt="Avatar"
-            />
+          <div className="relative">
+          <img
+  ref={avatarRef}
+  src={profilePicSrc}
+  onError={(e) => {
+    e.target.onerror = null;
+    e.target.src = userImage;
+  }}
+  className="h-10 w-10 min-h-10 min-w-10 shrink-0 aspect-square object-cover rounded-full cursor-pointer border-2 joyride-navbar-profile"
+  onClick={toggleUserpopup}
+  alt="Avatar"
+/>
+
             {userPopup && (
               <div
                 ref={userPopupRef}
-                className="absolute top-20 right-4 bg-white w-[155px] text-black rounded-[8px] shadow-lg p-4 space-y-2 z-50"
+      className="absolute top-20 right-4 bg-white w-[155px] text-black rounded-[8px] shadow-lg p-4 space-y-2 z-50"
               >
                 <span
                   className="block font-[400] py-1 text-sm border-b  border-[#E4E4E4] cursor-pointer"
@@ -358,8 +363,12 @@ const Navbar = () => {
             )}
           </div>
           {isSubscribed && (
-            <div className="-ml-6">
-              <img src={vipTag} alt="vipTag" className="w-12" />
+            <div className="-ml-8 flex items-center justify-center">
+              <img
+                src={vipTag}
+                alt="VIP"
+                className="w-8 h-auto object-contain block"
+              />
             </div>
           )}
         </div>

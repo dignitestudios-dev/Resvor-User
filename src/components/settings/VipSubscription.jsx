@@ -161,6 +161,26 @@ const VipSubscription = () => {
     (userMembership.status === "active" || userMembership.isActive || mySubData?.isActive)
   );
 
+  const isCancelled = Boolean(
+    userMembership?.cancelAtPeriodEnd ||
+    mySubData?.membership?.cancelAtPeriodEnd ||
+    mySubData?.cancelAtPeriodEnd ||
+    userMembership?.status === "canceled"
+  );
+
+  const periodEndDate =
+    userMembership?.periodEnd ||
+    mySubData?.membership?.periodEnd ||
+    mySubData?.periodEnd;
+
+  const formattedPeriodEnd = periodEndDate
+    ? new Date(periodEndDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "period end";
+
   const activePlanId =
     mySubData?.plan?._id ||
     (typeof userMembership?.planId === "object"
@@ -340,12 +360,13 @@ const VipSubscription = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[12px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                  Active Membership
-                </span>
-                {userMembership?.cancelAtPeriodEnd && (
-                  <span className="text-[12px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">
-                    Cancels at period end
+                {isCancelled ? (
+                  <span className="text-[12px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                    Cancelled (Active until {formattedPeriodEnd})
+                  </span>
+                ) : (
+                  <span className="text-[12px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                    Active Membership
                   </span>
                 )}
               </div>
@@ -355,18 +376,27 @@ const VipSubscription = () => {
                   (isPlanActive(elitePlan) ? "Elite VIP Membership" : "VIP Membership")}
               </h3>
               <p className="text-xs text-gray-500">
-                Full VIP access across 3 premier venues included. Stripe prorations apply when changing tiers.
+                {isCancelled
+                  ? `Membership cancellation confirmed. You retain full VIP access across all 3 partner venues until ${formattedPeriodEnd}.`
+                  : "Full VIP access across 3 premier venues included. Stripe prorations apply when changing tiers."}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 self-end md:self-center">
-            <button
-              type="button"
-              onClick={() => setCancelModalOpen(true)}
-              className="text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3.5 py-2 rounded-lg transition"
-            >
-              Cancel Membership
-            </button>
+            {isCancelled ? (
+              <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-bold shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                <span>Already Cancelled</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setCancelModalOpen(true)}
+                className="text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3.5 py-2 rounded-lg transition"
+              >
+                Cancel Membership
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -390,8 +420,14 @@ const VipSubscription = () => {
             />
             <span>Vip Plans</span>
             {vipPlan && isPlanActive(vipPlan) && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 uppercase">
-                Active
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                  isCancelled
+                    ? "bg-red-100 text-red-700 border border-red-200"
+                    : "bg-emerald-100 text-emerald-700"
+                }`}
+              >
+                {isCancelled ? "Cancelled" : "Active"}
               </span>
             )}
           </button>
@@ -412,8 +448,14 @@ const VipSubscription = () => {
             />
             <span>Elite vips</span>
             {elitePlan && isPlanActive(elitePlan) && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 uppercase">
-                Active
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                  isCancelled
+                    ? "bg-red-100 text-red-700 border border-red-200"
+                    : "bg-emerald-100 text-emerald-700"
+                }`}
+              >
+                {isCancelled ? "Cancelled" : "Active"}
               </span>
             )}
           </button>
@@ -438,9 +480,15 @@ const VipSubscription = () => {
                 {activeSubTab === "elite_vip" ? "Elite Tier Access" : "VIP Tier Access"}
               </span>
               {isCurrentPlanActive && (
-                <span className="bg-emerald-500 text-white text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full flex items-center gap-1">
+                <span
+                  className={`text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full flex items-center gap-1 ${
+                    isCancelled ? "bg-red-600 text-white" : "bg-emerald-500 text-white"
+                  }`}
+                >
                   <HiCheckCircle />
-                  Your Current Plan
+                  {isCancelled
+                    ? `Cancelled (Access until ${formattedPeriodEnd})`
+                    : "Your Current Plan"}
                 </span>
               )}
             </div>
@@ -487,17 +535,30 @@ const VipSubscription = () => {
             <div className="mt-6 pt-4 border-t border-white/15">
               {isCurrentPlanActive ? (
                 <div className="flex flex-col gap-2">
-                  <div className="w-full text-center py-2.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-sm font-semibold flex items-center justify-center gap-2">
-                    <HiCheckCircle className="text-lg" />
-                    Currently Subscribed
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setCancelModalOpen(true)}
-                    className="w-full text-center py-2 text-xs text-red-300 hover:text-red-200 hover:underline transition"
-                  >
-                    Cancel Membership
-                  </button>
+                  {isCancelled ? (
+                    <>
+                      <div className="w-full text-center py-2.5 rounded-lg bg-red-500/20 border border-red-400/40 text-red-200 text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5">
+                        <span>Already Cancelled</span>
+                      </div>
+                      <p className="text-[11px] text-gray-300 text-center leading-tight">
+                        Active until {formattedPeriodEnd}. No further renewal charges.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-full text-center py-2.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-sm font-semibold flex items-center justify-center gap-2">
+                        <HiCheckCircle className="text-lg" />
+                        Currently Subscribed
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCancelModalOpen(true)}
+                        className="w-full text-center py-2 text-xs text-red-300 hover:text-red-200 hover:underline transition"
+                      >
+                        Cancel Membership
+                      </button>
+                    </>
+                  )}
                 </div>
               ) : isMembershipActive ? (
                 <button

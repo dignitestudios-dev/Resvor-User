@@ -3,24 +3,24 @@ import { Logo } from "../../assets/export";
 
 export default function OnboardingStepper({ steps = [], currentStep = 0 }) {
   return (
-    <div className="col-span-12 lg:col-span-4 flex justify-center lg:justify-start h-full px-0 lg:px-10">
+    <div className="col-span-12 lg:col-span-4 flex justify-center lg:justify-start lg:self-start lg:sticky lg:top-8 h-auto px-0 lg:px-10">
       <div className="w-full">
         <div
           className="
           bg-[#EFEFEF1A] border border-[#CACACA]
-          h-full
+          h-auto lg:h-fit
           hidden-scrollbar
           overflow-auto
-        flex flex-row lg:flex-col
-        items-center lg:items-start
-        justify-between lg:justify-normal
-        w-full
-        gap-0 lg:gap-0
-        relative
-        rounded-[15px]
-        px-10 
-        py-10
-      "
+          flex flex-row lg:flex-col
+          items-center lg:items-start
+          justify-between lg:justify-normal
+          w-full
+          gap-0 lg:gap-0
+          relative
+          rounded-[15px]
+          px-6 sm:px-10 
+          py-6 sm:py-10
+        "
         >
           <img src={Logo} alt="" className="hidden lg:block w-[173px] mb-10" />
           {steps?.map((step, index) => {
@@ -30,10 +30,14 @@ export default function OnboardingStepper({ steps = [], currentStep = 0 }) {
             return (
               <div
                 key={index}
-                className="relative flex  flex-col items-center lg:items-start text-center lg:text-left flex-1"
+                className="relative flex flex-col items-center lg:items-start text-center lg:text-left flex-1 lg:flex-none"
               >
                 {/* Icon */}
-                <div className="flex items-center gap-4 mb-1 lg:mb-8">
+                <div
+                  className={`flex items-center gap-4 mb-1 ${
+                    isLast ? "lg:mb-0" : "lg:mb-8"
+                  }`}
+                >
                   <div
                     className={`
                   w-10 h-10 lg:w-12 lg:h-12 rounded-[8px] flex items-center justify-center
@@ -87,7 +91,7 @@ export default function OnboardingStepper({ steps = [], currentStep = 0 }) {
                   /* Horizontal line (mobile) */
                   top-[35%] w-full h-px left-20
                   /* Vertical line (desktop) */
-                  lg:w-px lg:h-16 lg:left-6 lg:top-12
+                  lg:w-px lg:h-8 lg:left-6 lg:top-12
                 `}
                   ></div>
                 )}
