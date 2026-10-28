@@ -12,7 +12,7 @@ import { useForgotPassword } from "../../hooks/mutations/OnboardingMutations"; /
 const VerifyForgotOtp = () => {
   const location = useLocation();
   const email = location?.state?.email;
-  
+
 
   const forgotPasswordMutation = useForgotPassword();
 
@@ -21,12 +21,12 @@ const VerifyForgotOtp = () => {
   const inputs = useRef([]);
 
   const isOtpComplete = otp.every((digit) => digit !== "");
-const isValidOtp = otp.join("").length === 5;
+  const isValidOtp = otp.join("").length === 5;
 
   const verifyForgotOtpMutation = useVerifyForgotOtp();
 
   const [isActive, setIsActive] = useState(true);
-  const [seconds, setSeconds] = useState(30);
+  const [seconds, setSeconds] = useState(90);
 
   const handleChange = (e, index) => {
     const { value } = e.target;
@@ -82,10 +82,10 @@ const isValidOtp = otp.join("").length === 5;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-if (!isOtpComplete) {
-  ErrorToast("Please enter complete OTP");
-  return;
-}
+    if (!isOtpComplete) {
+      ErrorToast("Please enter complete OTP");
+      return;
+    }
     try {
       const response = await verifyForgotOtpMutation.mutateAsync({
         otp: otp.join(""),
@@ -106,53 +106,53 @@ if (!isOtpComplete) {
           response?.message || "Something went wrong. Please try again."
         );
       }
-    }  catch (err) {
-  const errorData = err?.response?.data;
+    } catch (err) {
+      const errorData = err?.response?.data;
 
-  ErrorToast(
-    errorData?.error?.[0]?.message ||
-    errorData?.message ||
-    "Something went wrong"
-  );
+      ErrorToast(
+        errorData?.error?.[0]?.message ||
+        errorData?.message ||
+        "Something went wrong"
+      );
 
-  console.log(err, "error forgot otp");
-}
+      console.log(err, "error forgot otp");
+    }
   };
 
 
-const handleResendOtp = async () => {
-  try {
-    if (!email) {
-      ErrorToast("Email not found");
-      return;
+  const handleResendOtp = async () => {
+    try {
+      if (!email) {
+        ErrorToast("Email not found");
+        return;
+      }
+
+      const response = await forgotPasswordMutation.mutateAsync({
+        email,
+        role: "user",
+      });
+
+      if (response?.success) {
+        SuccessToast("OTP resent successfully");
+        setOtp(Array(5).fill(""));
+        setSeconds(90);
+        setIsActive(true);
+        inputs.current[0]?.focus();
+      } else {
+        ErrorToast(response?.message || "Failed to resend OTP");
+      }
+    } catch (err) {
+      const errorData = err?.response?.data;
+
+      ErrorToast(
+        errorData?.error?.[0]?.message ||
+        errorData?.message ||
+        "Something went wrong"
+      );
+
+      console.log(err, "error forgot otp");
     }
-
-    const response = await forgotPasswordMutation.mutateAsync({
-      email,
-      role: "user",
-    });
-
-    if (response?.success) {
-      SuccessToast("OTP resent successfully");
-      setOtp(Array(5).fill(""));
-      setSeconds(30);
-      setIsActive(true);
-      inputs.current[0]?.focus();
-    } else {
-      ErrorToast(response?.message || "Failed to resend OTP");
-    }
-  } catch (err) {
-  const errorData = err?.response?.data;
-
-  ErrorToast(
-    errorData?.error?.[0]?.message ||
-    errorData?.message ||
-    "Something went wrong"
-  );
-
-  console.log(err, "error forgot otp");
-}
-};
+  };
 
   return (
     <div className="w-full flex flex-col items-center text-white px-4 py-6 relative">
@@ -224,19 +224,19 @@ const handleResendOtp = async () => {
           flex flex-col gap-4"
         >
           <AuthButton
-  text="Verify"
-  loading={verifyForgotOtpMutation.isPending}
-  disabled={!isOtpComplete || !isValidOtp || verifyForgotOtpMutation.isPending}
-/>
+            text="Verify"
+            loading={verifyForgotOtpMutation.isPending}
+            disabled={!isOtpComplete || !isValidOtp || verifyForgotOtpMutation.isPending}
+          />
 
           <CountDown
-  isActive={isActive}
-  setIsActive={setIsActive}
-  seconds={seconds}
-  setSeconds={setSeconds}
-  onResend={handleResendOtp}
-  isLoading={forgotPasswordMutation.isPending}
-/>
+            isActive={isActive}
+            setIsActive={setIsActive}
+            seconds={seconds}
+            setSeconds={setSeconds}
+            onResend={handleResendOtp}
+            isLoading={forgotPasswordMutation.isPending}
+          />
 
           <button
             onClick={() => navigate("/auth/forget-password")}
