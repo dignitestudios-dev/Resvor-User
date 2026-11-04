@@ -105,7 +105,7 @@ const CreateAccount = ({ handleNext, setEmail }) => {
               type={"email"}
               id={"email"}
               name={"email"}
-              maxLength={60}
+              maxLength={255}
               value={values.email}
               onChange={handleChange}
               onBlur={handleBlur}

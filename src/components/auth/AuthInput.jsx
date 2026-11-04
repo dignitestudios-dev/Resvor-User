@@ -23,11 +23,13 @@ export default function AuthInput({
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div>
-      <label className="block text-[14px] font-[500] text-white mb-2">
-        {label}
-      </label>
-      <div className="relative">
+    <div className="w-full min-w-0">
+      {label && (
+        <label className="block text-[14px] font-[500] text-white mb-2">
+          {label}
+        </label>
+      )}
+      <div className="relative w-full min-w-0">
         <input
           disabled={disabled}
           type={showToggle ? (showPassword ? "text" : "password") : type}
@@ -40,12 +42,12 @@ export default function AuthInput({
           required={required}
           className={`${
             textColor ? "text-black" : "text-white"
-          }  w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
+          } w-full max-w-full min-w-0 box-border px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${
             error && touched ? "ring-red-500" : "ring-[#CACACA]"
           }
   focus:ring-2 ${
     error && touched ? "focus:ring-red-500" : "focus:ring-gray-200"
-  } focus:outline-none pr-12 placeholder:font-light placeholder:text-[12px] placeholder:text-[#E6E6F0] ${
+  } focus:outline-none pr-12 placeholder:font-light placeholder:text-[12px] placeholder:text-[#E6E6F0] overflow-hidden ${
     className || ""
   }`}
         />
@@ -59,7 +61,9 @@ export default function AuthInput({
           </button>
         )}
       </div>
-      {error && touched && <p className="text-red-600 text-[12px] mt-2">{error}</p>}
+      {error && touched && (
+        <p className="text-red-600 text-[12px] mt-2 break-words break-all">{error}</p>
+      )}
     </div>
   );
 }

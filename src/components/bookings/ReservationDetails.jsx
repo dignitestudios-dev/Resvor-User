@@ -246,26 +246,20 @@ export default function ReservationDetails() {
   const disputeEligibility = checkDisputeEligibility(event);
 
   const organizerName =
-    [event?.userId?.firstName, event?.userId?.lastName]
-      .filter(Boolean)
-      .join(" ")
-      .trim() ||
+    
     event?.name ||
     event?.guestName ||
     event?.contactName ||
     "-";
 
   const organizerEmail =
-    event?.userId?.email ||
-    event?.email ||
+
     event?.guestEmail ||
     event?.contactEmail ||
     "-";
 
   const organizerPhone =
-    event?.phone ||
-    event?.phoneNumber ||
-    event?.contactPhone ||
+  
     event?.guestPhone ||
     event?.userId?.phone ||
     event?.userId?.phoneNumber ||
@@ -525,7 +519,7 @@ export default function ReservationDetails() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[14px] break-all pt-1">
                     <p>{eventDescription}</p>
                   </div>
-                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-[14px]">
+                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4 text-[14px]">
                     <div>
                       <p className="text-[#727272]">Organizer</p>
                       <p className="font-semibold text-[#181818]">
@@ -536,6 +530,12 @@ export default function ReservationDetails() {
                       <p className="text-[#727272]">Organizer Email</p>
                       <p className="font-semibold text-[#181818] break-all">
                         {organizerEmail}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[#727272]">Organizer Phone</p>
+                      <p className="font-semibold text-[#181818] break-all">
+                        {organizerPhone}
                       </p>
                     </div>
                   </div>

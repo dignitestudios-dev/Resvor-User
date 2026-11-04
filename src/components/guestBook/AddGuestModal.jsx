@@ -13,7 +13,7 @@ import { ErrorToast, SuccessToast } from "../global/Toaster";
 import { guestbookSchema } from "../../schema/app/appSchema";
 import { useQueryClient } from "@tanstack/react-query";
 import { FiCamera, FiPlus, FiTrash2 } from "react-icons/fi";
-import { phoneFormatter, phoneToE164 } from "../../lib/helpers";
+import { normalizePhoneDigits, phoneFormatter, phoneToE164 } from "../../lib/helpers";
 
 const MONTHS = [
   { value: "1", label: "January (01)" },
@@ -157,7 +157,7 @@ const AddGuestModal = ({ onClose }) => {
   });
 
   const handlePhoneChange = (e) => {
-    const cleanVal = e.target.value.replace(/\D/g, "").slice(0, 10);
+    const cleanVal = normalizePhoneDigits(e.target.value);
     setFieldValue("phoneNumber", cleanVal);
   };
   const today = new Date();

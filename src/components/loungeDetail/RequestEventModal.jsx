@@ -8,7 +8,7 @@ import { ErrorToast } from "../global/Toaster";
 import { useFormik } from "formik";
 import { requestEventSchema } from "../../schema/app/appSchema";
 import PhoneInput from "../auth/PhoneInput";
-import { phoneFormatter, phoneToE164 } from "../../lib/helpers";
+import { normalizePhoneDigits, phoneFormatter, phoneToE164 } from "../../lib/helpers";
 
 const eventTypeOptions = [
   "Birthday Party",
@@ -224,7 +224,7 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
 
   // Form input cleaners for numeric-only inputs
   const handlePhoneChange = (e) => {
-    const cleanVal = e.target.value.replace(/\D/g, "").slice(0, 10);
+    const cleanVal = normalizePhoneDigits(e.target.value);
     setFieldValue("phone", cleanVal);
   };
 

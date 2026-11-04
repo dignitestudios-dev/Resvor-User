@@ -278,16 +278,16 @@ const PersonalDetails = ({ handleNext, handlePrevious, setPhoneNumber }) => {
                 values.specialDatesData.dobDate?.month) ||
                 (Array.isArray(values.specialDatesData.specialDates) &&
                   values.specialDatesData.specialDates.length > 0)) && (
-                <div className="bg-white/10 backdrop-blur-[28.9px] border border-white/20 rounded-[15px] p-2 space-y-2 mt-3 shadow-lg">
+                <div className="bg-white/10 backdrop-blur-[28.9px] border border-white/20 rounded-[15px] p-2 space-y-2 mt-3 shadow-lg overflow-hidden">
                   {/* DOB Row */}
                   {values.specialDatesData?.dobDate?.day &&
                     values.specialDatesData?.dobDate?.month && (
                       <div className="flex items-center justify-between px-3 py-2.5 rounded-[12px] bg-black/20 border border-white/10 transition hover:bg-black/30">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1 mr-2 overflow-hidden">
                           <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-300 flex items-center justify-center flex-shrink-0">
                             <IoCalendarOutline className="w-4 h-4 text-white" />
                           </div>
-                          <div>
+                          <div className="min-w-0 flex-1 overflow-hidden">
                             <p className="text-white text-[13px] font-medium leading-tight">
                               Birthday
                             </p>
@@ -309,12 +309,12 @@ const PersonalDetails = ({ handleNext, handlePrevious, setPhoneNumber }) => {
                         key={index}
                         className="flex items-center justify-between px-3 py-2.5 rounded-[12px] bg-black/20 border border-white/10 transition hover:bg-black/30"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1 mr-2 overflow-hidden">
                           <div className="w-8 h-8 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center flex-shrink-0">
                             <Sparkles className="w-4 h-4 text-amber-300" />
                           </div>
-                          <div>
-                            <p className="text-white text-[13px] font-medium leading-tight capitalize">
+                          <div className="min-w-0 flex-1 overflow-hidden">
+                            <p className="text-white text-[13px] font-medium leading-tight capitalize truncate break-all" title={date.title}>
                               {date.title || "Special Date"}
                             </p>
                             {/* <p className="text-[#A3A3A3] text-[11px]">
@@ -323,7 +323,7 @@ const PersonalDetails = ({ handleNext, handlePrevious, setPhoneNumber }) => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-2.5 flex-shrink-0">
                           <span className="text-[13px] font-medium text-white bg-white/15 px-3 py-1 rounded-[10px] border border-white/15 tracking-wide">
                             {formatDateMMDDYY(date)}
                           </span>

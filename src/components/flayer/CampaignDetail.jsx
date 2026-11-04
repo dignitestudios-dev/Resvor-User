@@ -292,7 +292,7 @@ export default function CampaignDetail() {
                       <div className="bg-gray-50 rounded-xl p-4 mt-4">
                         <p className="text-xs text-gray-400 font-semibold uppercase mb-2">Additional Description</p>
                         <div
-                          className="text-sm text-gray-700 leading-relaxed font-light"
+                          className="text-sm text-gray-700 break-all leading-relaxed font-light"
                           dangerouslySetInnerHTML={{ __html: campaign.additionalInfo }}
                         />
                       </div>

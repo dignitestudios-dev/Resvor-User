@@ -1,4 +1,5 @@
 import * as Yup from "yup";
+import { normalizePhoneDigits } from "../../lib/helpers";
 
 export const changePasswordSchema = Yup.object().shape({
   password: Yup.string()
@@ -52,7 +53,7 @@ export const guestbookSchema = Yup.object({
     .test(
       "valid-phone",
       "Please enter a valid 10-digit phone number.",
-      (value) => !value || value.replace(/\D/g, "").length === 10
+      (value) => !value || normalizePhoneDigits(value).length === 10
     )
     .nullable(),
   birthMonth: Yup.string().nullable(),
@@ -84,7 +85,7 @@ export const editGuestbookSchema = Yup.object({
     .test(
       "valid-phone",
       "Please enter a valid 10-digit phone number.",
-      (value) => !value || value.replace(/\D/g, "").length === 10
+      (value) => !value || normalizePhoneDigits(value).length === 10
     )
     .nullable(),
   birthMonth: Yup.string().nullable(),
@@ -195,8 +196,10 @@ export const requestEventSchema = Yup.object({
     ),
   phone: Yup.string()
     .required("Phone number is required")
-    .length(10, "Phone number must be exactly 10 digits")
-    .matches(/^\d{10}$/, "Phone number must contain only numbers"),
+    .test("len", "Phone number must be exactly 10 digits", (value) => {
+      if (!value) return false;
+      return normalizePhoneDigits(value).length === 10;
+    }),
   guestCount: Yup.string()
     .required("Guest count is required")
     .test("is-positive-number", "Enter a valid guest count", (value) => {

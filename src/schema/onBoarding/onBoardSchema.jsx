@@ -1,4 +1,5 @@
 import * as Yup from "yup";
+import { normalizePhoneDigits } from "../../lib/helpers";
 
 export const personalDetailSchema = Yup.object({
   profile: Yup.mixed()
@@ -93,7 +94,7 @@ export const personalDetailSchema = Yup.object({
     .required("Phone number is required.")
     .test("len", "Phone number must be exactly 10 digits.", (val) => {
       if (!val) return false;
-      const digits = val.replace(/\D/g, "");
+      const digits = normalizePhoneDigits(val);
       return digits.length === 10;
     }),
 

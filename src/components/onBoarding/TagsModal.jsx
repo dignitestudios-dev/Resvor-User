@@ -49,6 +49,8 @@ const TagsModal = ({
       const itemErrors = {};
       if (!date.title || !date.title.trim()) {
         itemErrors.title = "Title is required";
+      } else if (date.title.trim().length > 30) {
+        itemErrors.title = "Title cannot exceed 30 characters";
       }
       if (!date.day || !date.month) {
         itemErrors.date = "Day and Month are required";
@@ -181,7 +183,7 @@ const TagsModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-lg max-h-[680px] max-w-[515px] p-10 relative">
+      <div className="bg-white rounded-xl shadow-lg max-h-[680px] w-full max-w-[515px] p-6 sm:p-10 relative overflow-hidden flex flex-col">
         <button
           type="button"
           className="absolute top-5 right-6"
@@ -199,7 +201,7 @@ const TagsModal = ({
           offers and curated invitations.
         </p>
 
-        <div className="max-h-[500px] overflow-auto scrollbar-custom">
+        <div className="max-h-[500px] overflow-y-auto overflow-x-hidden scrollbar-custom w-full min-w-0">
           {/* Birthday */}
           <label className="block text-[14px] font-[500] text-[#181818] mb-2 mt-6">
             When Is Your Birthday?
@@ -227,13 +229,13 @@ const TagsModal = ({
           {specialDates.map((date, index) => (
             <div
               key={index}
-              className="border-b border-gray-200 pb-4 mb-4"
+              className="border-b border-gray-200 pb-4 mb-4 w-full min-w-0 overflow-hidden"
             >
               <label className="block text-[14px] font-[500] text-[#181818] mb-2 mt-6">
                 Title for Special Date
               </label>
 
-              <div className="px-1">
+              <div className="px-1 w-full min-w-0">
                 <AuthInput
                   textColor={true}
                   text="specialDate"
@@ -241,7 +243,7 @@ const TagsModal = ({
                   type="text"
                   id={`specialDate-${index}`}
                   name={`specialDate-${index}`}
-                  maxLength={100}
+                  maxLength={30}
                   value={date.title}
                   onChange={(e) =>
                     handleTitleChange(index, e.target.value)
@@ -256,7 +258,7 @@ const TagsModal = ({
                 <span className="text-[#CACACA]"> (required)</span>
               </label>
 
-              <div className="px-1">
+              <div className="px-1 w-full min-w-0">
                 <DateInput
                   placeholder="Select Date"
                   id={`specialDate-date-${index}`}
