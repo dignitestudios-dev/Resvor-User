@@ -42,8 +42,7 @@ const formatEventStatus = (value) => {
   const normalized = String(value || "").toLowerCase();
   const statusMap = {
     pending: "Pending",
-    approved: "Upcoming",
-    confirmed: "Upcoming",
+    confirmed: "Confirmed",
     completed: "Completed",
     rejected: "Rejected",
     cancelled: "Cancelled",
@@ -166,9 +165,8 @@ const MyBooking = () => {
     } else if (booking.status === "confirmed") {
       status = "Confirmed";
     } else if (booking.status === "approved") {
-      status = "Approved"
-    }
-    else if (booking.status === "cancelled" || booking.status === "rejected") {
+      status = "Approved";
+    } else if (booking.status === "cancelled" || booking.status === "rejected") {
       status = "Cancelled";
     }
 
@@ -203,6 +201,7 @@ const MyBooking = () => {
           ? `$${event.budget}`
           : "-",
       status: formatEventStatus(event.status),
+      rejectionReason: event.rejectionReason || "",
     };
   });
 
@@ -212,7 +211,11 @@ const MyBooking = () => {
   const activeLoading = activeTab === "bookings" ? isBookingsLoading : isEventsLoading;
 
   const filteredRows = activeStatusFilter
-    ? activeRows.filter((row) => row.status === activeStatusFilter)
+    ? activeRows.filter(
+        (row) =>
+          String(row.status || "").toLowerCase() ===
+          activeStatusFilter.toLowerCase()
+      )
     : activeRows;
 
   // ── render ─────────────────────────────────────────────────────────────────
@@ -260,7 +263,7 @@ const MyBooking = () => {
                     setBookingStatusFilter(status);
                     setBookingsPage(1);
                   }}
-                  options={["All", "Completed", "Upcoming", "Cancelled"]}
+                  options={["All", "Pending", "Confirmed", "Completed", "Cancelled"]}
                 />
               </div>
             ) : (
@@ -271,7 +274,7 @@ const MyBooking = () => {
                     setEventStatusFilter(status);
                     setEventsPage(1);
                   }}
-                  options={["All", "Pending", "Upcoming", "Completed", "Rejected", "Cancelled"]}
+                  options={["All", "Pending", "Confirmed", "Completed", "Rejected", "Cancelled"]}
                 />
               </div>
             )}

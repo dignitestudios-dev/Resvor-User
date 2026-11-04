@@ -5,11 +5,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router";
 import ConfirmationModal from "../global/ConfirmationModal";
 import SendInvitationModal from "../flayer/SendInvitationModal";
+import FlayerFeeModal from "../flayer/FlayerFeeModal";
+import AuthSuccessModal from "../auth/AuthSuccessModal";
 import { ErrorToast, SuccessToast } from "../global/Toaster";
 import DisputeModal from "./DisputeModal";
 import ViewDisputeModal from "./ViewDisputeModal";
 import RejectedModal from "./RejectedModal";
-import { useCancelEvent, useCreateDispute, useEventDetails } from "../../hooks/queries/useQueries";
+import { useCancelEvent, useCreateDispute, useEventDetails, useCreateCampaign } from "../../hooks/queries/useQueries";
 
 // ── dispute eligibility helper ────────────────────────────────────────────────
 const checkDisputeEligibility = (event) => {
@@ -215,12 +217,153 @@ const getStatusClasses = (status) => {
   return { backgroundColor: "#F3F4F6", color: "#6B7280" };
 };
 
+const createFallback1pxFile = () => {
+  const byteCharacters = atob(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+  );
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], { type: "image/png" });
+  return new File([blob], "event-invitation.png", { type: "image/png" });
+};
+
+const generateEventInvitationBanner = (event) => {
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1200;
+    canvas.height = 630;
+    const ctx = canvas.getContext("2d");
+
+    // Dark navy / royal blue gradient
+    const grad = ctx.createLinearGradient(0, 0, 1200, 630);
+    grad.addColorStop(0, "#061523");
+    grad.addColorStop(0.5, "#0B0E52");
+    grad.addColorStop(1, "#012C57");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1200, 630);
+
+    // Decorative inner border
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(30, 30, 1140, 570);
+
+    // Brand tag
+    ctx.fillStyle = "#A5B4FC";
+    ctx.font = "bold 26px sans-serif";
+    ctx.fillText("RESVOR EVENT INVITATION", 70, 95);
+
+    // Event title
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 52px sans-serif";
+    const title = String(event?.title || event?.name || "Special Event");
+    const displayTitle = title.length > 35 ? title.slice(0, 32) + "..." : title;
+    ctx.fillText(displayTitle, 70, 185);
+
+    // Venue name
+    const venue = event?.loungeId?.name || "Exclusive Lounge";
+    ctx.fillStyle = "#E0E7FF";
+    ctx.font = "32px sans-serif";
+    ctx.fillText(`📍 ${venue}`, 70, 260);
+
+    // Date & Time
+    const rawDate = event?.startDateTime || event?.date;
+    const dateStr = rawDate
+      ? new Date(rawDate).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "";
+    const timeStr = rawDate
+      ? new Date(rawDate).toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "";
+    if (dateStr || timeStr) {
+      ctx.fillStyle = "#CBD5E1";
+      ctx.font = "28px sans-serif";
+      ctx.fillText(`🗓 ${dateStr} ${timeStr ? `• ${timeStr}` : ""}`, 70, 325);
+    }
+
+    // Event type badge
+    if (event?.eventType) {
+      ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
+      ctx.beginPath();
+      if (typeof ctx.roundRect === "function") {
+        ctx.roundRect(70, 375, 220, 48, 10);
+      } else {
+        ctx.rect(70, 375, 220, 48);
+      }
+      ctx.fill();
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "bold 20px sans-serif";
+      ctx.fillText(String(event.eventType).toUpperCase(), 95, 407);
+    }
+
+    // Invitation message
+    ctx.fillStyle = "#94A3B8";
+    ctx.font = "22px sans-serif";
+    ctx.fillText(
+      "You are cordially invited! We look forward to seeing you.",
+      70,
+      520
+    );
+
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(new File([blob], "event-invitation.png", { type: "image/png" }));
+        } else {
+          resolve(createFallback1pxFile());
+        }
+      }, "image/png");
+    });
+  } catch {
+    return Promise.resolve(createFallback1pxFile());
+  }
+};
+
+const fetchImageAsFile = async (imageUrl) => {
+  if (!imageUrl) return null;
+  try {
+    const res = await fetch(imageUrl, { mode: "cors" });
+    if (res.ok) {
+      const blob = await res.blob();
+      const mime = blob.type || "image/png";
+      const ext = mime.split("/")[1] || "png";
+      return new File([blob], `event-image.${ext}`, { type: mime });
+    }
+  } catch (err) {
+    // S3 or cross-origin fetch may be blocked by CORS
+  }
+  return null;
+};
+
+const getCampaignImageFile = async (imageUrl, event) => {
+  if (imageUrl) {
+    try {
+      const file = await fetchImageAsFile(imageUrl);
+      if (file && file.size > 0) return file;
+    } catch {
+      // Ignore
+    }
+  }
+  return generateEventInvitationBanner(event);
+};
+
 export default function ReservationDetails() {
   const navigate = useNavigate();
   const { id } = useParams();
   const queryClient = useQueryClient();
 
   const [sendInvitation, setSendInvitation] = useState(false);
+  const [pendingRecipients, setPendingRecipients] = useState([]);
+  const [isFlayerFee, setIsFlayerFee] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [showViewDisputeModal, setShowViewDisputeModal] = useState(false);
@@ -237,6 +380,7 @@ export default function ReservationDetails() {
   console.log("🚀 ~ ReservationDetails ~ event:", event)
   const { mutate: cancelEvent, isPending: isCancelling } = useCancelEvent();
   const { mutate: createDispute, isPending: isFilingDispute } = useCreateDispute();
+  const { mutate: createCampaign, isPending: isSendingCampaign } = useCreateCampaign();
 
   const disputeId =
     (typeof event?.disputeId === "object" ? event?.disputeId?._id : event?.disputeId) ||
@@ -280,6 +424,12 @@ export default function ReservationDetails() {
   const eventStatus = formatLabel(event?.status);
   // const paymentStatus = formatLabel(event?.paymentStatus);
   const currentStatus = String(event?.status || "").toLowerCase();
+  const eventOverviewImage =
+    event?.image?.location ||
+    event?.image ||
+    event?.flyer ||
+    event?.loungeId?.logo?.location ||
+    "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80";
   console.log("🚀 ~ ReservationDetails ~ currentStatus:", currentStatus)
   const hideSendInvite = [
     "pending",
@@ -338,6 +488,60 @@ export default function ReservationDetails() {
         },
       }
     );
+  };
+
+  const handleProceedInvitation = (recipients) => {
+    setPendingRecipients(recipients);
+    setSendInvitation(false);
+    setIsFlayerFee(true);
+  };
+
+  const handleSubmitCampaign = async (recipients) => {
+    if (!recipients || recipients.length === 0) {
+      ErrorToast("Please select at least one recipient.");
+      return;
+    }
+
+    const payload = new FormData();
+    payload.append("channel", "email");
+    recipients.forEach((email, index) => {
+      payload.append(`recipients[${index}]`, email);
+    });
+
+    const info = event?.title
+      ? `Event Invitation: ${event.title}`
+      : "Event Invitation";
+    payload.append("additionalInfo", event?.description || info);
+    if (event?._id || id) {
+      payload.append("eventId", event?._id || id);
+    }
+
+    try {
+      const imageFile = await getCampaignImageFile(eventOverviewImage, event);
+      if (imageFile) {
+        payload.append("image", imageFile);
+      }
+    } catch (err) {
+      console.warn("Failed to attach event overview image:", err);
+    }
+
+    if (!payload.get("image")) {
+      payload.append("image", createFallback1pxFile());
+    }
+
+    createCampaign(payload, {
+      onSuccess: () => {
+        SuccessToast("Campaign sent successfully!");
+        setIsFlayerFee(false);
+        setIsSuccess(true);
+      },
+      onError: (err) => {
+        const message =
+          err?.response?.data?.message ||
+          "Failed to send campaign. Please try again.";
+        ErrorToast(message);
+      },
+    });
   };
 
   if (isLoading) {
@@ -474,7 +678,7 @@ export default function ReservationDetails() {
             <div className="bg-[#FFFFFF] rounded-[24px] p-5 space-y-6">
               <div className="flex flex-col md:flex-row gap-8 pb-5 border-b border-[#0000001A]">
                 <img
-                  src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80"
+                  src={eventOverviewImage}
                   alt="Event venue"
                   className="rounded-xl w-[368px] h-[212px] object-cover"
                 />
@@ -696,9 +900,26 @@ export default function ReservationDetails() {
 
       {sendInvitation && (
         <SendInvitationModal
-          onClick={() => setSendInvitation(false)}
+          onProceed={handleProceedInvitation}
+          onClick={handleProceedInvitation}
           onClose={() => setSendInvitation(false)}
-          handleSuccess={() => setSendInvitation(false)}
+
+        />
+      )}
+
+      {isFlayerFee && (
+        <FlayerFeeModal
+          onClick={() => handleSubmitCampaign(pendingRecipients)}
+          onClose={() => setIsFlayerFee(false)}
+          isLoading={isSendingCampaign}
+        />
+      )}
+
+      {isSuccess && (
+        <AuthSuccessModal
+          onClick={() => setIsSuccess(false)}
+          title="Invitation sent"
+          description="Your invitation has been sent to all guests."
         />
       )}
 

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useCampaignContacts } from "../../hooks/queries/useQueries";
 import { ErrorToast } from "../../components/global/Toaster";
 
-const SendInvitationModal = ({ onClose, onProceed }) => {
+const SendInvitationModal = ({ onClose, onProceed, onClick, handleSuccess }) => {
   const [email, setEmail] = useState("");
   const [selectedGuests, setSelectedGuests] = useState([]);
 
@@ -67,7 +67,13 @@ const SendInvitationModal = ({ onClose, onProceed }) => {
 
   const handleSend = () => {
     if (selectedGuests.length > 0) {
-      onProceed(selectedGuests);
+      if (typeof onProceed === "function") {
+        onProceed(selectedGuests);
+      } else if (typeof onClick === "function") {
+        onClick(selectedGuests);
+      } else if (typeof handleSuccess === "function") {
+        handleSuccess(selectedGuests);
+      }
     }
   };
 
