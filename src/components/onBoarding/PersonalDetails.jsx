@@ -3,12 +3,13 @@
 import AuthButton from "../auth/AuthButton";
 import { useFormik } from "formik";
 import AuthInput from "../auth/AuthInput";
-import { binIcon, mapImg, uploadIcon } from "../../assets/export";
+import { uploadIcon } from "../../assets/export";
 import { useState } from "react";
 import TagsInputField from "./TagsInputField";
 import { LogOutIcon, Sparkles, Trash2 } from "lucide-react";
 import { IoCalendarOutline } from "react-icons/io5";
 import TagsModal from "./TagsModal";
+import ImageCropperModal from "../global/ImageCropperModal";
 import { personalDetailValues } from "../../init/onBoarding/onBoardValues";
 import { personalDetailSchema } from "../../schema/onBoarding/onBoardSchema";
 import { ErrorToast } from "../global/Toaster";
@@ -33,6 +34,9 @@ const PersonalDetails = ({ handleNext, handlePrevious, setPhoneNumber }) => {
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [imageError, setImageError] = useState("");
+  const [isCropperOpen, setIsCropperOpen] = useState(false);
+  const [cropSourceImage, setCropSourceImage] = useState(null);
+  const [rawFileToCrop, setRawFileToCrop] = useState(null);
   const closeModal = () => setModalIsOpen(false);
 
   const personalDetailsMutation = usePersonalDetails();
@@ -153,11 +157,12 @@ const PersonalDetails = ({ handleNext, handlePrevious, setPhoneNumber }) => {
     setImageError("");
 
     if (file) {
-      // Check file type
-      if (!["image/jpeg", "image/png"].includes(file.type)) {
-        const errorMsg = "Only JPEG and PNG formats are allowed";
+      // Check file type: JPG, JPEG, PNG, WEBP
+      if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(file.type)) {
+        const errorMsg = "Only JPG, JPEG, PNG, and WEBP formats are allowed";
         setImageError(errorMsg);
         ErrorToast(errorMsg);
+        e.target.value = "";
         return;
       }
 
@@ -166,6 +171,7 @@ const PersonalDetails = ({ handleNext, handlePrevious, setPhoneNumber }) => {
         const errorMsg = "File size must not exceed 10MB";
         setImageError(errorMsg);
         ErrorToast(errorMsg);
+        e.target.value = "";
         return;
       }
 
@@ -175,14 +181,32 @@ const PersonalDetails = ({ handleNext, handlePrevious, setPhoneNumber }) => {
         const errorMsg = "Image resolution must be at least 215x215";
         setImageError(errorMsg);
         ErrorToast(errorMsg);
+        e.target.value = "";
         return;
       }
 
-      // If all validations pass, set file in Formik state
-      setFieldValue("profile", file);
-      // set preview separately
-      setFieldValue("userImage", URL.createObjectURL(file));
+      // Open cropping modal before uploading
+      const objectUrl = URL.createObjectURL(file);
+      setCropSourceImage(objectUrl);
+      setRawFileToCrop(file);
+      setIsCropperOpen(true);
+      e.target.value = "";
     }
+  };
+
+  const handleCropComplete = (croppedFile, croppedPreviewUrl) => {
+    setFieldValue("profile", croppedFile);
+    setFieldValue("userImage", croppedPreviewUrl);
+    setIsCropperOpen(false);
+  };
+
+  const handleCloseCropper = () => {
+    setIsCropperOpen(false);
+    if (cropSourceImage) {
+      URL.revokeObjectURL(cropSourceImage);
+      setCropSourceImage(null);
+    }
+    setRawFileToCrop(null);
   };
   return (
     <div className="flex flex-col justify-center items-center h-auto ">
@@ -225,7 +249,7 @@ const PersonalDetails = ({ handleNext, handlePrevious, setPhoneNumber }) => {
                   Upload profile picture
                   <input
                     type="file"
-                    accept=".jpg,.jpeg,.png"
+                    accept=".jpg,.jpeg,.png,.webp"
                     onChange={handleFileChange}
                     className="absolute inset-0 opacity-0 cursor-pointer -left-24"
                   />
@@ -417,6 +441,14 @@ const PersonalDetails = ({ handleNext, handlePrevious, setPhoneNumber }) => {
           initialData={values.specialDatesData}
         />
       )}
+
+      <ImageCropperModal
+        isOpen={isCropperOpen}
+        imageSrc={cropSourceImage}
+        originalFile={rawFileToCrop}
+        onClose={handleCloseCropper}
+        onCropComplete={handleCropComplete}
+      />
     </div>
   );
 };

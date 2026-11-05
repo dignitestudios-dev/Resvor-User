@@ -1,11 +1,13 @@
+/* eslint-disable react/prop-types */
 import { RxCross2 } from "react-icons/rx";
 import { AiOutlinePlus } from "react-icons/ai";
 import InputField from "../auth/InputField";
 import Button from "../global/Button";
-import { binIcon, mapImg, userImage } from "../../assets/export";
+import { binIcon, userImage } from "../../assets/export";
 import { useState, useRef } from "react";
 import TagsInputField from "../onBoarding/TagsInputField";
 import TagsModal from "../onBoarding/TagsModal";
+import ImageCropperModal from "../global/ImageCropperModal";
 import { ErrorToast } from "../global/Toaster";
 
 const validateImageResolution = (file) => {
@@ -93,6 +95,9 @@ const EditProfileModal = ({
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const [isCropperOpen, setIsCropperOpen] = useState(false);
+  const [cropSourceImage, setCropSourceImage] = useState(null);
+  const [rawFileToCrop, setRawFileToCrop] = useState(null);
   const fileInputRef = useRef(null);
 
   const [specialDatesData, setSpecialDatesData] = useState(() =>
@@ -114,31 +119,51 @@ const EditProfileModal = ({
     const file = e.target.files?.[0];
 
     if (file) {
-      // Check file type
+      // Check file type: JPG, JPEG, PNG, WEBP
       if (!["image/jpeg", "image/png", "image/jpg", "image/webp"].includes(file.type)) {
-        const errorMsg = "Only JPEG and PNG formats are allowed";
-        ErrorToast(errorMsg);
+        ErrorToast("Only JPG, JPEG, PNG, and WEBP formats are allowed.");
+        if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
 
       // Check file size (10MB)
       if (file.size > 10 * 1024 * 1024) {
-        const errorMsg = "File size must not exceed 10MB";
-        ErrorToast(errorMsg);
+        ErrorToast("File size must not exceed 10MB.");
+        if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
 
-      // Check image resolution (215x215)
+      // Check image resolution (must be at least 215x215)
       const isValidResolution = await validateImageResolution(file);
       if (!isValidResolution) {
-        const errorMsg = "Image resolution must be at least 215x215";
-        ErrorToast(errorMsg);
+        ErrorToast("Image resolution must be at least 215x215.");
+        if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
 
-      setSelectedImageFile(file);
-      setPreviewImage(URL.createObjectURL(file));
+      // Open cropping modal before uploading
+      const objectUrl = URL.createObjectURL(file);
+      setCropSourceImage(objectUrl);
+      setRawFileToCrop(file);
+      setIsCropperOpen(true);
     }
+  };
+
+  const handleCropComplete = (croppedFile, croppedPreviewUrl) => {
+    setSelectedImageFile(croppedFile);
+    setPreviewImage(croppedPreviewUrl);
+    setIsCropperOpen(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleCloseCropper = () => {
+    setIsCropperOpen(false);
+    if (cropSourceImage) {
+      URL.revokeObjectURL(cropSourceImage);
+      setCropSourceImage(null);
+    }
+    setRawFileToCrop(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleChange = (e) => {
@@ -229,7 +254,7 @@ const EditProfileModal = ({
               type="file"
               ref={fileInputRef}
               onChange={handleImageChange}
-              accept="image/*"
+              accept="image/jpeg,image/png,image/jpg,image/webp"
               className="hidden"
             />
 
@@ -436,6 +461,14 @@ const EditProfileModal = ({
           setFieldError={() => { }}
         />
       )}
+
+      <ImageCropperModal
+        isOpen={isCropperOpen}
+        imageSrc={cropSourceImage}
+        originalFile={rawFileToCrop}
+        onClose={handleCloseCropper}
+        onCropComplete={handleCropComplete}
+      />
 
 
 
