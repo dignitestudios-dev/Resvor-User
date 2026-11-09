@@ -30,7 +30,10 @@ export const submitVerifyPhone = async (payload) => {
   );
   return data;
 };
-
+export const submitSendOnboardingOtp = async () => {
+  const { data } = await axios.post("/auth/onboarding/send-otp");
+  return data;
+};
 export const submitUpdateOnboardingPhone = async (payload) => {
   const { data } = await axios.patch(
     "/auth/onboarding/phone-number",
