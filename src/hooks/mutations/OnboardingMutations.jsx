@@ -62,7 +62,8 @@ export const useVerifyPhone = () => {
 };
 export const useSendOnboardingOtp = () =>
   useMutation({
-    mutationFn: submitSendOnboardingOtp,
+    mutationFn: submitSendOnboardingOtp 
+    ,
   });
 export const useUpdateOnboardingPhone = () => {
   return useMutation({
