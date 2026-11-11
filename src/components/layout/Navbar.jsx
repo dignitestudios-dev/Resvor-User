@@ -298,22 +298,30 @@ const Navbar = () => {
             )}
           </div>
           <div className="relative">
-          <img
-  ref={avatarRef}
-  src={profilePicSrc}
-  onError={(e) => {
-    e.target.onerror = null;
-    e.target.src = userImage;
-  }}
-  className="h-10 w-10 min-h-10 min-w-10 shrink-0 aspect-square object-cover rounded-full cursor-pointer border-2 joyride-navbar-profile"
-  onClick={toggleUserpopup}
-  alt="Avatar"
-/>
+            <img
+              ref={avatarRef}
+              src={profilePicSrc}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = userImage;
+              }}
+              className="h-10 w-10 min-h-10 min-w-10 shrink-0 aspect-square object-cover rounded-full cursor-pointer border-2 joyride-navbar-profile"
+              onClick={toggleUserpopup}
+              alt="Avatar"
+            />
+
+            {isSubscribed && (
+              <img
+                src={vipTag}
+                alt="VIP"
+                className="absolute -right-7 top-1/2 -translate-y-1/2 w-8 h-auto object-contain z-10"
+              />
+            )}
 
             {userPopup && (
               <div
                 ref={userPopupRef}
-      className="absolute top-20 right-4 bg-white w-[155px] text-black rounded-[8px] shadow-lg p-4 space-y-2 z-50"
+                className="absolute top-20 right-4 bg-white w-[155px] text-black rounded-[8px] shadow-lg p-4 space-y-2 z-50"
               >
                 <span
                   className="block font-[400] py-1 text-sm border-b  border-[#E4E4E4] cursor-pointer"
@@ -363,7 +371,7 @@ const Navbar = () => {
               </div>
             )}
           </div>
-          {isSubscribed && (
+          {/* {isSubscribed && (
             <div className="-ml-8 flex items-center justify-center">
               <img
                 src={vipTag}
@@ -371,7 +379,7 @@ const Navbar = () => {
                 className="w-8 h-auto object-contain block"
               />
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Mobile Toggle */}
