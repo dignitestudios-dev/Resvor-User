@@ -877,19 +877,19 @@ export default function ReservationDetails() {
                 <div>
                   <p className="text-black font-semibold mb-2">Name</p>
                   <p className="text-gray-600 text-sm font-semibold">
-                    {organizerName}
+                    {event?.userId?.firstName} {event?.userId?.lastName}
                   </p>
                 </div>
                 <div>
                   <p className="text-black font-semibold mb-2">Email Address</p>
                   <p className="text-gray-600 text-sm font-semibold break-all">
-                    {organizerEmail}
+                    {event?.userId?.email || "N/A"}
                   </p>
                 </div>
                 <div>
                   <p className="text-black font-semibold mb-2">Phone Number</p>
                   <p className="text-gray-600 text-sm font-semibold">
-                    {organizerPhone}
+                    {event?.userId?.phone || "N/A"}
                   </p>
                 </div>
               </div>

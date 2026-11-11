@@ -12,6 +12,7 @@ import {
   useCancelBooking,
   useCreateDispute,
 } from "../../hooks/queries/useQueries";
+import { Mail, Phone, UserRound } from "lucide-react";
 
 // ── dispute eligibility helper ────────────────────────────────────────────────
 const checkDisputeEligibility = (booking) => {
@@ -306,8 +307,8 @@ export default function BookingDetails() {
 
   // ── Issue #13 — prefer booking-level contact fields over populated userId ──
   const contactName =
-    booking?.contactName ||
-    booking?.guestName ||
+    // booking?.contactName ||
+    // booking?.guestName ||
     (booking?.userId && typeof booking.userId === "object"
       ? [booking.userId.firstName || booking.userId.name, booking.userId.lastName]
         .filter(Boolean)
@@ -317,8 +318,8 @@ export default function BookingDetails() {
     "-";
 
   const contactEmail =
-    booking?.contactEmail ||
-    booking?.guestEmail ||
+    // booking?.contactEmail ||
+    // booking?.guestEmail ||
     booking?.email ||
     (booking?.userId && typeof booking.userId === "object"
       ? booking.userId.email
@@ -326,16 +327,16 @@ export default function BookingDetails() {
     "-";
 
   const contactPhone =
-    booking?.contactPhone ||
-    booking?.guestPhone ||
-    booking?.phoneNumber ||
+    // // booking?.contactPhone ||
+    // // booking?.guestPhone ||
+    // booking?.phoneNumber ||
     booking?.phone ||
     (booking?.userId && typeof booking.userId === "object"
       ? booking.userId.phone ||
       booking.userId.phoneNumber ||
       booking.userId.mobile
       : "") ||
-    "-";
+    "N/A";
 
   // ── Issue #4 — lounge cover image: widen lookup ───────────────────────────
   const lounge = booking?.loungeId;
@@ -628,6 +629,52 @@ export default function BookingDetails() {
               </div>
 
               {/* Guest details row — Issue #6 children count, Issue #8 no dupe date */}
+
+              <div className="border-t border-gray-200 pt-5 mt-5 mb-6">
+
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {/* Organizer Name */}
+                  <div className="flex items-center gap-3 bg-[#F8F9FC] border border-gray-100 rounded-xl p-4">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                      <UserRound className="w-5 h-5 text-blue-900" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-500 mb-1">Organizer Name</p>
+                      <p className="text-sm font-semibold text-gray-800 break-all">
+                        {booking.guestName ||
+                          "N/A"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Organizer Email */}
+                  <div className="flex items-center gap-3 bg-[#F8F9FC] border border-gray-100 rounded-xl p-4">
+                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                      <Mail className="w-5 h-5 text-green-700" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-500 mb-1">Email Address</p>
+                      <p className="text-sm font-semibold text-gray-800 break-all">
+                        {booking.guestEmail || "N/A"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Organizer Phone */}
+                  <div className="flex items-center gap-3 bg-[#F8F9FC] border border-gray-100 rounded-xl p-4">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                      <Phone className="w-5 h-5 text-orange-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-500 mb-1">Phone Number</p>
+                      <p className="text-sm font-semibold text-gray-800 break-all">
+                        {booking.guestPhone || "N/A"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4 text-sm pb-5 border-b border-[#0000001A]">
                 <div className="space-y-1 min-w-0">
                   <p className="font-semibold text-[#000000] text-[15px]">Guests</p>
@@ -807,7 +854,7 @@ export default function BookingDetails() {
             {/* ── Section: User Information — Issue #13 ─────────────────── */}
             <div className="mt-4">
               <h2 className="text-[24px] font-semibold text-[#252525] mb-3">
-                Contact Information
+                User Information
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm bg-white rounded-[16px] px-6 pt-6 pb-4">
                 <div className="space-y-1 min-w-0">
