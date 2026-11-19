@@ -3,9 +3,10 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useWalletMe, useWalletTransactions } from "../../hooks/queries/useQueries";
 import { useWalletTopup } from "../../hooks/mutations/OnboardingMutations";
+import { useTableQuery } from "../../hooks/useTableQuery";
+import Pagination from "../global/Pagination";
 import { SuccessToast, ErrorToast } from "../global/Toaster";
 import { RxCross2 } from "react-icons/rx";
-import Button from "../global/Button";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
@@ -312,12 +313,17 @@ const TopUpModal = ({ onClose }) => {
 /* ─── Main Wallet Component ────────────────────────── */
 const Wallet = () => {
   const [showTopUp, setShowTopUp] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const limit = 10;
 
+  const { query, setPage } = useTableQuery({
+    defaultValues: {
+      page: 1,
+    },
+  });
+
   const { data: walletResponse, isLoading: isLoadingWallet } = useWalletMe();
-  const { data: txResponse, isLoading: isLoadingTx } = useWalletTransactions({
-    page: currentPage,
+  const { data: txResponse, isLoading: isLoadingTx, isFetching: isFetchingTx } = useWalletTransactions({
+    page: query.page,
     limit,
   });
 
@@ -325,18 +331,6 @@ const Wallet = () => {
   const transactions = txResponse?.data || [];
   const pagination = txResponse?.pagination;
   const totalPages = pagination?.totalPages || pagination?.pages || 1;
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
 
   return (
     <div className="mx-auto px-6 py-8">
@@ -404,7 +398,11 @@ const Wallet = () => {
         </h3>
 
         {/* Desktop table */}
-        <div className="hidden md:block overflow-x-auto">
+        <div
+          className={`hidden md:block overflow-x-auto transition-opacity duration-200 ${
+            isFetchingTx ? "opacity-75" : "opacity-100"
+          }`}
+        >
           <table className="min-w-full text-left border-collapse">
             <thead>
               <tr className="border-b text-[#181818] text-[13.9px] font-[600]">
@@ -416,7 +414,7 @@ const Wallet = () => {
               </tr>
             </thead>
             <tbody>
-              {isLoadingTx ? (
+              {isLoadingTx && !transactions.length ? (
                 [...Array(3)].map((_, i) => (
                   <tr key={i} className="border-b">
                     {[...Array(5)].map((__, j) => (
@@ -458,8 +456,12 @@ const Wallet = () => {
         </div>
 
         {/* Mobile cards */}
-        <div className="space-y-4 md:hidden">
-          {isLoadingTx ? (
+        <div
+          className={`space-y-4 md:hidden transition-opacity duration-200 ${
+            isFetchingTx ? "opacity-75" : "opacity-100"
+          }`}
+        >
+          {isLoadingTx && !transactions.length ? (
             [...Array(3)].map((_, i) => (
               <div key={i} className="border rounded-xl p-4 animate-pulse space-y-2">
                 {[...Array(4)].map((__, j) => (
@@ -499,32 +501,14 @@ const Wallet = () => {
         </div>
 
         {/* Pagination Controls Section */}
-        {!isLoadingTx && transactions.length > 0 && (
-          <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl mt-4">
-            <div className="text-sm text-gray-500">
-              Showing page <span className="font-semibold text-gray-800">{currentPage}</span> of{" "}
-              <span className="font-semibold text-gray-800">{totalPages}</span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handlePrevPage}
-                disabled={currentPage === 1}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                onClick={handleNextPage}
-                disabled={currentPage >= totalPages}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={query.page}
+          totalPages={totalPages}
+          totalItems={pagination?.totalItems ?? pagination?.total ?? transactions.length}
+          itemsPerPage={limit}
+          onPageChange={setPage}
+          isLoading={isFetchingTx}
+        />
       </div>
 
       {/* Top-Up Modal */}

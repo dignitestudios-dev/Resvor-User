@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { useLocation, useNavigate } from "react-router";
-import Billing from "./Billing";
 import UpdatePlan from "./UpdatePlan";
 import VipSubscription from "./VipSubscription";
 import Wallet from "./Wallet";
@@ -72,7 +71,14 @@ const SubscriptionBilling = () => {
               {tabs.map((tab) => (
                 <button
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
+                  onClick={() => {
+                    if (activeTab === tab.key) return;
+                    setActiveTab(tab.key);
+                    const params = new URLSearchParams(location.search);
+                    params.set("tab", tab.key);
+                    params.delete("page");
+                    navigate(`?${params.toString()}`);
+                  }}
                   className={`
                   px-3 py-2 text-[16px] transition-all duration-200
                   border-b-2 whitespace-nowrap

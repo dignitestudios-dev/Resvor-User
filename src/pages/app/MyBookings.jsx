@@ -1,10 +1,12 @@
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useMemo } from "react";
 import BookingsTable from "../../components/bookings/BookingsTable";
 import EventBookingsTable from "../../components/bookings/EventBookingsTable";
 import StatusDropdown from "../../components/global/StatusDropdown";
+import Pagination from "../../components/global/Pagination";
 import { useBookings, useEvents } from "../../hooks/queries/useQueries";
+import { useTableQuery } from "../../hooks/useTableQuery";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -54,22 +56,37 @@ const formatEventStatus = (value) => {
 
 const MyBooking = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("bookings");
-  const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
-  const [bookingStatusFilter, setBookingStatusFilter] = useState("");
-  const [eventStatusFilter, setEventStatusFilter] = useState("");
 
-  // Pagination states
-  const [bookingsPage, setBookingsPage] = useState(1);
-  const [eventsPage, setEventsPage] = useState(1);
+  const { query, setPage, setFilter, updateQuery } = useTableQuery({
+    defaultValues: {
+      tab: "bookings",
+      status: "all",
+      page: 1,
+    },
+  });
+
+  const activeTab = query.tab === "events" ? "events" : "bookings";
+  const activeStatusFilter = query.status || "all";
   const limit = 10;
 
-  const { data: bookingsResponse, isLoading: isBookingsLoading } = useBookings(
-    { page: bookingsPage, limit },
+  const bookingsApiParams = useMemo(() => ({
+    page: query.page,
+    limit,
+    ...(activeStatusFilter && activeStatusFilter !== "all" ? { status: activeStatusFilter.toLowerCase() } : {}),
+  }), [query.page, limit, activeStatusFilter]);
+
+  const eventsApiParams = useMemo(() => ({
+    page: query.page,
+    limit,
+    ...(activeStatusFilter && activeStatusFilter !== "all" ? { status: activeStatusFilter.toLowerCase() } : {}),
+  }), [query.page, limit, activeStatusFilter]);
+
+  const { data: bookingsResponse, isLoading: isBookingsLoading, isFetching: isBookingsFetching } = useBookings(
+    bookingsApiParams,
     { enabled: activeTab === "bookings" }
   );
-  const { data: eventsResponse, isLoading: isEventsLoading } = useEvents(
-    { page: eventsPage, limit },
+  const { data: eventsResponse, isLoading: isEventsLoading, isFetching: isEventsFetching } = useEvents(
+    eventsApiParams,
     { enabled: activeTab === "events" }
   );
 
@@ -77,41 +94,26 @@ const MyBooking = () => {
   const eventsData = eventsResponse?.data || [];
 
   const bookingsPagination = bookingsResponse?.pagination || {
-    currentPage: 1,
+    currentPage: query.page,
     totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10,
+    totalItems: bookingsData.length,
+    itemsPerPage: limit,
   };
 
   const eventsPagination = eventsResponse?.pagination || {
-    currentPage: 1,
+    currentPage: query.page,
     totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10,
+    totalItems: eventsData.length,
+    itemsPerPage: limit,
   };
 
-  const handlePrevBookingsPage = () => {
-    if (bookingsPagination.currentPage > 1) {
-      setBookingsPage((prev) => prev - 1);
-    }
+  const handleTabChange = (newTab) => {
+    updateQuery({ tab: newTab, status: "all", page: 1 });
   };
 
-  const handleNextBookingsPage = () => {
-    if (bookingsPagination.currentPage < bookingsPagination.totalPages) {
-      setBookingsPage((prev) => prev + 1);
-    }
-  };
-
-  const handlePrevEventsPage = () => {
-    if (eventsPagination.currentPage > 1) {
-      setEventsPage((prev) => prev - 1);
-    }
-  };
-
-  const handleNextEventsPage = () => {
-    if (eventsPagination.currentPage < eventsPagination.totalPages) {
-      setEventsPage((prev) => prev + 1);
-    }
+  const handleStatusChange = (newStatus) => {
+    const val = (newStatus || "").toLowerCase();
+    setFilter("status", val === "all" ? "" : val);
   };
 
   // ── bookings rows ──────────────────────────────────────────────────────────
@@ -207,16 +209,33 @@ const MyBooking = () => {
 
   // ── filter ──────────────────────────────────────────────────────────────────
   const activeRows = activeTab === "bookings" ? bookingRows : eventRows;
-  const activeStatusFilter = activeTab === "bookings" ? bookingStatusFilter : eventStatusFilter;
-  const activeLoading = activeTab === "bookings" ? isBookingsLoading : isEventsLoading;
+  const activeInitialLoading =
+    activeTab === "bookings"
+      ? isBookingsLoading && !bookingsData.length
+      : isEventsLoading && !eventsData.length;
+  const activeFetching = activeTab === "bookings" ? isBookingsFetching : isEventsFetching;
+  const activePagination = activeTab === "bookings" ? bookingsPagination : eventsPagination;
 
-  const filteredRows = activeStatusFilter
-    ? activeRows.filter(
-        (row) =>
-          String(row.status || "").toLowerCase() ===
-          activeStatusFilter.toLowerCase()
-      )
-    : activeRows;
+  const filteredRows =
+    activeStatusFilter && activeStatusFilter !== "all"
+      ? activeRows.filter(
+          (row) =>
+            String(row.status || "").toLowerCase() ===
+            activeStatusFilter.toLowerCase()
+        )
+      : activeRows;
+
+  const totalRecords =
+    activeStatusFilter &&
+    activeStatusFilter !== "all" &&
+    activePagination.totalItems === activeRows.length
+      ? filteredRows.length
+      : (activePagination.totalItems ?? filteredRows.length);
+
+  const currentDropdownValue =
+    activeStatusFilter && activeStatusFilter !== "all"
+      ? activeStatusFilter.charAt(0).toUpperCase() + activeStatusFilter.slice(1)
+      : "All";
 
   // ── render ─────────────────────────────────────────────────────────────────
   return (
@@ -235,21 +254,23 @@ const MyBooking = () => {
           <div className="flex flex-col">
             <div className="w-[320px] flex">
               <button
-                className={`text-[12px] py-3 px-6 rounded-l-2xl w-full ${activeTab === "bookings"
-                  ? " bg-[#FFFFFF] text-[#222246]"
-                  : " bg-[#222246] text-white"
-                  }`}
-                onClick={() => setActiveTab("bookings")}
+                className={`text-[12px] py-3 px-6 rounded-l-2xl w-full ${
+                  activeTab === "bookings"
+                    ? " bg-[#FFFFFF] text-[#222246]"
+                    : " bg-[#222246] text-white"
+                }`}
+                onClick={() => handleTabChange("bookings")}
               >
                 My Reservations
               </button>
 
               <button
-                className={`text-[12px] px-6 rounded-r-2xl w-full ${activeTab === "events"
-                  ? "bg-[#FFFFFF] text-[#222246]"
-                  : "bg-[#222246] text-white"
-                  }`}
-                onClick={() => setActiveTab("events")}
+                className={`text-[12px] px-6 rounded-r-2xl w-full ${
+                  activeTab === "events"
+                    ? "bg-[#FFFFFF] text-[#222246]"
+                    : "bg-[#222246] text-white"
+                }`}
+                onClick={() => handleTabChange("events")}
               >
                 My Events
               </button>
@@ -258,22 +279,16 @@ const MyBooking = () => {
             {activeTab === "bookings" ? (
               <div className="text-white absolute top-40 right-44 z-20 w-[180px]">
                 <StatusDropdown
-                  value={bookingStatusFilter}
-                  onChange={(status) => {
-                    setBookingStatusFilter(status);
-                    setBookingsPage(1);
-                  }}
+                  value={currentDropdownValue}
+                  onChange={handleStatusChange}
                   options={["All", "Pending", "Confirmed", "Completed", "Cancelled"]}
                 />
               </div>
             ) : (
               <div className="text-white absolute top-40 right-44 z-20 w-[180px]">
                 <StatusDropdown
-                  value={eventStatusFilter}
-                  onChange={(status) => {
-                    setEventStatusFilter(status);
-                    setEventsPage(1);
-                  }}
+                  value={currentDropdownValue}
+                  onChange={handleStatusChange}
                   options={["All", "Pending", "Confirmed", "Completed", "Rejected", "Cancelled"]}
                 />
               </div>
@@ -284,74 +299,38 @@ const MyBooking = () => {
 
       <div className="px-5 lg:px-40 mt-12">
         <div className="mx-auto bg-white rounded-xl -mt-[16em] border-[1px] border-[#b9b9b95f] min-h-[200px]">
-          {activeLoading ? (
+          {activeInitialLoading ? (
             <div className="flex justify-center items-center py-20 text-gray-500 font-medium">
               Loading {activeTab === "bookings" ? "bookings" : "events"}...
             </div>
           ) : activeTab === "bookings" ? (
-            <>
+            <div className={`transition-opacity duration-200 ${activeFetching ? "opacity-75" : "opacity-100"}`}>
               <BookingsTable
                 users={filteredRows}
               />
-              {!isBookingsLoading && filteredRows.length > 0 && (
-                <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl">
-                  <div className="text-sm text-gray-500">
-                    Showing page <span className="font-semibold text-gray-800">{bookingsPagination.currentPage}</span> of{" "}
-                    <span className="font-semibold text-gray-800">{bookingsPagination.totalPages}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={handlePrevBookingsPage}
-                      disabled={bookingsPagination.currentPage === 1}
-                      className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleNextBookingsPage}
-                      disabled={bookingsPagination.currentPage === bookingsPagination.totalPages}
-                      className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-              )}
-            </>
+              <Pagination
+                currentPage={query.page}
+                totalPages={bookingsPagination.totalPages || 1}
+                totalItems={totalRecords}
+                itemsPerPage={limit}
+                onPageChange={setPage}
+                isLoading={activeFetching}
+              />
+            </div>
           ) : (
-            <>
+            <div className={`transition-opacity duration-200 ${activeFetching ? "opacity-75" : "opacity-100"}`}>
               <EventBookingsTable
                 events={filteredRows}
               />
-              {!isEventsLoading && filteredRows.length > 0 && (
-                <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl">
-                  <div className="text-sm text-gray-500">
-                    Showing page <span className="font-semibold text-gray-800">{eventsPagination.currentPage}</span> of{" "}
-                    <span className="font-semibold text-gray-800">{eventsPagination.totalPages}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={handlePrevEventsPage}
-                      disabled={eventsPagination.currentPage === 1}
-                      className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleNextEventsPage}
-                      disabled={eventsPagination.currentPage === eventsPagination.totalPages}
-                      className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-              )}
-            </>
+              <Pagination
+                currentPage={query.page}
+                totalPages={eventsPagination.totalPages || 1}
+                totalItems={totalRecords}
+                itemsPerPage={limit}
+                onPageChange={setPage}
+                isLoading={activeFetching}
+              />
+            </div>
           )}
         </div>
       </div>
