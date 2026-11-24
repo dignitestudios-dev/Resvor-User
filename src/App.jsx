@@ -25,6 +25,7 @@ import Chat from "./pages/app/Chat";
 import TermsAndConditions from "./pages/app/TermsAndConditions";
 import PrivacyPolicy from "./pages/app/PrivacyPolicy";
 import Notifications from "./pages/app/Notifications";
+import CampaignRedirect from "./pages/campaigns/CampaignRedirect";
 import { useAuthMe } from "./hooks/queries/useQueries";
 import Cookies from "js-cookie";
 import ScrollToTop from "./components/global/ScrollToTop";
@@ -123,6 +124,11 @@ function App() {
               <Navigate to="/auth/login" replace />
             )
           }
+        />
+
+        <Route
+          path="/campaigns/i/:id"
+          element={<CampaignRedirect />}
         />
 
         <Route element={<ProtectedAppRoute />}>
