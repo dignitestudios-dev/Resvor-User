@@ -1,9 +1,12 @@
+/* eslint-disable react/prop-types */
 import { useState, useEffect } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { useNavigate, useLocation } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { flyerData } from "../../static/MockData";
 import { useFlyerHistory } from "../../hooks/queries/useQueries";
+import { useTableQuery } from "../../hooks/useTableQuery";
+import Pagination from "../../components/global/Pagination";
 import { IoIosArrowForward } from "react-icons/io";
 import { FiPlus } from "react-icons/fi";
 import AddCustomFlyerModal from "../../components/flayer/AddCustomFlyerModal";
@@ -41,13 +44,15 @@ const formatTimeLabel = (isoValue) => {
 const FlyerHistoryTable = ({
   rows,
   isLoading,
+  isFetching,
   page,
   totalPages,
-  onPrev,
-  onNext,
+  totalItems,
+  itemsPerPage,
+  onPageChange,
   onRowClick,
 }) => {
-  if (isLoading) {
+  if (isLoading && !rows.length) {
     return (
       <div className="flex justify-center items-center py-20 text-gray-500 font-medium">
         Loading history...
@@ -93,7 +98,7 @@ const FlyerHistoryTable = ({
   };
 
   return (
-    <>
+    <div className={`transition-opacity duration-200 ${isFetching ? "opacity-75" : "opacity-100"}`}>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="sticky top-0 z-10 ">
@@ -153,34 +158,15 @@ const FlyerHistoryTable = ({
       </div>
 
       {/* Pagination */}
-      {rows.length > 0 && (
-        <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl">
-          <div className="text-sm text-gray-500">
-            Showing page{" "}
-            <span className="font-semibold text-gray-800">{page}</span> of{" "}
-            <span className="font-semibold text-gray-800">{totalPages}</span>
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={onPrev}
-              disabled={page === 1}
-              className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              onClick={onNext}
-              disabled={page === totalPages}
-              className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-    </>
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onPageChange={onPageChange}
+        isLoading={isFetching}
+      />
+    </div>
   );
 };
 
@@ -191,7 +177,14 @@ const Flyers = () => {
   const location = useLocation();
   const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState(location.state?.tab || "flyers");
+  const { query, setPage, updateQuery } = useTableQuery({
+    defaultValues: {
+      tab: location.state?.tab || "flyers",
+      page: 1,
+    },
+  });
+
+  const activeTab = query.tab === "history" ? "history" : "flyers";
 
   // Custom flyer & campaign modals state
   const [isAddCustomFlyerOpen, setIsAddCustomFlyerOpen] = useState(false);
@@ -201,9 +194,9 @@ const Flyers = () => {
 
   useEffect(() => {
     if (location.state?.tab) {
-      setActiveTab(location.state.tab);
+      updateQuery({ tab: location.state.tab }, { resetPage: true });
     }
-  }, [location.state]);
+  }, [location.state, updateQuery]);
 
   // Step 3: When flyer is picked, close upload modal and open send invitation form
   const handleAddFlyerFile = (file) => {
@@ -222,25 +215,23 @@ const Flyers = () => {
   const handleConfirmClose = () => {
     setIsConfirmPopupOpen(false);
     setCustomFlyerFile(null);
-    setActiveTab("history");
+    updateQuery({ tab: "history", page: 1 });
   };
 
-  // Pagination for history
-  const [historyPage, setHistoryPage] = useState(1);
   const limit = 10;
 
-  const { data: historyResponse, isLoading: isHistoryLoading } =
+  const { data: historyResponse, isLoading: isHistoryLoading, isFetching: isHistoryFetching } =
     useFlyerHistory(
-      { page: historyPage, limit },
+      { page: query.page, limit },
       { enabled: activeTab === "history" },
     );
 
   const historyData = historyResponse?.data || [];
   const historyPagination = historyResponse?.pagination || {
-    currentPage: 1,
+    currentPage: query.page,
     totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10,
+    totalItems: historyData.length,
+    itemsPerPage: limit,
   };
 
   // Map raw API data to table rows
@@ -254,15 +245,6 @@ const Flyers = () => {
     totalRecipients: item.totalRecipients,
     status: item.status,
   }));
-
-  const handlePrevHistory = () => {
-    if (historyPagination.currentPage > 1) setHistoryPage((p) => p - 1);
-  };
-
-  const handleNextHistory = () => {
-    if (historyPagination.currentPage < historyPagination.totalPages)
-      setHistoryPage((p) => p + 1);
-  };
 
   return (
     <>
@@ -286,7 +268,7 @@ const Flyers = () => {
                 ? "bg-[#FFFFFF] text-[#222246]"
                 : "bg-[#222246] text-white"
                 }`}
-              onClick={() => setActiveTab("flyers")}
+              onClick={() => updateQuery({ tab: "flyers" }, { resetPage: true })}
             >
               Flyers
             </button>
@@ -295,7 +277,7 @@ const Flyers = () => {
                 ? "bg-[#FFFFFF] text-[#222246]"
                 : "bg-[#222246] text-white"
                 }`}
-              onClick={() => setActiveTab("history")}
+              onClick={() => updateQuery({ tab: "history" }, { resetPage: true })}
             >
               History
             </button>
@@ -380,10 +362,12 @@ const Flyers = () => {
             <FlyerHistoryTable
               rows={historyRows}
               isLoading={isHistoryLoading}
-              page={historyPagination.currentPage}
-              totalPages={historyPagination.totalPages}
-              onPrev={handlePrevHistory}
-              onNext={handleNextHistory}
+              isFetching={isHistoryFetching}
+              page={query.page}
+              totalPages={historyPagination.totalPages || 1}
+              totalItems={historyPagination.totalItems ?? historyRows.length}
+              itemsPerPage={limit}
+              onPageChange={setPage}
               onRowClick={(id) => navigate(`/app/campaign-detail/${id}`)}
             />
           )}

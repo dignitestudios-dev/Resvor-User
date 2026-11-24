@@ -142,10 +142,11 @@ export const addGuest = async (payload) => {
     }
   }
 
+  const isFormData = dataToSend instanceof FormData;
   const { data } = await axios.post("/guestbook", dataToSend, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
+    headers: isFormData
+      ? { "Content-Type": "multipart/form-data" }
+      : { "Content-Type": "application/json" },
   });
 
   return data;
@@ -185,13 +186,14 @@ export const updateGuest = async ({ entryId, payload }) => {
     }
   }
 
+  const isFormData = dataToSend instanceof FormData;
   const { data } = await axios.patch(
     `/guestbook/${entryId}`,
     dataToSend,
     {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: isFormData
+        ? { "Content-Type": "multipart/form-data" }
+        : { "Content-Type": "application/json" },
     }
   );
 

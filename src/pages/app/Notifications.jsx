@@ -1,27 +1,35 @@
-import React, { useState } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { useNavigate } from "react-router";
 import { useNotifications } from "../../hooks/queries/useQueries";
+import { useTableQuery } from "../../hooks/useTableQuery";
+import Pagination from "../../components/global/Pagination";
 import moment from "moment";
 
 const Notifications = () => {
   const navigate = useNavigate();
-  const [selectTab, setSelectTab] = useState("all");
-  const [page, setPage] = useState(1);
+
+  const { query, setPage, setFilter } = useTableQuery({
+    defaultValues: {
+      filter: "all",
+      page: 1,
+    },
+  });
+
+  const selectTab = query.filter || "all";
   const limit = 10;
 
-  const { data: notificationsData, isLoading } = useNotifications(page, limit);
+  const { data: notificationsData, isLoading, isFetching } = useNotifications(query.page, limit);
   const notifications = notificationsData?.data || [];
 
   const pagination = notificationsData?.pagination || {
-    currentPage: 1,
+    currentPage: query.page,
     totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10,
+    totalItems: notifications.length,
+    itemsPerPage: limit,
   };
 
   const handleSelect = (val) => {
-    setSelectTab(val);
+    setFilter("filter", val);
   };
 
   const handleNotificationClick = (item) => {
@@ -105,7 +113,7 @@ const Notifications = () => {
           </div>
 
           {/* Content */}
-          {isLoading ? (
+          {isLoading && !notifications.length ? (
             <div className="p-6 divide-y divide-gray-100 min-h-[300px]">
               {Array(5)
                 .fill(0)
@@ -120,7 +128,7 @@ const Notifications = () => {
                 ))}
             </div>
           ) : (
-            <div>
+            <div className={`transition-opacity duration-200 ${isFetching ? "opacity-75" : "opacity-100"}`}>
               {filteredTasks?.length > 0 ? (
                 <div className="divide-y divide-gray-100 px-6 min-h-[300px]">
                   {filteredTasks.map((item, index) => (
@@ -162,32 +170,15 @@ const Notifications = () => {
           )}
 
           {/* Pagination */}
-          {!isLoading && filteredTasks.length > 0 && (
-            <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl mt-4">
-              <div className="text-sm text-gray-500">
-                Showing page <span className="font-semibold text-gray-800">{pagination.currentPage}</span> of{" "}
-                <span className="font-semibold text-gray-800">{pagination.totalPages}</span>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={pagination.currentPage === 1}
-                  className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPage((prev) => Math.min(prev + 1, pagination.totalPages))}
-                  disabled={pagination.currentPage >= pagination.totalPages}
-                  className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={query.page}
+            totalPages={pagination.totalPages || 1}
+            totalItems={selectTab === "all" ? (pagination.totalItems ?? notifications.length) : filteredTasks.length}
+            itemsPerPage={limit}
+            onPageChange={setPage}
+            isLoading={isFetching}
+            className="mt-4"
+          />
         </div>
       </div>
     </>

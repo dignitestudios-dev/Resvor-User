@@ -1,6 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import axios from "../../axios";
-import GuestBook from './../../pages/app/GuestBook';
 import { getGuestBook } from "../api/Get";
 import Cookies from "js-cookie";
 
@@ -24,16 +23,19 @@ export const useAuthMe = () => {
   });
 };
 
-const fetchLounges = async (params = {}) => {
-  const { data } = await axios.get("/lounges/list", { params });
+const fetchLounges = async (params = {}, signal) => {
+  const { data } = await axios.get("/lounges/list", { params, signal });
   return data;
 };
 
-export const useLounges = (params = {}) => {
+export const useLounges = (params = {}, options = {}) => {
   return useQuery({
     queryKey: ["lounges", params],
-    queryFn: () => fetchLounges(params),
+    queryFn: ({ signal }) => fetchLounges(params, signal),
+    placeholderData: keepPreviousData,
+    staleTime: 30000,
     retry: false,
+    ...options,
   });
 };
 
@@ -51,15 +53,20 @@ export const useLoungeDetails = (loungeId) => {
   });
 };
 
-export const useGuestBook = (pageOrParams = 1, limit = 20, filters = {}) => {
+export const useGuestBook = (pageOrParams = 1, limit = 20, filters = {}, options = {}) => {
   const params =
     typeof pageOrParams === "object" && pageOrParams !== null
       ? pageOrParams
       : { page: pageOrParams, limit, ...filters };
+  const opts = typeof pageOrParams === "object" ? limit : options;
 
   return useQuery({
     queryKey: ["guestbook", params],
-    queryFn: () => getGuestBook(params),
+    queryFn: ({ signal }) => getGuestBook(params, undefined, undefined, signal),
+    placeholderData: keepPreviousData,
+    staleTime: 30000,
+    retry: false,
+    ...(typeof opts === "object" ? opts : {}),
   });
 };
 
@@ -148,9 +155,10 @@ export const useToggleFavorite = () => {
   });
 };
 
-const fetchBookings = async ({ page = 1, limit = 10 } = {}) => {
+const fetchBookings = async (params = {}, signal) => {
   const { data } = await axios.get("/bookings", {
-    params: { page, limit },
+    params,
+    signal,
   });
   return data;
 };
@@ -158,15 +166,18 @@ const fetchBookings = async ({ page = 1, limit = 10 } = {}) => {
 export const useBookings = (params, options = {}) => {
   return useQuery({
     queryKey: ["bookings", params],
-    queryFn: () => fetchBookings(params),
+    queryFn: ({ signal }) => fetchBookings(params, signal),
+    placeholderData: keepPreviousData,
+    staleTime: 30000,
     retry: false,
     ...options,
   });
 };
 
-const fetchEvents = async ({ page = 1, limit = 10 } = {}) => {
+const fetchEvents = async (params = {}, signal) => {
   const { data } = await axios.get("/events", {
-    params: { page, limit },
+    params,
+    signal,
   });
   return data;
 };
@@ -174,7 +185,9 @@ const fetchEvents = async ({ page = 1, limit = 10 } = {}) => {
 export const useEvents = (params, options = {}) => {
   return useQuery({
     queryKey: ["events", params],
-    queryFn: () => fetchEvents(params),
+    queryFn: ({ signal }) => fetchEvents(params, signal),
+    placeholderData: keepPreviousData,
+    staleTime: 30000,
     retry: false,
     ...options,
   });
@@ -420,9 +433,10 @@ export const useWalletMe = () => {
   });
 };
 
-const fetchWalletTransactions = async ({ page = 1, limit = 10 } = {}) => {
+const fetchWalletTransactions = async ({ page = 1, limit = 10 } = {}, signal) => {
   const { data } = await axios.get("/wallet/transactions", {
     params: { page, limit },
+    signal,
   });
   return data;
 };
@@ -430,16 +444,19 @@ const fetchWalletTransactions = async ({ page = 1, limit = 10 } = {}) => {
 export const useWalletTransactions = (params = {}, options = {}) => {
   return useQuery({
     queryKey: ["wallet-transactions", params],
-    queryFn: () => fetchWalletTransactions(params),
+    queryFn: ({ signal }) => fetchWalletTransactions(params, signal),
+    placeholderData: keepPreviousData,
+    staleTime: 30000,
     retry: false,
     ...options,
   });
 };
 
 // ── Campaign History ─────────────────────────────────────────
-const fetchFlyerHistory = async ({ page = 1, limit = 10 } = {}) => {
+const fetchFlyerHistory = async ({ page = 1, limit = 10 } = {}, signal) => {
   const { data } = await axios.get("/campaigns/", {
     params: { page, limit },
+    signal,
   });
   return data;
 };
@@ -447,7 +464,9 @@ const fetchFlyerHistory = async ({ page = 1, limit = 10 } = {}) => {
 export const useFlyerHistory = (params = {}, options = {}) => {
   return useQuery({
     queryKey: ["flyer-history", params],
-    queryFn: () => fetchFlyerHistory(params),
+    queryFn: ({ signal }) => fetchFlyerHistory(params, signal),
+    placeholderData: keepPreviousData,
+    staleTime: 30000,
     retry: false,
     ...options,
   });
@@ -623,18 +642,31 @@ export const useMarkChatAsRead = () => {
   });
 };
 
-const fetchNotifications = async (page = 1, limit = 10) => {
+const fetchNotifications = async (pageOrParams = 1, limit = 10, signal) => {
+  const params =
+    typeof pageOrParams === "object" && pageOrParams !== null
+      ? pageOrParams
+      : { page: pageOrParams, limit };
   const { data } = await axios.get("/notifications", {
-    params: { page, limit },
+    params,
+    signal,
   });
   return data;
 };
 
-export const useNotifications = (page = 1, limit = 10, options = {}) => {
+export const useNotifications = (pageOrParams = 1, limit = 10, options = {}) => {
+  const params =
+    typeof pageOrParams === "object" && pageOrParams !== null
+      ? pageOrParams
+      : { page: pageOrParams, limit };
+  const opts = typeof pageOrParams === "object" ? limit : options;
+
   return useQuery({
-    queryKey: ["notifications", page, limit],
-    queryFn: () => fetchNotifications(page, limit),
+    queryKey: ["notifications", params],
+    queryFn: ({ signal }) => fetchNotifications(params, undefined, signal),
+    placeholderData: keepPreviousData,
+    staleTime: 30000,
     retry: false,
-    ...options,
+    ...(typeof opts === "object" ? opts : {}),
   });
 };

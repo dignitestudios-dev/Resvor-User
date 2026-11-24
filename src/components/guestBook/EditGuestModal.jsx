@@ -4,14 +4,16 @@ import { RxCross2 } from "react-icons/rx";
 import Button from "../global/Button";
 import InputField from "../auth/InputField";
 import PhoneInput from "../auth/PhoneInput";
+import SelectField from "../global/SelectField";
 import { useFormik } from "formik";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useUpdateGuest } from "../../hooks/mutations/OnboardingMutations";
 import { SuccessToast, ErrorToast } from "../global/Toaster";
 import { editGuestbookSchema } from "../../schema/app/appSchema";
 import { useQueryClient } from "@tanstack/react-query";
 import { FiCamera, FiPlus, FiTrash2 } from "react-icons/fi";
 import { normalizePhoneDigits, phoneFormatter, phoneToE164 } from "../../lib/helpers";
+import usaStatesCities from "../../data/usa_states_cities.json";
 
 const MONTHS = [
   { value: "1", label: "January (01)" },
@@ -27,6 +29,24 @@ const MONTHS = [
   { value: "11", label: "November (11)" },
   { value: "12", label: "December (12)" },
 ];
+
+const stateOptions = Object.keys(usaStatesCities).map((state) => ({
+  label: state,
+  value: state,
+}));
+
+const parseNestedObject = (data) => {
+  if (!data) return {};
+  if (typeof data === "object") return data;
+  if (typeof data === "string") {
+    try {
+      return JSON.parse(data);
+    } catch {
+      return {};
+    }
+  }
+  return {};
+};
 
 const EditGuestModal = ({ onClose, guestData }) => {
   const queryClient = useQueryClient();
@@ -102,7 +122,14 @@ const EditGuestModal = ({ onClose, guestData }) => {
       : "");
 
   // Extract initial phone without country code for input (10 digits)
-  const initialPhoneDigits = (guestData?.phoneNumber || guestData?.phone || "").replace(/\D/g, "").slice(-10);
+  const initialPhoneDigits = (guestData?.phoneNumber || guestData?.phone || "")
+    .replace(/\D/g, "")
+    .slice(-10);
+
+  const initialAddress = parseNestedObject(guestData?.address);
+  const initialSocialNetwork = parseNestedObject(
+    guestData?.socialNetwork || guestData?.socialNetworks
+  );
 
   const {
     values,
@@ -122,6 +149,23 @@ const EditGuestModal = ({ onClose, guestData }) => {
       phoneNumber: initialPhoneDigits,
       birthMonth: guestData?.birthMonth ? String(guestData.birthMonth) : "",
       details: guestData?.details || "",
+      company: guestData?.company || "",
+      title: guestData?.title || "",
+      website: guestData?.website || "",
+      nickname: guestData?.nickname || "",
+      address: {
+        street: initialAddress?.street || "",
+        city: initialAddress?.city || "",
+        state: initialAddress?.state || "",
+        zip: initialAddress?.zip || "",
+        country: initialAddress?.country || "United States (USA)",
+      },
+      socialNetwork: {
+        facebook: initialSocialNetwork?.facebook || "",
+        twitter: initialSocialNetwork?.twitter || "",
+        linkedin: initialSocialNetwork?.linkedin || "",
+        instagram: initialSocialNetwork?.instagram || "",
+      },
     },
     validationSchema: editGuestbookSchema,
     onSubmit: (values) => {
@@ -135,13 +179,43 @@ const EditGuestModal = ({ onClose, guestData }) => {
           : "",
       }));
 
+      const addressPayload = {
+        street: values.address.street?.trim() || "",
+        city: values.address.city?.trim() || "",
+        state: values.address.state?.trim() || "",
+        zip: values.address.zip?.trim() || "",
+        country: values.address.country?.trim() || "United States (USA)",
+      };
+
+      const socialNetworkPayload = {
+        facebook: values.socialNetwork.facebook?.trim() || "",
+        twitter: values.socialNetwork.twitter?.trim() || "",
+        linkedin: values.socialNetwork.linkedin?.trim() || "",
+        instagram: values.socialNetwork.instagram?.trim() || "",
+      };
+
+      const loungeId =
+        guestData?.loungeId?._id ||
+        (typeof guestData?.loungeId === "string" ? guestData.loungeId : undefined) ||
+        guestData?.lounge?._id ||
+        (typeof guestData?.lounge === "string" ? guestData.lounge : undefined);
+
       let payloadToSend;
 
       if (photoFile) {
         const formData = new FormData();
+        // if (loungeId) {
+        //   formData.append("loungeId", loungeId);
+        // }
         formData.append("firstName", values.firstName.trim());
         formData.append("lastName", values.lastName.trim());
         formData.append("email", values.email.trim());
+        formData.append("company", values.company.trim());
+        formData.append("title", values.title.trim());
+        formData.append("website", values.website.trim());
+        formData.append("nickname", values.nickname.trim());
+        formData.append("address", JSON.stringify(addressPayload));
+        formData.append("socialNetwork", JSON.stringify(socialNetworkPayload));
 
         if (values.phoneNumber) {
           const formattedE164 = phoneToE164(values.phoneNumber);
@@ -159,9 +233,16 @@ const EditGuestModal = ({ onClose, guestData }) => {
         payloadToSend = formData;
       } else {
         payloadToSend = {
+          // ...(loungeId ? { loungeId } : {}),
           firstName: values.firstName.trim(),
           lastName: values.lastName.trim(),
           email: values.email.trim(),
+          company: values.company.trim(),
+          title: values.title.trim(),
+          website: values.website.trim(),
+          nickname: values.nickname.trim(),
+          address: addressPayload,
+          socialNetwork: socialNetworkPayload,
           birthMonth: values.birthMonth ? Number(values.birthMonth) : undefined,
           phoneNumber: values.phoneNumber
             ? phoneToE164(values.phoneNumber)
@@ -196,14 +277,37 @@ const EditGuestModal = ({ onClose, guestData }) => {
     },
   });
 
+  const cityOptions = useMemo(() => {
+    const rawCities = values.address?.state
+      ? usaStatesCities[values.address.state] || []
+      : [];
+    const seen = new Set();
+    const list = [];
+    for (const c of rawCities) {
+      const trimmed = typeof c === "string" ? c.trim() : "";
+      if (trimmed && !seen.has(trimmed.toLowerCase())) {
+        seen.add(trimmed.toLowerCase());
+        list.push({ label: trimmed, value: trimmed });
+      }
+    }
+    if (
+      values.address?.city &&
+      !list.some(
+        (opt) => opt.value.toLowerCase() === values.address.city.toLowerCase()
+      )
+    ) {
+      return [{ label: values.address.city, value: values.address.city }, ...list];
+    }
+    return list;
+  }, [values.address?.state, values.address?.city]);
+
   const handlePhoneChange = (e) => {
     const cleanVal = normalizePhoneDigits(e.target.value);
     setFieldValue("phoneNumber", cleanVal);
   };
+
   const today = new Date();
-
   const maxDate = today.toISOString().split("T")[0];
-
   const minDate = new Date(
     today.getFullYear() - 13,
     today.getMonth(),
@@ -211,9 +315,10 @@ const EditGuestModal = ({ onClose, guestData }) => {
   )
     .toISOString()
     .split("T")[0];
+
   return (
     <div className="fixed inset-0 bg-[#0A150F80] z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[16px] h-auto max-h-[90vh] w-[580px] max-w-full pb-8 flex flex-col shadow-2xl">
+      <div className="bg-white rounded-[16px] h-auto max-h-[90vh] w-[620px] max-w-full pb-8 flex flex-col shadow-2xl">
         {/* Header */}
         <div className="flex justify-between items-center px-8 py-5 border-b border-b-[#0000001a]">
           <h2 className="text-[24px] font-bold text-[#181818]">Edit Guest</h2>
@@ -335,6 +440,62 @@ const EditGuestModal = ({ onClose, guestData }) => {
               </div>
             </div>
 
+            {/* Nickname & Website */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <InputField
+                label="Nickname *"
+                placeholder="e.g. Av"
+                id="nickname"
+                name="nickname"
+                value={values.nickname}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.nickname}
+                touched={touched.nickname}
+                maxLength={50}
+              />
+              <InputField
+                label="Website *"
+                placeholder="e.g. https://example.com"
+                id="website"
+                name="website"
+                value={values.website}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.website}
+                touched={touched.website}
+                maxLength={100}
+              />
+            </div>
+
+            {/* Company & Title */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <InputField
+                label="Company *"
+                placeholder="e.g. Acme Inc."
+                id="company"
+                name="company"
+                value={values.company}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.company}
+                touched={touched.company}
+                maxLength={60}
+              />
+              <InputField
+                label="Title *"
+                placeholder="e.g. Product Manager"
+                id="title"
+                name="title"
+                value={values.title}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.title}
+                touched={touched.title}
+                maxLength={60}
+              />
+            </div>
+
             {/* Lounge Name (Disabled) & Birth Month */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col">
@@ -380,6 +541,154 @@ const EditGuestModal = ({ onClose, guestData }) => {
                     </option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            {/* Address Section */}
+            <div className="flex flex-col gap-4 border border-gray-200 rounded-[12px] p-4 bg-gray-50/50">
+              <span className="text-sm font-semibold text-gray-800">
+                Address
+              </span>
+              <InputField
+                label="Street"
+                placeholder="e.g. 123 Main Street"
+                id="address.street"
+                name="address.street"
+                value={values.address?.street}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.address?.street}
+                touched={touched.address?.street}
+                maxLength={120}
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                <SelectField
+                  label="State"
+                  placeholder="Select State"
+                  name="address.state"
+                  value={values.address?.state}
+                  onChange={(val) => {
+                    setFieldValue("address.state", val);
+                    if (!val) {
+                      setFieldValue("address.city", "");
+                    }
+                    setFieldTouched("address.state", true, false);
+                  }}
+                  onBlur={() => setFieldTouched("address.state", true, false)}
+                  error={errors.address?.state}
+                  touched={touched.address?.state}
+                  options={stateOptions}
+                  searchable={true}
+                  isClearable={true}
+                />
+                <SelectField
+                  label={values.address?.state ? "City *" : "City"}
+                  placeholder={
+                    values.address?.state
+                      ? "Select City"
+                      : "Select State first"
+                  }
+                  name="address.city"
+                  value={values.address?.city}
+                  disabled={!values.address?.state}
+                  onChange={(val) => {
+                    setFieldValue("address.city", val);
+                    setFieldTouched("address.city", true, false);
+                  }}
+                  onBlur={() => setFieldTouched("address.city", true, false)}
+                  error={errors.address?.city}
+                  touched={touched.address?.city}
+                  options={cityOptions}
+                  searchable={true}
+                  isClearable={true}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <InputField
+                  label="Zip Code"
+                  placeholder="e.g. 90210"
+                  id="address.zip"
+                  name="address.zip"
+                  value={values.address?.zip}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.address?.zip}
+                  touched={touched.address?.zip}
+                  maxLength={20}
+                />
+                <InputField
+                  label="Country"
+                  placeholder="United States (USA)"
+                  id="address.country"
+                  name="address.country"
+                  value={values.address?.country || "United States (USA)"}
+                  disabled
+                  className="bg-gray-100 text-gray-600 cursor-not-allowed"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.address?.country}
+                  touched={touched.address?.country}
+                  maxLength={60}
+                />
+              </div>
+            </div>
+
+            {/* Social Networks Section */}
+            <div className="flex flex-col gap-4 border border-gray-200 rounded-[12px] p-4 bg-gray-50/50">
+              <span className="text-sm font-semibold text-gray-800">
+                Social Networks
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <InputField
+                  label="Facebook"
+                  placeholder="https://facebook.com/username"
+                  id="socialNetwork.facebook"
+                  name="socialNetwork.facebook"
+                  value={values.socialNetwork?.facebook}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.socialNetwork?.facebook}
+                  touched={touched.socialNetwork?.facebook}
+                  maxLength={200}
+                />
+                <InputField
+                  label="Twitter / X"
+                  placeholder="https://x.com/username"
+                  id="socialNetwork.twitter"
+                  name="socialNetwork.twitter"
+                  value={values.socialNetwork?.twitter}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.socialNetwork?.twitter}
+                  touched={touched.socialNetwork?.twitter}
+                  maxLength={200}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <InputField
+                  label="LinkedIn"
+                  placeholder="https://linkedin.com/in/username"
+                  id="socialNetwork.linkedin"
+                  name="socialNetwork.linkedin"
+                  value={values.socialNetwork?.linkedin}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.socialNetwork?.linkedin}
+                  touched={touched.socialNetwork?.linkedin}
+                  maxLength={200}
+                />
+                <InputField
+                  label="Instagram"
+                  placeholder="https://instagram.com/username"
+                  id="socialNetwork.instagram"
+                  name="socialNetwork.instagram"
+                  value={values.socialNetwork?.instagram}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.socialNetwork?.instagram}
+                  touched={touched.socialNetwork?.instagram}
+                  maxLength={200}
+                />
               </div>
             </div>
 
@@ -492,4 +801,3 @@ const EditGuestModal = ({ onClose, guestData }) => {
 };
 
 export default EditGuestModal;
-

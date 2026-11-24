@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import axios from "../../axios";
-import { ErrorToast } from "../../components/global/Toaster";
 import { processError } from "../../lib/utils";
 
 const useUsers = (url, currentPage = 1) => {
@@ -23,6 +22,7 @@ const useUsers = (url, currentPage = 1) => {
 
   useEffect(() => {
     getUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   return { loading, data, pagination };
@@ -31,10 +31,14 @@ const useUsers = (url, currentPage = 1) => {
 export { useUsers };
 
 
-export const getGuestBook = async (paramsOrPage = 1, limit = 20, filters = {}) => {
+export const getGuestBook = async (paramsOrPage = 1, limit = 20, filters = {}, signal) => {
   let queryParams = {};
+  let abortSignal = signal;
   if (typeof paramsOrPage === "object" && paramsOrPage !== null) {
     queryParams = { ...paramsOrPage };
+    if (limit && typeof limit !== "number" && !signal) {
+      abortSignal = limit;
+    }
   } else {
     queryParams = {
       page: paramsOrPage,
@@ -45,6 +49,7 @@ export const getGuestBook = async (paramsOrPage = 1, limit = 20, filters = {}) =
 
   const response = await axios.get("/guestbook", {
     params: queryParams,
+    signal: abortSignal,
   });
 
   return response.data;

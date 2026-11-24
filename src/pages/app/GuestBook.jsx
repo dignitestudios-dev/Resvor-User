@@ -1,11 +1,14 @@
 import { FaArrowLeftLong } from "react-icons/fa6";
+import { FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import { binIcon, editIcon } from "../../assets/export";
-import { useState } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import AddGuestModal from "../../components/guestBook/AddGuestModal";
 import EditGuestModal from "../../components/guestBook/EditGuestModal";
 import DeleteGuestModal from "../../components/guestBook/DeleteGuestModal";
+import Pagination from "../../components/global/Pagination";
 import { useGuestBook } from "../../hooks/queries/useQueries";
+import { useTableQuery } from "../../hooks/useTableQuery";
 import { useQueryClient } from "@tanstack/react-query";
 
 const GuestBook = () => {
@@ -16,20 +19,55 @@ const GuestBook = () => {
   const [editGuest, setEditGuest] = useState(null);
   const [guestToDelete, setGuestToDelete] = useState(null);
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
+  const { query, setPage, setSearch } = useTableQuery({
+    defaultValues: {
+      page: 1,
+      search: "",
+    },
+  });
+
+  const [searchTerm, setSearchTerm] = useState(query.search || "");
+  const isTypingRef = useRef(false);
+
+  // Sync external URL changes (e.g. browser back/forward or reset)
+  useEffect(() => {
+    if (!isTypingRef.current) {
+      setSearchTerm(query.search || "");
+    }
+  }, [query.search]);
+
+  // Debounce search input (400ms) with replace to avoid cluttering browser history
+  useEffect(() => {
+    if (searchTerm === (query.search || "")) {
+      isTypingRef.current = false;
+      return;
+    }
+
+    isTypingRef.current = true;
+    const timer = setTimeout(() => {
+      setSearch(searchTerm, { replace: true });
+      isTypingRef.current = false;
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, query.search, setSearch]);
 
   const limit = 5;
 
-  // Pass currentPage to your hook so TanStack Query refetches when the page updates
-  const { data: guestbookResponse, isLoading } = useGuestBook(currentPage, limit);
+  const guestbookParams = useMemo(() => ({
+    page: query.page,
+    limit,
+    ...(query.search.trim() ? { search: query.search.trim() } : {}),
+  }), [query.page, limit, query.search]);
 
-  const users = guestbookResponse?.data || [];
+  const { data: guestbookResponse, isLoading, isFetching } = useGuestBook(guestbookParams);
+
+  const users = useMemo(() => guestbookResponse?.data || [], [guestbookResponse?.data]);
   const pagination = guestbookResponse?.pagination || {
-    currentPage: 1,
+    currentPage: query.page,
     totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 20
+    totalItems: users.length,
+    itemsPerPage: limit,
   };
 
   const [sortConfig, setSortConfig] = useState({
@@ -45,38 +83,46 @@ const GuestBook = () => {
     setSortConfig({ key, direction });
   };
 
-  const sortedUsers = [...users].sort((a, b) => {
-    if (!sortConfig.key) return 0;
+  const sortedUsers = useMemo(() => {
+    return [...users].sort((a, b) => {
+      if (!sortConfig.key) return 0;
 
-    let valA = a[sortConfig.key] || "";
-    let valB = b[sortConfig.key] || "";
+      let valA = a[sortConfig.key] || "";
+      let valB = b[sortConfig.key] || "";
 
-    if (sortConfig.key === "loungeId") {
-      valA = a.loungeId?.name || "";
-      valB = b.loungeId?.name || "";
-    }
+      if (sortConfig.key === "loungeId") {
+        valA = a.loungeId?.name || "";
+        valB = b.loungeId?.name || "";
+      }
 
-    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
-    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
-    return 0;
-  });
+      if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+      if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [users, sortConfig]);
+
+  // Client-side search fallback to ensure immediate match even if backend ignores search param
+  const displayUsers = useMemo(() => {
+    if (!query.search?.trim()) return sortedUsers;
+    const term = query.search.toLowerCase().trim();
+    return sortedUsers.filter((u) => {
+      const name = (u.fullName || `${u.firstName || ""} ${u.lastName || ""}`).toLowerCase();
+      const email = (u.email || "").toLowerCase();
+      const lounge = (u.loungeId?.name || "").toLowerCase();
+      const phone = (u.phoneNumber || "").toLowerCase();
+      return name.includes(term) || email.includes(term) || lounge.includes(term) || phone.includes(term);
+    });
+  }, [sortedUsers, query.search]);
 
   const handleConfirmDelete = () => {
     queryClient.invalidateQueries({ queryKey: ["guestbook"] });
     setGuestToDelete(null);
   };
 
-  // Pagination Change Handlers
-  const handlePrevPage = () => {
-    if (pagination.currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (pagination.currentPage < pagination.totalPages) {
-      setCurrentPage((prev) => prev + 1);
-    }
+  const handleSearchSubmit = (e) => {
+    e?.preventDefault();
+    isTypingRef.current = false;
+    setSearch(searchTerm, { replace: true });
   };
 
   const formatGuestDate = (dateVal) => {
@@ -119,9 +165,48 @@ const GuestBook = () => {
 
       <div className="px-5 lg:px-40 pb-10">
         <div className="mx-auto bg-white rounded-xl -mt-[16em] border-[1px] border-[#b9b9b95f] overflow-hidden">
+          {/* Search Toolbar */}
+          <div className="p-4 px-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-white">
+            <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md flex items-center gap-2">
+              <div className="relative flex-1">
+                <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                <input
+                  type="text"
+                  placeholder="Search by name, email, or lounge..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#010067]/20 focus:border-[#010067] transition"
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-[#010067] text-white px-4 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition cursor-pointer shrink-0"
+              >
+                Search
+              </button>
+            </form>
+            {query.search && (
+              <button
+                type="button"
+                onClick={() => {
+                  isTypingRef.current = false;
+                  setSearchTerm("");
+                  setSearch("", { replace: true });
+                }}
+                className="text-xs text-gray-500 hover:text-gray-800 self-center font-medium cursor-pointer"
+              >
+                Clear Search ({query.search})
+              </button>
+            )}
+          </div>
+
           {/* Desktop View */}
-          <div className="bg-white hidden md:block overflow-y-auto min-h-[300px]">
-            {isLoading ? (
+          <div
+            className={`bg-white hidden md:block overflow-y-auto min-h-[300px] transition-opacity duration-200 ${
+              isFetching ? "opacity-75" : "opacity-100"
+            }`}
+          >
+            {isLoading && !users.length ? (
               <div className="flex justify-center items-center h-[300px] text-gray-500 text-[14.82px]">
                 Loading guests...
               </div>
@@ -154,16 +239,16 @@ const GuestBook = () => {
                 </thead>
 
                 <tbody>
-                  {sortedUsers.length === 0 ? (
+                  {displayUsers.length === 0 ? (
                     <tr>
                       <td colSpan={5}>
                         <div className="flex justify-center items-center h-[240px] text-gray-500 text-[14.82px]">
-                          Nothing here yet. Add a new guest to get started
+                          {query.search ? "No matching guests found" : "Nothing here yet. Add a new guest to get started"}
                         </div>
                       </td>
                     </tr>
                   ) : (
-                    sortedUsers.map((user) => {
+                    displayUsers.map((user) => {
                       const displayName =
                         user.fullName ||
                         `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
@@ -272,13 +357,19 @@ const GuestBook = () => {
           </div>
 
           {/* Mobile View */}
-          <div className="space-y-4 md:hidden p-4">
-            {isLoading ? (
+          <div
+            className={`space-y-4 md:hidden p-4 transition-opacity duration-200 ${
+              isFetching ? "opacity-75" : "opacity-100"
+            }`}
+          >
+            {isLoading && !users.length ? (
               <div className="text-center py-10">Loading guests...</div>
-            ) : sortedUsers.length === 0 ? (
-              <div className="text-center py-10">Nothing here yet. Add a new guest to get started</div>
+            ) : displayUsers.length === 0 ? (
+              <div className="text-center py-10">
+                {query.search ? "No matching guests found" : "Nothing here yet. Add a new guest to get started"}
+              </div>
             ) : (
-              sortedUsers.map((user) => {
+              displayUsers.map((user) => {
                 const displayName =
                   user.fullName ||
                   `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
@@ -364,32 +455,14 @@ const GuestBook = () => {
           </div>
 
           {/* Pagination Controls Section */}
-          {!isLoading && sortedUsers.length > 0 && (
-            <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4">
-              <div className="text-sm text-gray-500">
-                Showing page <span className="font-semibold text-gray-800">{pagination.currentPage}</span> of{" "}
-                <span className="font-semibold text-gray-800">{pagination.totalPages}</span>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handlePrevPage}
-                  disabled={pagination.currentPage === 1}
-                  className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNextPage}
-                  disabled={pagination.currentPage === pagination.totalPages}
-                  className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={query.page}
+            totalPages={pagination.totalPages || 1}
+            totalItems={pagination.totalItems ?? users.length}
+            itemsPerPage={limit}
+            onPageChange={setPage}
+            isLoading={isFetching}
+          />
         </div>
 
         {addGuest && <AddGuestModal onClose={() => setAddGuest(false)} />}

@@ -4,8 +4,9 @@ import { RxCross2 } from "react-icons/rx";
 import Button from "../global/Button";
 import InputField from "../auth/InputField";
 import PhoneInput from "../auth/PhoneInput";
+import SelectField from "../global/SelectField";
 import { useFormik } from "formik";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import LoungeSelectField from "../global/LoungeSelectField";
 import { useLounges } from "../../hooks/queries/useQueries";
 import { useAddGuest } from "../../hooks/mutations/OnboardingMutations";
@@ -14,6 +15,7 @@ import { guestbookSchema } from "../../schema/app/appSchema";
 import { useQueryClient } from "@tanstack/react-query";
 import { FiCamera, FiPlus, FiTrash2 } from "react-icons/fi";
 import { normalizePhoneDigits, phoneFormatter, phoneToE164 } from "../../lib/helpers";
+import usaStatesCities from "../../data/usa_states_cities.json";
 
 const MONTHS = [
   { value: "1", label: "January (01)" },
@@ -29,6 +31,11 @@ const MONTHS = [
   { value: "11", label: "November (11)" },
   { value: "12", label: "December (12)" },
 ];
+
+const stateOptions = Object.keys(usaStatesCities).map((state) => ({
+  label: state,
+  value: state,
+}));
 
 const AddGuestModal = ({ onClose }) => {
   const queryClient = useQueryClient();
@@ -101,6 +108,23 @@ const AddGuestModal = ({ onClose }) => {
       firstName: "",
       lastName: "",
       email: "",
+      company: "",
+      title: "",
+      website: "",
+      nickname: "",
+      address: {
+        street: "",
+        city: "",
+        state: "",
+        zip: "",
+        country: "United States (USA)",
+      },
+      socialNetwork: {
+        facebook: "",
+        twitter: "",
+        linkedin: "",
+        instagram: "",
+      },
       phoneNumber: "",
       birthMonth: "",
       details: "",
@@ -108,23 +132,6 @@ const AddGuestModal = ({ onClose }) => {
     },
     validationSchema: guestbookSchema,
     onSubmit: (values) => {
-      const formData = new FormData();
-
-      formData.append("loungeId", values.lounge);
-      formData.append("firstName", values.firstName.trim());
-      formData.append("lastName", values.lastName.trim());
-      formData.append("email", values.email.trim());
-
-      if (values.phoneNumber) {
-        const formattedE164 = phoneToE164(values.phoneNumber);
-        formData.append("phoneNumber", formattedE164);
-      }
-      if (values.birthMonth) {
-        formData.append("birthMonth", values.birthMonth);
-      }
-      if (values.details) {
-        formData.append("details", values.details.trim());
-      }
       const cleanedSpecialDates = specialDates.map((item) => ({
         title: item.title,
         date: item.date
@@ -134,14 +141,36 @@ const AddGuestModal = ({ onClose }) => {
           : "",
       }));
 
-      if (cleanedSpecialDates.length > 0) {
-        formData.append("specialDates", JSON.stringify(cleanedSpecialDates));
-      }
-      if (photoFile) {
-        formData.append("photo", photoFile);
-      }
+      const payload = {
+        loungeId: values.lounge,
+        firstName: values.firstName.trim(),
+        lastName: values.lastName.trim(),
+        email: values.email.trim(),
+        company: values.company.trim(),
+        title: values.title.trim(),
+        website: values.website.trim(),
+        address: {
+          street: values.address.street?.trim() || "",
+          city: values.address.city?.trim() || "",
+          state: values.address.state?.trim() || "",
+          zip: values.address.zip?.trim() || "",
+          country: values.address.country?.trim() || "United States (USA)",
+        },
+        nickname: values.nickname.trim(),
+        socialNetwork: {
+          facebook: values.socialNetwork.facebook?.trim() || "",
+          twitter: values.socialNetwork.twitter?.trim() || "",
+          linkedin: values.socialNetwork.linkedin?.trim() || "",
+          instagram: values.socialNetwork.instagram?.trim() || "",
+        },
+        ...(values.phoneNumber ? { phoneNumber: phoneToE164(values.phoneNumber) } : {}),
+        ...(values.birthMonth ? { birthMonth: Number(values.birthMonth) } : {}),
+        ...(values.details?.trim() ? { details: values.details.trim() } : {}),
+        specialDates: cleanedSpecialDates,
+        ...(photoFile ? { photo: photoFile } : {}),
+      };
 
-      addGuestMutation(formData, {
+      addGuestMutation(payload, {
         onSuccess: (response) => {
           console.log("Guest added:", response);
           SuccessToast("Guest added successfully!");
@@ -156,14 +185,29 @@ const AddGuestModal = ({ onClose }) => {
     },
   });
 
+  const cityOptions = useMemo(() => {
+    const rawCities = values.address?.state
+      ? usaStatesCities[values.address.state] || []
+      : [];
+    const seen = new Set();
+    const list = [];
+    for (const c of rawCities) {
+      const trimmed = typeof c === "string" ? c.trim() : "";
+      if (trimmed && !seen.has(trimmed.toLowerCase())) {
+        seen.add(trimmed.toLowerCase());
+        list.push({ label: trimmed, value: trimmed });
+      }
+    }
+    return list;
+  }, [values.address?.state]);
+
   const handlePhoneChange = (e) => {
     const cleanVal = normalizePhoneDigits(e.target.value);
     setFieldValue("phoneNumber", cleanVal);
   };
+
   const today = new Date();
-
   const maxDate = today.toISOString().split("T")[0];
-
   const minDate = new Date(
     today.getFullYear() - 13,
     today.getMonth(),
@@ -171,9 +215,10 @@ const AddGuestModal = ({ onClose }) => {
   )
     .toISOString()
     .split("T")[0];
+
   return (
     <div className="fixed inset-0 bg-[#0A150F80] z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[16px] h-auto max-h-[90vh] w-[580px] max-w-full pb-8 flex flex-col shadow-2xl">
+      <div className="bg-white rounded-[16px] h-auto max-h-[90vh] w-[620px] max-w-full pb-8 flex flex-col shadow-2xl">
         {/* Header */}
         <div className="flex justify-between items-center px-8 py-5 border-b border-b-[#0000001a]">
           <h2 className="text-[24px] font-bold text-[#181818]">Add New Guest</h2>
@@ -236,7 +281,7 @@ const AddGuestModal = ({ onClose }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InputField
                 label="First Name *"
-                placeholder="e.g. Grace"
+                placeholder="e.g. Ava"
                 id="firstName"
                 name="firstName"
                 value={values.firstName}
@@ -248,7 +293,7 @@ const AddGuestModal = ({ onClose }) => {
               />
               <InputField
                 label="Last Name *"
-                placeholder="e.g. Hopper"
+                placeholder="e.g. Khan"
                 id="lastName"
                 name="lastName"
                 value={values.lastName}
@@ -264,7 +309,7 @@ const AddGuestModal = ({ onClose }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InputField
                 label="Email address *"
-                placeholder="e.g. grace@example.com"
+                placeholder="e.g. ava@example.com"
                 id="email"
                 name="email"
                 value={values.email}
@@ -293,6 +338,62 @@ const AddGuestModal = ({ onClose }) => {
                   autoComplete="off"
                 />
               </div>
+            </div>
+
+            {/* Nickname & Website */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <InputField
+                label="Nickname *"
+                placeholder="e.g. Av"
+                id="nickname"
+                name="nickname"
+                value={values.nickname}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.nickname}
+                touched={touched.nickname}
+                maxLength={50}
+              />
+              <InputField
+                label="Website *"
+                placeholder="e.g. https://example.com"
+                id="website"
+                name="website"
+                value={values.website}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.website}
+                touched={touched.website}
+                maxLength={100}
+              />
+            </div>
+
+            {/* Company & Title */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <InputField
+                label="Company *"
+                placeholder="e.g. Acme Inc."
+                id="company"
+                name="company"
+                value={values.company}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.company}
+                touched={touched.company}
+                maxLength={60}
+              />
+              <InputField
+                label="Title *"
+                placeholder="e.g. Product Manager"
+                id="title"
+                name="title"
+                value={values.title}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.title}
+                touched={touched.title}
+                maxLength={60}
+              />
             </div>
 
             {/* Lounge Name & Birth Month */}
@@ -329,6 +430,154 @@ const AddGuestModal = ({ onClose }) => {
                     </option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            {/* Address Section */}
+            <div className="flex flex-col gap-4 border border-gray-200 rounded-[12px] p-4 bg-gray-50/50">
+              <span className="text-sm font-semibold text-gray-800">
+                Address
+              </span>
+              <InputField
+                label="Street"
+                placeholder="e.g. 123 Main Street"
+                id="address.street"
+                name="address.street"
+                value={values.address?.street}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.address?.street}
+                touched={touched.address?.street}
+                maxLength={120}
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                <SelectField
+                  label="State"
+                  placeholder="Select State"
+                  name="address.state"
+                  value={values.address?.state}
+                  onChange={(val) => {
+                    setFieldValue("address.state", val);
+                    if (!val) {
+                      setFieldValue("address.city", "");
+                    }
+                    setFieldTouched("address.state", true, false);
+                  }}
+                  onBlur={() => setFieldTouched("address.state", true, false)}
+                  error={errors.address?.state}
+                  touched={touched.address?.state}
+                  options={stateOptions}
+                  searchable={true}
+                  isClearable={true}
+                />
+                <SelectField
+                  label={values.address?.state ? "City *" : "City"}
+                  placeholder={
+                    values.address?.state
+                      ? "Select City"
+                      : "Select State first"
+                  }
+                  name="address.city"
+                  value={values.address?.city}
+                  disabled={!values.address?.state}
+                  onChange={(val) => {
+                    setFieldValue("address.city", val);
+                    setFieldTouched("address.city", true, false);
+                  }}
+                  onBlur={() => setFieldTouched("address.city", true, false)}
+                  error={errors.address?.city}
+                  touched={touched.address?.city}
+                  options={cityOptions}
+                  searchable={true}
+                  isClearable={true}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <InputField
+                  label="Zip Code"
+                  placeholder="e.g. 90210"
+                  id="address.zip"
+                  name="address.zip"
+                  value={values.address?.zip}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.address?.zip}
+                  touched={touched.address?.zip}
+                  maxLength={20}
+                />
+                <InputField
+                  label="Country"
+                  placeholder="United States (USA)"
+                  id="address.country"
+                  name="address.country"
+                  value={values.address?.country || "United States (USA)"}
+                  disabled
+                  className="bg-gray-100 text-gray-600 cursor-not-allowed"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.address?.country}
+                  touched={touched.address?.country}
+                  maxLength={60}
+                />
+              </div>
+            </div>
+
+            {/* Social etworks Section */}
+            <div className="flex flex-col gap-4 border border-gray-200 rounded-[12px] p-4 bg-gray-50/50">
+              <span className="text-sm font-semibold text-gray-800">
+                Social Networks
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <InputField
+                  label="Facebook"
+                  placeholder="https://facebook.com/username"
+                  id="socialNetwork.facebook"
+                  name="socialNetwork.facebook"
+                  value={values.socialNetwork?.facebook}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.socialNetwork?.facebook}
+                  touched={touched.socialNetwork?.facebook}
+                  maxLength={200}
+                />
+                <InputField
+                  label="Twitter / X"
+                  placeholder="https://x.com/username"
+                  id="socialNetwork.twitter"
+                  name="socialNetwork.twitter"
+                  value={values.socialNetwork?.twitter}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.socialNetwork?.twitter}
+                  touched={touched.socialNetwork?.twitter}
+                  maxLength={200}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <InputField
+                  label="LinkedIn"
+                  placeholder="https://linkedin.com/in/username"
+                  id="socialNetwork.linkedin"
+                  name="socialNetwork.linkedin"
+                  value={values.socialNetwork?.linkedin}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.socialNetwork?.linkedin}
+                  touched={touched.socialNetwork?.linkedin}
+                  maxLength={200}
+                />
+                <InputField
+                  label="Instagram"
+                  placeholder="https://instagram.com/username"
+                  id="socialNetwork.instagram"
+                  name="socialNetwork.instagram"
+                  value={values.socialNetwork?.instagram}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.socialNetwork?.instagram}
+                  touched={touched.socialNetwork?.instagram}
+                  maxLength={200}
+                />
               </div>
             </div>
 

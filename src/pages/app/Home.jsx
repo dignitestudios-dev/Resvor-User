@@ -133,12 +133,13 @@
 
 // export default Home;
 
-import { filterIcon } from "../../assets/export";
 import { FaSearch } from "react-icons/fa";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import LoungeCard from "../../components/global/LoungeCard";
 import FilterDropdown from "../../components/global/FilterDropdown";
+import Pagination from "../../components/global/Pagination";
 import { useFavorites, useLounges } from "../../hooks/queries/useQueries";
+import { useTableQuery } from "../../hooks/useTableQuery";
 import WalkthroughWrapper from "../../components/walkthrough/WalkthroughWrapper";
 import { useUpdateFcmToken } from "../../hooks/mutations/OnboardingMutations";
 import { requestForToken } from "../../firebase/getFcmToken";
@@ -146,18 +147,54 @@ import { requestForToken } from "../../firebase/getFcmToken";
 const Home = () => {
   const [open, setOpen] = useState(false);
   const [services, setServices] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeSearch, setActiveSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+
+  const { query, setPage, setSearch } = useTableQuery({
+    defaultValues: {
+      page: 1,
+      search: "",
+    },
+  });
+
+  const [searchTerm, setSearchTerm] = useState(query.search || "");
+  const isTypingRef = useRef(false);
+
+  // Sync external URL changes (e.g. browser back/forward or reset)
+  useEffect(() => {
+    if (!isTypingRef.current) {
+      setSearchTerm(query.search || "");
+    }
+  }, [query.search]);
+
+  // Debounce search input (400ms) with history replace to avoid spamming browser history
+  useEffect(() => {
+    if (searchTerm === (query.search || "")) {
+      isTypingRef.current = false;
+      return;
+    }
+
+    isTypingRef.current = true;
+    const timer = setTimeout(() => {
+      setSearch(searchTerm, { replace: true });
+      isTypingRef.current = false;
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, query.search, setSearch]);
 
   const updateFcmMutation = useUpdateFcmToken();
+  const updateFcmMutationRef = useRef(updateFcmMutation);
+  updateFcmMutationRef.current = updateFcmMutation;
+  const fcmRegisteredRef = useRef(false);
 
   useEffect(() => {
+    if (fcmRegisteredRef.current) return;
+    fcmRegisteredRef.current = true;
+
     const syncFcmToken = async () => {
       try {
         const fcmToken = await requestForToken();
         if (fcmToken) {
-          await updateFcmMutation.mutateAsync({ fcmToken });
+          await updateFcmMutationRef.current.mutateAsync({ fcmToken });
         }
       } catch (error) {
         console.error("FCM Token registration on Home page failed:", error);
@@ -168,17 +205,17 @@ const Home = () => {
   }, []);
 
   const handleSearch = () => {
-    setCurrentPage(1);
-    setActiveSearch(searchTerm);
+    isTypingRef.current = false;
+    setSearch(searchTerm, { replace: true });
   };
 
   const queryParams = {
-    page: currentPage,
+    page: query.page,
     limit: 9,
-    ...(activeSearch.trim() ? { name: activeSearch.trim() } : {}),
+    ...(query.search.trim() ? { name: query.search.trim() } : {}),
   };
 
-  const { data: loungesResponse, isLoading } = useLounges(queryParams);
+  const { data: loungesResponse, isLoading, isFetching } = useLounges(queryParams);
   const { data: favoritesResponse } = useFavorites({
     enabled: !isLoading,
   });
@@ -189,14 +226,6 @@ const Home = () => {
   const totalItems = pagination?.totalItems ?? lounges.length;
   const favoriteLounges = favoritesResponse?.data || [];
   const favoriteIds = new Set(favoriteLounges.map((lounge) => lounge._id));
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
-  };
 
   const [selectedFilters, setSelectedFilters] = useState({
     location: "",
@@ -234,7 +263,7 @@ const Home = () => {
       guestCapacity: 1,
     });
     setServices([]);
-    setCurrentPage(1);
+    setPage(1);
   };
 
   return (
@@ -330,8 +359,12 @@ const Home = () => {
           )}
         </div>
 
-        <div className="grid md:grid-cols-3 grid-cols-1 gap-6 md:px-10 px-4 mt-6 joyride-lounge-list">
-          {isLoading ? (
+        <div
+          className={`grid md:grid-cols-3 grid-cols-1 gap-6 md:px-10 px-4 mt-6 joyride-lounge-list transition-opacity duration-200 ${
+            isFetching ? "opacity-75" : "opacity-100"
+          }`}
+        >
+          {isLoading && !lounges.length ? (
             <div className="col-span-full">
               <div className="grid md:grid-cols-3 grid-cols-1 gap-6">
                 {[...Array(6)].map((_, index) => (
@@ -374,34 +407,15 @@ const Home = () => {
         </div>
 
         {/* Pagination Controls */}
-        {!isLoading && lounges.length > 0 && (
-          <div className="flex items-center justify-between border-t border-[#D4D4D4] bg-white px-6 py-4 rounded-b-xl mt-4">
-            <div className="text-sm text-gray-500">
-              Showing page{" "}
-              <span className="font-semibold text-gray-800">{currentPage}</span>{" "}
-              of{" "}
-              <span className="font-semibold text-gray-800">{totalPages}</span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handlePrevPage}
-                disabled={currentPage === 1}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                onClick={handleNextPage}
-                disabled={currentPage >= totalPages}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={query.page}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={9}
+          onPageChange={setPage}
+          isLoading={isFetching}
+          className="mt-6"
+        />
       </div>
     </div>
   );

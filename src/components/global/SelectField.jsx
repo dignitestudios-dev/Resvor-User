@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useState, useRef, useEffect } from "react";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+import { RxCross2 } from "react-icons/rx";
 
 /**
  * SelectField — global dropdown select component.
@@ -12,6 +13,7 @@ import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
  * Additional props:
  *   options  — array of strings  OR  array of { label, value } objects
  *   searchable — show an inline search box (default: false)
+ *   isClearable — allow clearing/deselecting (default: true)
  */
 export default function SelectField({
   label,
@@ -26,6 +28,7 @@ export default function SelectField({
   disabled = false,
   required = false,
   searchable = false,
+  isClearable = true,
   className,
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -59,7 +62,19 @@ export default function SelectField({
     normalised.find((opt) => opt.value === value)?.label ?? "";
 
   const handleSelect = (opt) => {
-    onChange?.(opt.value);
+    if (isClearable && opt.value === value) {
+      onChange?.("");
+    } else {
+      onChange?.(opt.value);
+    }
+    onBlur?.({ target: { name } });
+    setIsOpen(false);
+    setSearch("");
+  };
+
+  const handleClear = (e) => {
+    e.stopPropagation();
+    onChange?.("");
     onBlur?.({ target: { name } });
     setIsOpen(false);
     setSearch("");
@@ -96,9 +111,22 @@ export default function SelectField({
           {selectedLabel || placeholder}
         </span>
 
-        <span className="ml-2 text-[#727272] shrink-0">
-          {isOpen ? <IoIosArrowUp size={18} /> : <IoIosArrowDown size={18} />}
-        </span>
+        <div className="flex items-center gap-1 shrink-0 ml-2">
+          {isClearable && Boolean(value) && !disabled && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="p-0.5 rounded-full hover:bg-gray-200 text-[#727272] hover:text-[#181818] transition"
+              title="Clear selection"
+              aria-label="Clear selection"
+            >
+              <RxCross2 size={16} />
+            </button>
+          )}
+          <span className="text-[#727272]">
+            {isOpen ? <IoIosArrowUp size={18} /> : <IoIosArrowDown size={18} />}
+          </span>
+        </div>
       </div>
 
       {/* Dropdown panel */}
@@ -118,6 +146,15 @@ export default function SelectField({
 
           {/* Options list */}
           <div className="max-h-[180px] overflow-y-auto">
+            {isClearable && Boolean(value) && (
+              <div
+                onClick={handleClear}
+                className="px-4 py-2 text-xs text-red-500 font-medium cursor-pointer hover:bg-red-50 border-b border-gray-100 flex items-center justify-between"
+              >
+                <span>Clear selection</span>
+                <RxCross2 size={14} />
+              </div>
+            )}
             {filtered.length > 0 ? (
               filtered.map((opt) => (
                 <div
