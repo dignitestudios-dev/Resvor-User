@@ -522,7 +522,7 @@ const AddGuestModal = ({ onClose }) => {
               </div>
             </div>
 
-            {/* Social Networks Section */}
+            {/* Social etworks Section */}
             <div className="flex flex-col gap-4 border border-gray-200 rounded-[12px] p-4 bg-gray-50/50">
               <span className="text-sm font-semibold text-gray-800">
                 Social Networks
