@@ -31,6 +31,18 @@ export const changePasswordSchema = Yup.object().shape({
     .oneOf([Yup.ref("newPassword")], "Password does not match"),
 });
 
+const urlRegex =
+  /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/;
+
+const optionalUrl = (maxChars = 200, fieldName = "URL") =>
+  Yup.string()
+    .max(maxChars, `${fieldName} cannot exceed ${maxChars} characters.`)
+    .test("is-valid-url", "Please enter a valid URL.", (value) => {
+      if (!value || (typeof value === "string" && !value.trim())) return true;
+      return urlRegex.test(typeof value === "string" ? value.trim() : "");
+    })
+    .nullable();
+
 export const guestbookSchema = Yup.object({
   firstName: Yup.string()
     .required("First name is required.")
@@ -49,6 +61,49 @@ export const guestbookSchema = Yup.object({
       /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
       "Invalid email format."
     ),
+  company: Yup.string().required("Company is required.").trim(),
+  title: Yup.string().required("Title is required.").trim(),
+  website: Yup.string()
+    .required("Website is required.")
+    .matches(urlRegex, "Please enter a valid URL.")
+    .trim(),
+  nickname: Yup.string().required("Nickname is required.").trim(),
+  address: Yup.object({
+    street: Yup.string()
+      .max(120, "Street cannot exceed 120 characters.")
+      .nullable(),
+    state: Yup.string()
+      .max(60, "State cannot exceed 60 characters.")
+      .nullable(),
+    city: Yup.string()
+      .max(80, "City cannot exceed 80 characters.")
+      .test(
+        "city-required-if-state",
+        "City is required when a state is selected.",
+        function (value) {
+          const state = this.parent?.state;
+          if (state && typeof state === "string" && state.trim().length > 0) {
+            return Boolean(
+              value && typeof value === "string" && value.trim().length > 0
+            );
+          }
+          return true;
+        }
+      )
+      .nullable(),
+    zip: Yup.string()
+      .max(20, "Zip code cannot exceed 20 characters.")
+      .nullable(),
+    country: Yup.string()
+      .max(60, "Country cannot exceed 60 characters.")
+      .nullable(),
+  }),
+  socialNetwork: Yup.object({
+    facebook: optionalUrl(200, "Facebook URL"),
+    twitter: optionalUrl(200, "Twitter / X URL"),
+    linkedin: optionalUrl(200, "LinkedIn URL"),
+    instagram: optionalUrl(200, "Instagram URL"),
+  }),
   phoneNumber: Yup.string()
     .test(
       "valid-phone",
@@ -81,6 +136,49 @@ export const editGuestbookSchema = Yup.object({
       /^(?!.*\.\.)(?!.*\.$)[A-Za-z0-9][A-Za-z0-9._+-]*@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/,
       "Invalid email format."
     ),
+  company: Yup.string().required("Company is required.").trim(),
+  title: Yup.string().required("Title is required.").trim(),
+  website: Yup.string()
+    .required("Website is required.")
+    .matches(urlRegex, "Please enter a valid URL.")
+    .trim(),
+  nickname: Yup.string().required("Nickname is required.").trim(),
+  address: Yup.object({
+    street: Yup.string()
+      .max(120, "Street cannot exceed 120 characters.")
+      .nullable(),
+    state: Yup.string()
+      .max(60, "State cannot exceed 60 characters.")
+      .nullable(),
+    city: Yup.string()
+      .max(80, "City cannot exceed 80 characters.")
+      .test(
+        "city-required-if-state",
+        "City is required when a state is selected.",
+        function (value) {
+          const state = this.parent?.state;
+          if (state && typeof state === "string" && state.trim().length > 0) {
+            return Boolean(
+              value && typeof value === "string" && value.trim().length > 0
+            );
+          }
+          return true;
+        }
+      )
+      .nullable(),
+    zip: Yup.string()
+      .max(20, "Zip code cannot exceed 20 characters.")
+      .nullable(),
+    country: Yup.string()
+      .max(60, "Country cannot exceed 60 characters.")
+      .nullable(),
+  }),
+  socialNetwork: Yup.object({
+    facebook: optionalUrl(200, "Facebook URL"),
+    twitter: optionalUrl(200, "Twitter / X URL"),
+    linkedin: optionalUrl(200, "LinkedIn URL"),
+    instagram: optionalUrl(200, "Instagram URL"),
+  }),
   phoneNumber: Yup.string()
     .test(
       "valid-phone",
@@ -226,7 +324,7 @@ const parseTimeToMinutes = (timeStr) => {
   if (!timeStr) return 0;
   const match = timeStr.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
   if (!match) return 0;
-  let [_, hours, minutes, ampm] = match;
+  let [, hours, minutes, ampm] = match;
   hours = parseInt(hours, 10);
   minutes = parseInt(minutes, 10);
   ampm = ampm.toUpperCase();
