@@ -17,7 +17,6 @@ const BookingModal = ({
   onClose,
   onNext,
   loungeId,
-  operatingHours,
   bookingData,
 }) => {
   const initialDisplay = bookingData?.displayData || {};
@@ -171,181 +170,6 @@ const BookingModal = ({
     );
   };
 
-  // Parse operating hours
-  const parseTimeRange = (hours) => {
-    if (!hours) {
-      return {
-        start: "",
-        end: "",
-        openLabel: "",
-        closeLabel: "",
-      };
-    }
-
-    const toHHMM = (t) => {
-      const s = (t || "").trim();
-
-      const m12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-
-      if (m12) {
-        let h = parseInt(m12[1], 10);
-        const min = m12[2];
-        const p = m12[3].toUpperCase();
-
-        if (p === "AM" && h === 12) h = 0;
-        if (p === "PM" && h !== 12) h += 12;
-
-        return `${String(h).padStart(2, "0")}:${min}`;
-      }
-
-      const m24 = s.match(/^(\d{1,2}):(\d{2})$/);
-
-      if (m24) {
-        return `${String(parseInt(m24[1], 10)).padStart(2, "0")}:${m24[2]}`;
-      }
-
-      return "";
-    };
-
-    if (
-      typeof hours === "object" &&
-      hours.open &&
-      hours.close
-    ) {
-      return {
-        start: toHHMM(hours.open),
-        end: toHHMM(hours.close),
-        openLabel: hours.open,
-        closeLabel: hours.close,
-      };
-    }
-
-    if (typeof hours === "string") {
-      const parts = hours.split(/\s+-\s+/);
-      const startLabel = parts[0]?.trim() || "";
-      const endLabel = parts[1]?.trim() || "";
-
-      return {
-        start: toHHMM(startLabel),
-        end: toHHMM(endLabel || startLabel),
-        openLabel: startLabel || hours,
-        closeLabel: endLabel || startLabel || hours,
-      };
-    }
-
-    return {
-      start: "",
-      end: "",
-      openLabel: "",
-      closeLabel: "",
-    };
-  };
-
-  // Time helpers
-  const toMinutes = (hhmm) => {
-    if (!hhmm) return null;
-
-    const [h, m] = hhmm.split(":").map(Number);
-
-    if (isNaN(h) || isNaN(m)) return null;
-
-    return h * 60 + m;
-  };
-
-  const isOvernightRange = (openHHMM, closeHHMM) => {
-    const openMin = toMinutes(openHHMM);
-    const closeMin = toMinutes(closeHHMM);
-
-    if (openMin === null || closeMin === null) return false;
-
-    return closeMin < openMin;
-  };
-
-  const isTimeInRange = (valHHMM, openHHMM, closeHHMM) => {
-    if (!valHHMM || !openHHMM || !closeHHMM) return true;
-
-    const val = toMinutes(valHHMM);
-    const open = toMinutes(openHHMM);
-    let close = toMinutes(closeHHMM);
-
-    if (val === null || open === null || close === null) return true;
-
-    if (isOvernightRange(openHHMM, closeHHMM)) {
-      close += 1440;
-
-      const normalized = val < open ? val + 1440 : val;
-
-      return normalized >= open && normalized <= close;
-    }
-
-    return val >= open && val <= close;
-  };
-
-  const {
-    start: minTime,
-    end: maxTime,
-    openLabel,
-    closeLabel,
-  } = parseTimeRange(operatingHours);
-
-  // Current time + 1 hour buffer
-  const getNowWithBuffer = () => {
-    const now = new Date();
-    const buffer = new Date(now.getTime() + 60 * 60 * 1000);
-
-    const isNextDay = buffer.getDate() !== now.getDate();
-
-    return {
-      timeStr: isNextDay
-        ? "25:00"
-        : `${String(buffer.getHours()).padStart(2, "0")}:${String(
-            buffer.getMinutes()
-          ).padStart(2, "0")}`,
-      label: buffer.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-  };
-
-  const isToday = (date) => {
-    if (!date) return false;
-
-    const now = new Date();
-
-    return (
-      date.getFullYear() === now.getFullYear() &&
-      date.getMonth() === now.getMonth() &&
-      date.getDate() === now.getDate()
-    );
-  };
-
-  const effectiveMinTime = isToday(startDate)
-    ? (() => {
-        const { timeStr } = getNowWithBuffer();
-
-        if (!minTime) return timeStr;
-
-        return timeStr > minTime ? timeStr : minTime;
-      })()
-    : minTime;
-
-  const effectiveMinLabel = isToday(startDate)
-    ? (() => {
-        const { timeStr, label } = getNowWithBuffer();
-
-        if (!minTime || timeStr > minTime) {
-          return `${label} (1-hour buffer)`;
-        }
-
-        return openLabel;
-      })()
-    : openLabel;
-
-  const isBufferEnforced =
-    isToday(startDate) &&
-    (!minTime || getNowWithBuffer().timeStr > minTime);
-
   // UTC formatting
   const formatDateTimeToUTC = (
     date,
@@ -381,13 +205,7 @@ const BookingModal = ({
     }
   };
 
-  const isEndNextDay = Boolean(
-    startTime &&
-      endTime &&
-      (isOvernightRange(minTime, maxTime)
-        ? endTime <= maxTime && startTime >= minTime
-        : endTime < startTime)
-  );
+  const isEndNextDay = Boolean(startTime && endTime && endTime < startTime);
 
   const formattedDate = formatDateTimeToUTC(startDate, startTime);
   const formattedStartTime = formatDateTimeToUTC(startDate, startTime);
@@ -528,109 +346,24 @@ const BookingModal = ({
     }
   };
 
-  // Time range validation
-  const checkTimeInRange = (val, field) => {
-    if (!val) return "";
-
-    if (effectiveMinTime) {
-      const valMin = toMinutes(val);
-      const effMin = toMinutes(effectiveMinTime);
-
-      let normalizedVal = valMin;
-
-      if (
-        isOvernightRange(effectiveMinTime, maxTime) &&
-        valMin !== null &&
-        effMin !== null &&
-        valMin < effMin
-      ) {
-        normalizedVal = valMin + 1440;
-      }
-
-      if (
-        valMin !== null &&
-        effMin !== null &&
-        normalizedVal < effMin
-      ) {
-        return isBufferEnforced
-          ? `${field} must be at least 1 hour in the future (after ${effectiveMinLabel})`
-          : `${field} must be at or after opening time (${openLabel})`;
-      }
-    }
-
-    if (!isTimeInRange(val, effectiveMinTime || minTime, maxTime)) {
-      return `${field} cannot exceed closing time (${closeLabel})`;
-    }
-
-    return "";
-  };
-
-  const checkEndAfterStart = (start, end) => {
-    if (!start || !end) return "";
-
-    if (isOvernightRange(minTime, maxTime)) {
-      const startIsEvening = start >= minTime;
-      const endIsEvening = end >= minTime;
-
-      const startIsMorning = start <= maxTime;
-      const endIsMorning = end <= maxTime;
-
-      if (startIsEvening && endIsEvening && end <= start) {
-        return "End time must be after start time";
-      }
-
-      if (startIsMorning && endIsMorning && end <= start) {
-        return "End time must be after start time";
-      }
-
-      if (startIsMorning && endIsEvening) {
-        return "End time must be after start time";
-      }
-    } else {
-      if (end <= start) {
-        return "End time must be after start time";
-      }
-    }
-
-    return "";
-  };
-
   const handleStartTimeChange = (val) => {
     setStartTime(val);
-
-    const err = checkTimeInRange(val, "Start time");
-
-    setFormErrors((prev) => {
-      const nextErrors = {
+    if (val) {
+      setFormErrors((prev) => ({
         ...prev,
-        startTime: err || "",
-      };
-
-      if (endTime) {
-        const endErr =
-          checkTimeInRange(endTime, "End time") ||
-          checkEndAfterStart(val, endTime);
-
-        nextErrors.endTime = endErr || "";
-      }
-
-      return nextErrors;
-    });
+        startTime: "",
+      }));
+    }
   };
 
   const handleEndTimeChange = (val) => {
     setEndTime(val);
-
-    const rangeErr = checkTimeInRange(val, "End time");
-
-    const orderErr = !rangeErr
-      ? checkEndAfterStart(startTime, val)
-      : "";
-
-    setFormErrors((prev) => ({
-      ...prev,
-      endTime: rangeErr || orderErr || "",
-    }));
+    if (val) {
+      setFormErrors((prev) => ({
+        ...prev,
+        endTime: "",
+      }));
+    }
   };
 
   // Final validation
@@ -655,15 +388,6 @@ const BookingModal = ({
 
     const childErr = validateChildren(formData.children);
     if (childErr) errors.children = childErr;
-
-    const startErr = checkTimeInRange(startTime, "Start time");
-    if (startErr) errors.startTime = startErr;
-
-    const endErr =
-      checkTimeInRange(endTime, "End time") ||
-      checkEndAfterStart(startTime, endTime);
-
-    if (endErr) errors.endTime = endErr;
 
     setFormErrors(errors);
 
@@ -765,12 +489,6 @@ const BookingModal = ({
                 onChange={handleStartTimeChange}
                 error={formErrors.startTime}
               />
-
-              {minTime && maxTime && (
-                <p className="text-[11px] text-[#727272] mt-1">
-                  Allowed: {effectiveMinLabel} – {closeLabel}
-                </p>
-              )}
             </div>
 
             <div className="w-full">
@@ -780,12 +498,6 @@ const BookingModal = ({
                 onChange={handleEndTimeChange}
                 error={formErrors.endTime}
               />
-
-              {minTime && maxTime && (
-                <p className="text-[11px] text-[#727272] mt-1">
-                  Allowed: {effectiveMinLabel} – {closeLabel}
-                </p>
-              )}
             </div>
           </div>
 
@@ -826,7 +538,7 @@ const BookingModal = ({
           {/* Phone */}
           <div className="px-1 py-2">
             <PhoneInput
-              label="Phone number"
+              label="Phone number *"
               id="phone"
               name="phone"
               value={phoneFormatter(formData.phone)}

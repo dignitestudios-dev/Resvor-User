@@ -45,7 +45,7 @@ const EnterNewNumberModal = ({ onClose, onNext }) => {
           </div>
 
           <label htmlFor="newNumber" className="text-[14px] font-[500] -mb-4">
-            Phone Number
+            Phone Number *
           </label>
 
           <div>

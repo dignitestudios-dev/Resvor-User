@@ -194,12 +194,6 @@ const EditGuestModal = ({ onClose, guestData }) => {
         instagram: values.socialNetwork.instagram?.trim() || "",
       };
 
-      const loungeId =
-        guestData?.loungeId?._id ||
-        (typeof guestData?.loungeId === "string" ? guestData.loungeId : undefined) ||
-        guestData?.lounge?._id ||
-        (typeof guestData?.lounge === "string" ? guestData.lounge : undefined);
-
       let payloadToSend;
 
       if (photoFile) {
@@ -217,10 +211,8 @@ const EditGuestModal = ({ onClose, guestData }) => {
         formData.append("address", JSON.stringify(addressPayload));
         formData.append("socialNetwork", JSON.stringify(socialNetworkPayload));
 
-        if (values.phoneNumber) {
-          const formattedE164 = phoneToE164(values.phoneNumber);
-          formData.append("phoneNumber", formattedE164);
-        }
+        const formattedE164 = phoneToE164(values.phoneNumber);
+        formData.append("phoneNumber", formattedE164);
         if (values.birthMonth) {
           formData.append("birthMonth", values.birthMonth);
         }
@@ -244,9 +236,7 @@ const EditGuestModal = ({ onClose, guestData }) => {
           address: addressPayload,
           socialNetwork: socialNetworkPayload,
           birthMonth: values.birthMonth ? Number(values.birthMonth) : undefined,
-          phoneNumber: values.phoneNumber
-            ? phoneToE164(values.phoneNumber)
-            : undefined,
+          phoneNumber: phoneToE164(values.phoneNumber),
           specialDates: cleanedSpecialDates,
           details: values.details ? values.details.trim() : undefined,
           ...(isPhotoRemoved ? { removePhoto: true } : {}),
@@ -421,7 +411,7 @@ const EditGuestModal = ({ onClose, guestData }) => {
               />
               <div>
                 <PhoneInput
-                  label="Phone Number"
+                  label="Phone Number *"
                   id="phoneNumber"
                   name="phoneNumber"
                   value={phoneFormatter(values.phoneNumber)}

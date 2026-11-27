@@ -108,7 +108,7 @@ const SendInvitationForm = ({ isOpen, onClose, flyerFile, onSuccess }) => {
 
     const payload = new FormData();
     payload.append("channel", "email");
-    payload.append("additionalInfo", additionalInfo || "");
+    payload.append("additionalInfo[0]", additionalInfo || "");
 
     // Array indices format: recipients[0], recipients[1], etc.
     selectedRecipients.forEach((email, index) => {
@@ -116,7 +116,13 @@ const SendInvitationForm = ({ isOpen, onClose, flyerFile, onSuccess }) => {
     });
 
     if (flyerFile) {
-      payload.append("image", flyerFile);
+      if (Array.isArray(flyerFile)) {
+        flyerFile.forEach((file, index) => {
+          payload.append(`images[${index}]`, file);
+        });
+      } else {
+        payload.append("images[0]", flyerFile);
+      }
     }
 
     createCampaign(payload, {
