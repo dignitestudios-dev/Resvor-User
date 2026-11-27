@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { RxCross2 } from "react-icons/rx";
 import { RiLoader5Line } from "react-icons/ri";
 import PhoneInput from "../auth/PhoneInput";
-import { phoneFormatter, phoneToE164 } from "../../lib/helpers";
+import { normalizePhoneDigits, phoneFormatter, phoneToE164 } from "../../lib/helpers";
 import { useUpdateOnboardingPhone } from "../../hooks/mutations/OnboardingMutations";
 import { ErrorToast, SuccessToast } from "../global/Toaster";
 import Cookies from "js-cookie";
@@ -39,9 +39,13 @@ const ChangePhoneModal = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const digitsOnly = phone.replace(/\D/g, "");
-    if (!digitsOnly || digitsOnly.length < 7) {
-      setError("Please enter a valid phone number");
+    const digitsOnly = normalizePhoneDigits(phone);
+    if (!digitsOnly) {
+      setError("Phone number is required");
+      return;
+    }
+    if (digitsOnly.length !== 10) {
+      setError("Please enter a valid 10-digit phone number");
       return;
     }
 
@@ -113,7 +117,7 @@ const ChangePhoneModal = ({
               value={phone}
               onChange={handleChange}
               onBlur={() => {}}
-              label="New Phone Number"
+              label="New Phone Number *"
               labelColor="text-[#181818]"
               textColor="text-black"
               countryCodeColor="text-black"

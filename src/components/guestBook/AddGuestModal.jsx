@@ -163,7 +163,7 @@ const AddGuestModal = ({ onClose }) => {
           linkedin: values.socialNetwork.linkedin?.trim() || "",
           instagram: values.socialNetwork.instagram?.trim() || "",
         },
-        ...(values.phoneNumber ? { phoneNumber: phoneToE164(values.phoneNumber) } : {}),
+        phoneNumber: phoneToE164(values.phoneNumber),
         ...(values.birthMonth ? { birthMonth: Number(values.birthMonth) } : {}),
         ...(values.details?.trim() ? { details: values.details.trim() } : {}),
         specialDates: cleanedSpecialDates,
@@ -321,7 +321,7 @@ const AddGuestModal = ({ onClose }) => {
               />
               <div>
                 <PhoneInput
-                  label="Phone Number"
+                  label="Phone Number *"
                   id="phoneNumber"
                   name="phoneNumber"
                   value={phoneFormatter(values.phoneNumber)}

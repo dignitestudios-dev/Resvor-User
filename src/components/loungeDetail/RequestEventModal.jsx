@@ -4,7 +4,6 @@ import DatePickerField from "../global/DatePickerField";
 import InputField from "../auth/InputField";
 import Button from "./../global/Button";
 import SelectField from "../global/SelectField";
-import { ErrorToast } from "../global/Toaster";
 import { useFormik } from "formik";
 import { requestEventSchema } from "../../schema/app/appSchema";
 import PhoneInput from "../auth/PhoneInput";
@@ -22,32 +21,7 @@ const eventTypeOptions = [
   "Other",
 ];
 
-const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
-  // Convert a 12-hour time string like "11:30 AM" or "2:30 AM" to 24-hour "HH:MM"
-  const toHHMM = (t) => {
-    const s = (t || "").trim();
-    const m12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-    if (m12) {
-      let h = parseInt(m12[1], 10);
-      const min = m12[2];
-      const p = m12[3].toUpperCase();
-      if (p === "AM" && h === 12) h = 0;
-      if (p === "PM" && h !== 12) h += 12;
-      return `${String(h).padStart(2, "0")}:${min}`;
-    }
-    const m24 = s.match(/^(\d{1,2}):(\d{2})$/);
-    if (m24) return `${String(parseInt(m24[1], 10)).padStart(2, "0")}:${m24[2]}`;
-    return "";
-  };
-
-  // New format: operatingHours = { open: '11:30 AM', close: '2:30 AM' }
-  const openLabel = operatingHours?.open || "";
-  const closeLabel = operatingHours?.close || "";
-  const minTime = toHHMM(openLabel);   // e.g. "11:30"
-  const maxTime = toHHMM(closeLabel);  // e.g. "02:30"
-
-  // Detect overnight range: close time is numerically earlier than open time (e.g. 11:30 AM → 2:30 AM next day)
-  const isOvernightRange = minTime && maxTime && maxTime < minTime;
+const RequestEventModal = ({ onClose, onNext, eventData }) => {
   // Tomorrow's date — users cannot book for today, only from tomorrow onwards
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -84,29 +58,16 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
     validateOnChange: true,
     validateOnBlur: true,
     onSubmit: (values) => {
-      // Validate time bounds reactively
-      const minCheck = checkTimeInRange(values.startTime, "Start time");
-      const maxCheck = checkTimeInRange(values.endTime, "End time");
-      const orderCheck = checkEndAfterStart(values.startTime, values.endTime);
-
-      if (minCheck || maxCheck || orderCheck) {
-        if (minCheck) setFieldError("startTime", minCheck);
-        if (maxCheck) setFieldError("endTime", maxCheck);
-        if (!maxCheck && orderCheck) setFieldError("endTime", orderCheck);
-        ErrorToast("Please fill all the required fields correctly.");
-        return;
-      }
-
       // Prepare startDateTime and endDateTime
       const startDateTime = new Date(values.startDate);
       const [startH, startM] = values.startTime.split(":");
-      startDateTime.setHours(parseInt(startH), parseInt(startM));
+      startDateTime.setHours(parseInt(startH, 10), parseInt(startM, 10));
 
       const endDateTime = new Date(values.startDate);
       const [endH, endM] = values.endTime.split(":");
-      endDateTime.setHours(parseInt(endH), parseInt(endM));
-      // If overnight range and end time is before start time (crosses midnight), bump end date by +1
-      if (isOvernightRange && values.endTime < values.startTime) {
+      endDateTime.setHours(parseInt(endH, 10), parseInt(endM, 10));
+      // If end time is earlier than start time (crosses midnight into next day), bump end date by +1
+      if (values.endTime < values.startTime) {
         endDateTime.setDate(endDateTime.getDate() + 1);
       }
 
@@ -137,89 +98,24 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
     },
   });
 
-  // Time validation — overnight-aware (e.g. 11:30 AM → 2:30 AM next day)
-  const checkTimeInRange = (val, field) => {
-    if (!val) return "";
-    if (!minTime && !maxTime) return ""; // no operating hours configured
-
-    if (isOvernightRange) {
-      // Valid times: >= open (e.g. >= 11:30) OR <= close (e.g. <= 02:30)
-      const isValid = val >= minTime || val <= maxTime;
-      if (!isValid)
-        return `${field} must be between ${openLabel} and ${closeLabel} (overnight)`;
-    } else {
-      if (minTime && val < minTime)
-        return `${field} must be at or after opening time (${openLabel})`;
-      if (maxTime && val > maxTime)
-        return `${field} cannot exceed closing time (${closeLabel})`;
-    }
-    return "";
-  };
-
-  // Validates that end time is strictly after start time (overnight-aware)
-  const checkEndAfterStart = (start, end) => {
-    if (!start || !end) return "";
-    if (isOvernightRange) {
-      // Both in evening portion: end must be > start
-      // Both in early-morning portion: end must be > start
-      // start in evening, end in early-morning: always valid (crosses midnight)
-      const startIsEvening = start >= minTime; // e.g. >= "11:30"
-      const endIsEvening = end >= minTime;
-      const startIsMorning = start <= maxTime; // e.g. <= "02:30"
-      const endIsMorning = end <= maxTime;
-
-      if (startIsEvening && endIsEvening && end <= start)
-        return "End time must be after start time";
-      if (startIsMorning && endIsMorning && end <= start)
-        return "End time must be after start time";
-      // start evening, end morning = valid (crosses midnight)
-      // start morning, end evening = invalid (going backwards)
-      if (startIsMorning && endIsEvening)
-        return "End time must be after start time";
-    } else {
-      if (end <= start) return "End time must be after start time";
-    }
-    return "";
-  };
-
   const handleStartTimeChange = (e) => {
     const val = e.target.value;
     setFieldValue("startTime", val);
-    const err = checkTimeInRange(val, "Start time");
-    setFieldError("startTime", err || "");
-    // Re-validate existing end time against new start time
-    if (values.endTime) {
-      const endErr = checkTimeInRange(values.endTime, "End time") ||
-        checkEndAfterStart(val, values.endTime);
-      setFieldError("endTime", endErr || "");
-    }
+    if (val) setFieldError("startTime", "");
   };
 
   const handleEndTimeChange = (e) => {
     const val = e.target.value;
     setFieldValue("endTime", val);
-    const rangeErr = checkTimeInRange(val, "End time");
-    const orderErr = !rangeErr ? checkEndAfterStart(values.startTime, val) : "";
-    setFieldError("endTime", rangeErr || orderErr || "");
+    if (val) setFieldError("endTime", "");
   };
 
-  // On blur — only clear error, no clamping for overnight ranges
   const handleStartTimeBlur = (e) => {
     handleBlur(e);
-    const val = values.startTime;
-    if (!val) return;
-    const err = checkTimeInRange(val, "Start time");
-    if (!err) setFieldError("startTime", "");
   };
 
   const handleEndTimeBlur = (e) => {
     handleBlur(e);
-    const val = values.endTime;
-    if (!val) return;
-    const rangeErr = checkTimeInRange(val, "End time");
-    const orderErr = !rangeErr ? checkEndAfterStart(values.startTime, val) : "";
-    if (!rangeErr && !orderErr) setFieldError("endTime", "");
-    else setFieldError("endTime", rangeErr || orderErr);
   };
 
   // Form input cleaners for numeric-only inputs
@@ -322,11 +218,6 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
                 onChange={handleStartTimeChange}
                 onBlur={handleStartTimeBlur}
               />
-              {minTime && maxTime && (
-                <p className="text-[11px] text-[#727272] mt-1">
-                  Allowed: {openLabel} – {closeLabel}
-                </p>
-              )}
               {touched.startTime && errors.startTime && (
                 <p className="text-red-600 text-[12px] mt-1">{errors.startTime}</p>
               )}
@@ -339,20 +230,12 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
               <input
                 type="time"
                 data-slot="input"
-                {...(!isOvernightRange && values.startTime
-                  ? { min: values.startTime }
-                  : {})}
                 className={`text-black w-full px-4 py-2 text-sm rounded-[15px] bg-white/10 backdrop-blur-[28.9px] ring-1 ${touched.endTime && errors.endTime ? "ring-red-500" : "ring-[#CACACA]"
                   } focus:ring-2 focus:ring-gray-200 focus:outline-none`}
                 value={values.endTime}
                 onChange={handleEndTimeChange}
                 onBlur={handleEndTimeBlur}
               />
-              {minTime && maxTime && (
-                <p className="text-[11px] text-[#727272] mt-1">
-                  Allowed: {openLabel} – {closeLabel}
-                </p>
-              )}
               {touched.endTime && errors.endTime && (
                 <p className="text-red-600 text-[12px] mt-1">{errors.endTime}</p>
               )}
@@ -396,7 +279,7 @@ const RequestEventModal = ({ onClose, onNext, operatingHours, eventData }) => {
           <div className="w-full flex items-start gap-2 my-2 px-1">
             <div className="w-full">
               <PhoneInput
-                label="Phone number"
+                label="Phone number *"
                 id="phone"
                 name="phone"
                 value={phoneFormatter(values.phone)}

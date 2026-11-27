@@ -280,7 +280,7 @@ const PersonalDetails = ({ handleNext, handlePrevious, setPhoneNumber }) => {
             />
           </div>
           <PhoneInput
-            label={"Phone Number"}
+            label={"Phone Number *"}
             value={phoneFormatter(values.number)}
             id={"number"}
             name={"number"}

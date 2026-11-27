@@ -46,7 +46,7 @@ const ChangeNumberModal = ({ onClose, onNext }) => {
               </p>
             </div>
             <label htmlFor="number" className="text-[14px] font-[500] -mb-4">
-              Phone Number
+              Phone Number *
             </label>
             <PhoneInput
               id="number"

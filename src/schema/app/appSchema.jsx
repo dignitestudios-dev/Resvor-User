@@ -105,12 +105,15 @@ export const guestbookSchema = Yup.object({
     instagram: optionalUrl(200, "Instagram URL"),
   }),
   phoneNumber: Yup.string()
+    .required("Phone number is required.")
     .test(
       "valid-phone",
       "Please enter a valid 10-digit phone number.",
-      (value) => !value || normalizePhoneDigits(value).length === 10
-    )
-    .nullable(),
+      (value) => {
+        if (!value) return false;
+        return normalizePhoneDigits(value).length === 10;
+      }
+    ),
   birthMonth: Yup.string().nullable(),
   details: Yup.string()
     .max(300, "Details cannot exceed 300 characters.")
@@ -180,12 +183,15 @@ export const editGuestbookSchema = Yup.object({
     instagram: optionalUrl(200, "Instagram URL"),
   }),
   phoneNumber: Yup.string()
+    .required("Phone number is required.")
     .test(
       "valid-phone",
       "Please enter a valid 10-digit phone number.",
-      (value) => !value || normalizePhoneDigits(value).length === 10
-    )
-    .nullable(),
+      (value) => {
+        if (!value) return false;
+        return normalizePhoneDigits(value).length === 10;
+      }
+    ),
   birthMonth: Yup.string().nullable(),
   details: Yup.string()
     .max(300, "Details cannot exceed 300 characters.")
@@ -320,22 +326,6 @@ export const requestEventSchema = Yup.object({
   ticketAtDoor: Yup.boolean(),
 });
 
-const parseTimeToMinutes = (timeStr) => {
-  if (!timeStr) return 0;
-  const match = timeStr.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
-  if (!match) return 0;
-  let [, hours, minutes, ampm] = match;
-  hours = parseInt(hours, 10);
-  minutes = parseInt(minutes, 10);
-  ampm = ampm.toUpperCase();
-  if (ampm === "PM" && hours !== 12) {
-    hours += 12;
-  } else if (ampm === "AM" && hours === 12) {
-    hours = 0;
-  }
-  return hours * 60 + minutes;
-};
-
 export const createFlyerSchema = Yup.object({
   eventTitle: Yup.string()
     .required("Event title is required")
@@ -357,13 +347,7 @@ export const createFlyerSchema = Yup.object({
     .typeError("Event date is required")
     .required("Event date is required"),
   startTime: Yup.string().required("Start time is required"),
-  endTime: Yup.string()
-    .required("End time is required")
-    .test("is-after-start", "End time must be after start time", function (value) {
-      const { startTime } = this.parent;
-      if (!startTime || !value) return true;
-      return parseTimeToMinutes(value) > parseTimeToMinutes(startTime);
-    }),
+  endTime: Yup.string().required("End time is required"),
   address: Yup.string()
     .required("Address is required")
     .max(120, "Address cannot exceed 120 characters.")

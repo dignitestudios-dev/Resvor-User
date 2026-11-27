@@ -265,7 +265,7 @@ const CreateFlyer = () => {
       payload.append(`recipients[${index}]`, email);
     });
 
-    payload.append("additionalInfo", values.additionalInfo);
+    payload.append("additionalInfo[0]", values.additionalInfo);
 
     // attach the captured flyer PNG
     if (flyerBlobRef.current) {
@@ -274,7 +274,13 @@ const CreateFlyer = () => {
         "event-flyer.png",
         { type: "image/png" }
       );
-      payload.append("image", flyerFile);
+      if (Array.isArray(flyerFile)) {
+        flyerFile.forEach((file, index) => {
+          payload.append(`images[${index}]`, file);
+        });
+      } else {
+        payload.append("images[0]", flyerFile);
+      }
     }
 
     createCampaign(payload, {
